@@ -1,0 +1,155 @@
+package main
+
+import (
+	"context"
+	"crypto/tls"
+	"flag"
+	"fmt"
+	"github.com/Yamashou/gqlgenc/clientv2"
+	"github.com/je4/revcatfront/v2/config"
+	"github.com/je4/revcatfront/v2/data/certs"
+	"github.com/je4/revcatfront/v2/data/web/static"
+	"github.com/je4/revcatfront/v2/data/web/templates"
+	"github.com/je4/revcatfront/v2/pkg/server"
+	"github.com/je4/utils/v2/pkg/zLogger"
+	"github.com/rs/zerolog"
+	"io"
+	"io/fs"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"path/filepath"
+	"strings"
+	"syscall"
+)
+
+var configfile = flag.String("config", "", "location of toml configuration file")
+
+func auth(apikey string) func(ctx context.Context, req *http.Request, gqlInfo *clientv2.GQLRequestInfo, res interface{}, next clientv2.RequestInterceptorFunc) error {
+	return func(ctx context.Context, req *http.Request, gqlInfo *clientv2.GQLRequestInfo, res interface{}, next clientv2.RequestInterceptorFunc) error {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apikey))
+		return next(ctx, req, gqlInfo, res)
+	}
+}
+
+func main() {
+
+	flag.Parse()
+
+	var cfgFS fs.FS
+	var cfgFile string
+	if *configfile != "" {
+		cfgFS = os.DirFS(filepath.Dir(*configfile))
+		cfgFile = filepath.Base(*configfile)
+	} else {
+		cfgFS = config.ConfigFS
+		cfgFile = "revcatfront.toml"
+	}
+
+	conf := &RevCatFrontConfig{
+		LogFile:      "",
+		LogLevel:     "DEBUG",
+		LocalAddr:    "localhost:81",
+		ExternalAddr: "http://localhost:81",
+	}
+
+	if err := LoadRevCatFrontConfig(cfgFS, cfgFile, conf); err != nil {
+		log.Fatalf("cannot load toml from [%v] %s: %v", cfgFS, cfgFile, err)
+	}
+
+	// create logger instance
+	var out io.Writer = os.Stdout
+	if conf.LogFile != "" {
+		fp, err := os.OpenFile(conf.LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+		if err != nil {
+			log.Fatalf("cannot open logfile %s: %v", conf.LogFile, err)
+		}
+		defer fp.Close()
+		out = fp
+	}
+
+	//	output := zerolog.ConsoleWriter{Out: out, TimeFormat: time.RFC3339}
+	_logger := zerolog.New(out).With().Timestamp().Logger()
+	switch strings.ToUpper(conf.LogLevel) {
+	case "DEBUG":
+		_logger = _logger.Level(zerolog.DebugLevel)
+	case "INFO":
+		_logger = _logger.Level(zerolog.InfoLevel)
+	case "WARN":
+		_logger = _logger.Level(zerolog.WarnLevel)
+	case "ERROR":
+		_logger = _logger.Level(zerolog.ErrorLevel)
+	case "FATAL":
+		_logger = _logger.Level(zerolog.FatalLevel)
+	case "PANIC":
+		_logger = _logger.Level(zerolog.PanicLevel)
+	default:
+		_logger = _logger.Level(zerolog.DebugLevel)
+	}
+	var logger zLogger.ZLogger = &_logger
+
+	var cert *tls.Certificate
+	if conf.TLSCert != "" {
+		c, err := tls.LoadX509KeyPair(conf.TLSCert, conf.TLSKey)
+		if err != nil {
+			logger.Fatal().Msgf("cannot load tls certificate: %v", err)
+		}
+		cert = &c
+	} else {
+		certBytes, err := fs.ReadFile(certs.CertFS, "localhost.cert.pem")
+		if err != nil {
+			logger.Fatal().Msgf("cannot read internal cert")
+		}
+		keyBytes, err := fs.ReadFile(certs.CertFS, "localhost.key.pem")
+		if err != nil {
+			logger.Fatal().Msgf("cannot read internal key")
+		}
+		c, err := tls.X509KeyPair(certBytes, keyBytes)
+		if err != nil {
+			logger.Fatal().Msgf("cannot create internal cert")
+		}
+		cert = &c
+	}
+
+	var templateFS fs.FS = templates.FS
+	if conf.Templates != "" {
+		templateFS = os.DirFS(conf.Templates)
+	}
+	var staticFS fs.FS = static.FS
+	if conf.StaticFiles != "" {
+		staticFS = os.DirFS(conf.StaticFiles)
+	}
+
+	ctrl := server.NewController(conf.LocalAddr, conf.ExternalAddr, cert, templateFS, staticFS, conf.Templates != "", logger)
+	ctrl.Start()
+
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
+	fmt.Println("press ctrl+c to stop server")
+	s := <-done
+	fmt.Println("got signal:", s)
+
+	if err := ctrl.Stop(); err != nil {
+		logger.Fatal().Msgf("cannot stop server: %v", err)
+	}
+	/*
+		if conf.Revcat.Insecure {
+			http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+		}
+		httpClient := &http.Client{}
+		c := client.NewClient(httpClient, conf.Revcat.Endpoint, nil)
+		entries, err := c.MediathekEntries(
+			context.Background(),
+			[]string{"zotero2-2486551.TJDM3289"},
+			auth(string(conf.Revcat.Apikey)),
+		)
+		if err != nil {
+			panic(err)
+		}
+		for _, entry := range entries.GetMediathekEntries() {
+			logger.Info().Msgf("%+v\n", entry)
+		}
+
+	*/
+}

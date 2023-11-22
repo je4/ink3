@@ -1,0 +1,14 @@
+logfile = ""
+loglevel = "DEBUG"
+
+localaddr = "localhost:8444"
+externaladdr = "https://localhost:8444"
+
+templates = "data/web/templates"
+staticfiles = "data/web/static"
+
+[revcat]
+endpoint = "https://localhost:8443/graphql"
+insecure = true
+apikey = "%%REVCAT_APIKEY%%"
+jwtkey = "%%REVCAT_JWTKEY%%"
