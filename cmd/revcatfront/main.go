@@ -97,19 +97,21 @@ func main() {
 		}
 		cert = &c
 	} else {
-		certBytes, err := fs.ReadFile(certs.CertFS, "localhost.cert.pem")
-		if err != nil {
-			logger.Fatal().Msgf("cannot read internal cert")
+		if strings.HasPrefix(strings.ToLower(conf.ExternalAddr), "https://") {
+			certBytes, err := fs.ReadFile(certs.CertFS, "localhost.cert.pem")
+			if err != nil {
+				logger.Fatal().Msgf("cannot read internal cert")
+			}
+			keyBytes, err := fs.ReadFile(certs.CertFS, "localhost.key.pem")
+			if err != nil {
+				logger.Fatal().Msgf("cannot read internal key")
+			}
+			c, err := tls.X509KeyPair(certBytes, keyBytes)
+			if err != nil {
+				logger.Fatal().Msgf("cannot create internal cert")
+			}
+			cert = &c
 		}
-		keyBytes, err := fs.ReadFile(certs.CertFS, "localhost.key.pem")
-		if err != nil {
-			logger.Fatal().Msgf("cannot read internal key")
-		}
-		c, err := tls.X509KeyPair(certBytes, keyBytes)
-		if err != nil {
-			logger.Fatal().Msgf("cannot create internal cert")
-		}
-		cert = &c
 	}
 
 	var templateFS fs.FS = templates.FS

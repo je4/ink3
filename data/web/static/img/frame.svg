@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.1"
+   width="398"
+   height="398"
+   id="svg485"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <g
+     id="g485"
+     transform="translate(-849,-400)">
+    <path
+       fill="none"
+       stroke="#646464"
+       paint-order="fill stroke markers"
+       d="m 912,798 v -1 h 4 l 4,-2 8,-1 v -1 h 3 l 1,-1 15,-1 v -1 h 2 v -1 h 3 l 1,-1 12,-1 2,-1 v -1 h 9 l 1,-1 h 37 l 1,-1 h 3 l 2,-2 12,-1 1,-1 h 14 l 2,-2 h 3 l 1,-1 h 5 l 1,-1 h 10 l 1,-1 h 2 v -1 h 5 l 2,-1 h 10 l 2,-1 13,-1 1,-1 h 9 l 1,-1 h 8 l 2,-1 h 10 l 1,-1 h 4 l 1,-1 h 9 l 5,-2 h 10 l 1,-1 h 4 l 1,-1 24,-1 v -1 h 9 v -1 h 25 l 2,-1 h 8 l 1,-1"
+       stroke-opacity="1"
+       stroke-linejoin="round"
+       stroke-miterlimit="10"
+       stroke-dasharray="none"
+       id="bottom" />
+    <path
+       fill="none"
+       stroke="#646464"
+       paint-order="fill stroke markers"
+       d="m 849,463 h 1 v 4 l 2,4 1,8 h 1 v 3 l 1,1 1,15 h 1 v 2 h 1 v 3 l 1,1 1,12 1,2 h 1 v 9 l 1,1 v 37 l 1,1 v 3 l 2,2 1,12 1,1 v 14 l 2,2 v 3 l 1,1 v 5 l 1,1 v 10 l 1,1 v 2 h 1 v 5 l 1,2 v 10 l 1,2 1,13 1,1 v 9 l 1,1 v 8 l 1,2 v 10 l 1,1 v 4 l 1,1 v 9 l 2,5 v 10 l 1,1 v 4 l 1,1 1,24 h 1 v 9 h 1 v 25 l 1,2 v 8 l 1,1"
+       stroke-opacity="1"
+       stroke-linejoin="round"
+       stroke-miterlimit="10"
+       stroke-dasharray="none"
+       id="left" />
+    <path
+       fill="none"
+       stroke="#646464"
+       paint-order="fill stroke markers"
+       d="m 1247,735 h -1 v -4 l -2,-4 -1,-8 h -1 v -3 l -1,-1 -1,-15 h -1 v -2 h -1 v -3 l -1,-1 -1,-12 -1,-2 h -1 v -9 l -1,-1 v -37 l -1,-1 v -3 l -2,-2 -1,-12 -1,-1 v -14 l -2,-2 v -3 l -1,-1 v -5 l -1,-1 v -10 l -1,-1 v -2 h -1 v -5 l -1,-2 v -10 l -1,-2 -1,-13 -1,-1 v -9 l -1,-1 v -8 l -1,-2 v -10 l -1,-1 v -4 l -1,-1 v -9 l -2,-5 v -10 l -1,-1 v -4 l -1,-1 -1,-24 h -1 v -9 h -1 v -25 l -1,-2 v -8 l -1,-1"
+       stroke-opacity="1"
+       stroke-linejoin="round"
+       stroke-miterlimit="10"
+       stroke-dasharray="none"
+       id="right" />
+    <path
+       fill="none"
+       stroke="#646464"
+       paint-order="fill stroke markers"
+       d="m 1184,400 v 1 h -4 l -4,2 -8,1 v 1 h -3 l -1,1 -15,1 v 1 h -2 v 1 h -3 l -1,1 -12,1 -2,1 v 1 h -9 l -1,1 h -37 l -1,1 h -3 l -2,2 -12,1 -1,1 h -14 l -2,2 h -3 l -1,1 h -5 l -1,1 h -10 l -1,1 h -2 v 1 h -5 l -2,1 h -10 l -2,1 -13,1 -1,1 h -9 l -1,1 h -8 l -2,1 h -10 l -1,1 h -4 l -1,1 h -9 l -5,2 h -10 l -1,1 h -4 l -1,1 -24,1 v 1 h -9 v 1 h -25 l -2,1 h -8 l -1,1"
+       stroke-opacity="1"
+       stroke-linejoin="round"
+       stroke-miterlimit="10"
+       stroke-dasharray="none"
+       id="top" />
+  </g>
+</svg>

@@ -27,3 +27,4 @@ go.sum
 .idea/
 /data/web/static/fonts/
 /data/web/static/bootstrap/
+/data/web/static/bootstrap-icons/

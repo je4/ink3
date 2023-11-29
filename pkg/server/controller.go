@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"emperror.dev/errors"
 	"fmt"
+	"github.com/Masterminds/sprig/v3"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/je4/utils/v2/pkg/zLogger"
@@ -23,6 +24,7 @@ func NewController(localAddr, externalAddr string, cert *tls.Certificate, templa
 		templateFS:    templateFS,
 		staticFS:      staticFS,
 		templateDebug: templateDebug,
+		templateCache: make(map[string]*template.Template),
 		logger:        logger,
 	}
 	router := gin.Default()
@@ -34,6 +36,13 @@ func NewController(localAddr, externalAddr string, cert *tls.Certificate, templa
 
 	router.GET("/", func(c *gin.Context) {
 		ctrl.indexPage(c)
+	})
+
+	router.POST("/search", func(c *gin.Context) {
+		ctrl.searchGridPage(c)
+	})
+	router.GET("/search", func(c *gin.Context) {
+		ctrl.searchGridPage(c)
 	})
 
 	var tlsConfig *tls.Config
@@ -88,22 +97,45 @@ func (ctrl *Controller) Stop() error {
 }
 
 func (ctrl *Controller) indexPage(c *gin.Context) {
-	tmpl, ok := ctrl.templateCache["index.gohtml"]
+	templateName := "index.gohtml"
+	tmpl, ok := ctrl.templateCache[templateName]
 	if !ok {
 		var err error
-		tmpl, err = template.ParseFS(ctrl.templateFS, "index.gohtml")
+		tmpl, err = template.New(templateName).Funcs(sprig.FuncMap()).ParseFS(ctrl.templateFS, templateName)
 		if err != nil {
-			ctrl.logger.Error().Err(err).Msgf("cannot parse template '%s'", "index.gohtml")
-			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot parse template '%s': %v", "index.gohtml", err))
+			ctrl.logger.Error().Err(err).Msgf("cannot parse template '%s'", templateName)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot parse template '%s': %v", templateName, err))
 			return
 		}
 		if !ctrl.templateDebug {
-			ctrl.templateCache["index.gohtml"] = tmpl
+			ctrl.templateCache[templateName] = tmpl
 		}
 	}
 	if err := tmpl.Execute(c.Writer, nil); err != nil {
-		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", "index.gohtml")
-		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", "index.gohtml", err))
+		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
+		return
+	}
+}
+
+func (ctrl *Controller) searchGridPage(c *gin.Context) {
+	templateName := "search_grid.gohtml"
+	tmpl, ok := ctrl.templateCache[templateName]
+	if !ok {
+		var err error
+		tmpl, err = template.New(templateName).Funcs(sprig.FuncMap()).ParseFS(ctrl.templateFS, templateName)
+		if err != nil {
+			ctrl.logger.Error().Err(err).Msgf("cannot parse template '%s'", templateName)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot parse template '%s': %v", templateName, err))
+			return
+		}
+		if !ctrl.templateDebug {
+			ctrl.templateCache[templateName] = tmpl
+		}
+	}
+	if err := tmpl.Execute(c.Writer, nil); err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
 		return
 	}
 }
