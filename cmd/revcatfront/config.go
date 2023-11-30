@@ -14,6 +14,13 @@ type RevcatConfig struct {
 	Apikey   configutil.EnvString `toml:"apikey"`
 }
 
+type Directus struct {
+	BaseUrl   string               `toml:"baseurl"`
+	Token     configutil.EnvString `toml:"token"`
+	CacheTime configutil.Duration  `toml:"cachetime"`
+	CatalogID int                  `toml:"catalogid"`
+}
+
 type RevCatFrontConfig struct {
 	LocalAddr    string `toml:"localaddr"`
 	ExternalAddr string `toml:"externaladdr"`
@@ -27,6 +34,8 @@ type RevCatFrontConfig struct {
 	LogLevel string `toml:"loglevel"`
 
 	Revcat RevcatConfig `toml:"revcat"`
+
+	Directus Directus `toml:"directus"`
 }
 
 func LoadRevCatFrontConfig(fSys fs.FS, fp string, conf *RevCatFrontConfig) error {

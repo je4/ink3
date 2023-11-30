@@ -64,6 +64,12 @@
             white-space: nowrap;
             -webkit-overflow-scrolling: touch;
         }
+
+        .gradient-border-bg {
+            border: 5px solid;
+            border-image: linear-gradient(45deg, black, whitesmoke) 1;
+            padding: 0rem;
+        }
     </style>
 
 
@@ -88,9 +94,8 @@
                     <input class="form-control w-auto" type="search" placeholder="Search" aria-label="Search">
                     <select class="form-select me-2" aria-label="collection">
                         <option value="0" selected>Alle Sammlungen</option>
-                        {{- range $val := until  15 }}
-                        {{- $val = add $val 1 }}
-                        <option value="{{$val}}">Sammlung #{{$val}}</option>
+                        {{- range $coll := .Collections }}
+                        <option value="{{$coll.Id}}">{{$coll.Title}}</option>
                         {{- end }}
                     </select>
                 </div>
@@ -104,19 +109,20 @@
     <div class="album py-5 bg-body-tertiary">
         <div class="container-fluid">
             <div class="row g-12">
-                {{- range $val := until  15 }}
-                    {{- $val = add $val 1 }}
-                    <div class="col p-0" style='background-image: url("static/img/frame.svg"); background-size: 100% 100%;'>
-                        <div class="m-5" style="transform: rotate(-{{randInt 3 12}}deg)">
+                {{- range $coll := .Collections }}
+                    <div class="col p-0" style='min-width: 500px; background-image: url("static/img/frame.svg"); background-size: 100% 100%;'>
+                        <div class="" style="margin: 10em 3em 10em 3em; transform: rotate(-{{randInt 3 8}}deg)">
                             <div style="align-content: center;">
-                                <svg class="bd-placeholder-img card-img-top" style="width: 200px; height: 200px;" width="100px" height="200px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em">Sammlung #{{$val}}</text></svg>
+                                <img class="gradient-border-bg" src="https://cms.basel-collections.ch/assets/{{ $coll.Image }}?fit=inside&width=500&height=200" />
+                                <!-- <svg class="bd-placeholder-img card-img-top" style="width: 200px; height: 200px;" width="100px" height="200px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em">Placeholder</text></svg> -->
                             </div>
                             <div class="card-body">
-                                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec malesuada nunc id nibh venenatis venenatis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.</p>
+                                <p class="card-title">{{ $coll.Title }}</p>
+                                <p class="card-text">{{ $coll.Description | toHTML }}</p>
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="btn-group">
                                         <button type="button" class="btn btn-sm btn-outline-secondary">Suche</button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary">Sammlungsseite</button>
+                                        <a type="button" class="btn btn-sm btn-outline-secondary" href="{{ $coll.Url }}">Sammlungsseite</a>
                                     </div>
                                 </div>
                             </div>

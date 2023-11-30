@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/Yamashou/gqlgenc/clientv2"
+	"github.com/je4/basel-collections/v2/directus"
 	"github.com/je4/revcatfront/v2/config"
 	"github.com/je4/revcatfront/v2/data/certs"
 	"github.com/je4/revcatfront/v2/data/web/static"
@@ -22,6 +23,7 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
+	"time"
 )
 
 var configfile = flag.String("config", "", "location of toml configuration file")
@@ -123,7 +125,9 @@ func main() {
 		staticFS = os.DirFS(conf.StaticFiles)
 	}
 
-	ctrl := server.NewController(conf.LocalAddr, conf.ExternalAddr, cert, templateFS, staticFS, conf.Templates != "", logger)
+	dir := directus.NewDirectus(conf.Directus.BaseUrl, string(conf.Directus.Token), time.Duration(conf.Directus.CacheTime))
+
+	ctrl := server.NewController(conf.LocalAddr, conf.ExternalAddr, cert, templateFS, staticFS, dir, conf.Directus.CatalogID, conf.Templates != "", logger)
 	ctrl.Start()
 
 	done := make(chan os.Signal, 1)

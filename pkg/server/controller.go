@@ -8,13 +8,22 @@ import (
 	"github.com/Masterminds/sprig/v3"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/je4/basel-collections/v2/directus"
 	"github.com/je4/utils/v2/pkg/zLogger"
 	"html/template"
 	"io/fs"
 	"net/http"
 )
 
-func NewController(localAddr, externalAddr string, cert *tls.Certificate, templateFS, staticFS fs.FS, templateDebug bool, logger zLogger.ZLogger) *Controller {
+func funcMap() template.FuncMap {
+	fm := sprig.FuncMap()
+	fm["toHTML"] = func(s string) template.HTML {
+		return template.HTML(s)
+	}
+	return fm
+}
+
+func NewController(localAddr, externalAddr string, cert *tls.Certificate, templateFS, staticFS fs.FS, dir *directus.Directus, catalogID int, templateDebug bool, logger zLogger.ZLogger) *Controller {
 
 	ctrl := &Controller{
 		localAddr:     localAddr,
@@ -26,6 +35,8 @@ func NewController(localAddr, externalAddr string, cert *tls.Certificate, templa
 		templateDebug: templateDebug,
 		templateCache: make(map[string]*template.Template),
 		logger:        logger,
+		dir:           dir,
+		catalogID:     int64(catalogID),
 	}
 	router := gin.Default()
 	corsConfig := cors.DefaultConfig()
@@ -67,8 +78,10 @@ type Controller struct {
 	logger        zLogger.ZLogger
 	templateFS    fs.FS
 	staticFS      fs.FS
+	dir           *directus.Directus
 	templateDebug bool
 	templateCache map[string]*template.Template
+	catalogID     int64
 }
 
 func (ctrl *Controller) Start() error {
@@ -101,7 +114,7 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 	tmpl, ok := ctrl.templateCache[templateName]
 	if !ok {
 		var err error
-		tmpl, err = template.New(templateName).Funcs(sprig.FuncMap()).ParseFS(ctrl.templateFS, templateName)
+		tmpl, err = template.New(templateName).Funcs(funcMap()).ParseFS(ctrl.templateFS, templateName)
 		if err != nil {
 			ctrl.logger.Error().Err(err).Msgf("cannot parse template '%s'", templateName)
 			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot parse template '%s': %v", templateName, err))
@@ -111,7 +124,37 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 			ctrl.templateCache[templateName] = tmpl
 		}
 	}
-	if err := tmpl.Execute(c.Writer, nil); err != nil {
+
+	cat, err := ctrl.dir.GetCatalogue(ctrl.catalogID)
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot get catalogue #%v", ctrl.catalogID)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot get catalogue #%v: %v", ctrl.catalogID, err))
+		return
+	}
+
+	type tplData struct {
+		Collections []*directus.Collection `json:"collections"`
+	}
+	var data = &tplData{
+		Collections: []*directus.Collection{},
+	}
+	for _, collid := range cat.Collections {
+		coll, err := ctrl.dir.GetCollection(collid.CollectionID.Id)
+		if err != nil {
+			continue
+			/*
+				ctrl.logger.Error().Err(err).Msgf("cannot get collection #%v", collid.CollectionID.Id)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot get collection #%v: %v", collid.CollectionID.Id, err))
+				return
+			*/
+		}
+		if coll.Status != "published" {
+			continue
+		}
+		data.Collections = append(data.Collections, coll)
+	}
+
+	if err := tmpl.Execute(c.Writer, data); err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
 		return
@@ -123,7 +166,7 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 	tmpl, ok := ctrl.templateCache[templateName]
 	if !ok {
 		var err error
-		tmpl, err = template.New(templateName).Funcs(sprig.FuncMap()).ParseFS(ctrl.templateFS, templateName)
+		tmpl, err = template.New(templateName).Funcs(funcMap()).ParseFS(ctrl.templateFS, templateName)
 		if err != nil {
 			ctrl.logger.Error().Err(err).Msgf("cannot parse template '%s'", templateName)
 			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot parse template '%s': %v", templateName, err))
