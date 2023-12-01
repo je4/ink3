@@ -7,4 +7,5 @@ import "embed"
 //go:embed bootstrap-icons/font/bootstrap-icons.min.css bootstrap-icons/font/fonts/bootstrap-icons.woff2 bootstrap-icons/font/fonts/bootstrap-icons.woff
 //go:embed css/blog.css
 //go:embed img/frame.svg img/histories.png img/revolving.png
+//go:embed js/d3.js js/d3bubble.js
 var FS embed.FS
