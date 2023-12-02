@@ -36,6 +36,8 @@ type RevCatFrontConfig struct {
 	Revcat RevcatConfig `toml:"revcat"`
 
 	Directus Directus `toml:"directus"`
+
+	MediaserverBase string `toml:"mediaserverbase"`
 }
 
 func LoadRevCatFrontConfig(fSys fs.FS, fp string, conf *RevCatFrontConfig) error {

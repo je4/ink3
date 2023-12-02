@@ -91,13 +91,45 @@
 
 <main class="container-fluid">
 
-        <div class="row">
-            <div class="col" style="height: 400px;" id="bubbleArea">
-                </div>
+        <div class="row d-none d-md-block">
+            <div class="col p-0" style="height: 400px; background-image: url('static/img/7373.svg'); background-size: 100% auto;" id="bubbleArea"></div>
         </div>
+    <div class="container mt-3 mb-3">
+        <form method="get" action="search">
+            <div class="row">
+                <div class="col-md d-flex justify-content-end align-items-center">
+                    <div class="input-group">
+                        <input name="search" class="form-control w-auto" type="search" placeholder="Search" aria-label="Search">
+                    </div>
+                    <button class="col btn btn-outline-dark" type="submit">Suche</button>
+                </div>
+            </div>
+            <div class="container mt-5">
+                <table class="table">
+                    <tbody>
+                {{- range $key, $coll := .Collections }}
+                        <tr>
+                            <td>
+                                <div class="form-check form-switch">
+                                    <input name="collection_{{ $coll.Id }}" class="form-check-input" type="checkbox" role="switch" id="collSwitch_{{ $key }}">
+                                    <label class="form-check-label" for="collSwitch_{{ $key }}">{{ $coll.Title }}</label>
+                                </div>
+                            </td>
+                            <td>
+                                <a style="white-space: nowrap;" href="{{ $coll.Url }}" target="_blank" type="button" class="btn btn-outline-dark btn-sm"><span class="bi-box-arrow-up-right"></span>&nbsp;Collection</a>
+                            </td>
+                        </tr>
+                {{- end }}
+                    </tbody>
+                </table>
+            </div>
+        </form>
+
+    </div>
 </main>
 <footer class="blog-footer">
-    <p>REVOLVING HI:STORIES build by info-age GmbH Basel</p>
+    <p>REVOLVING HI:STORIES build by info-age GmbH Basel<br/>
+    Background Frame designed by <a href="http://www.freepik.com">kjpargeter / Freepik</a></p>
     <p>
         <a href="#">Back to top</a>
     </p>
@@ -107,9 +139,12 @@
 <script src="static/js/d3.js"></script>
 <script src="static/js/d3bubble.js"></script>
 <script>
+    {{- $maxRadius := 120 }}
+    {{- $minRadius := 80 }}
+    {{- $maxDiameter := mul $maxRadius 2 }}
     const collections =  [
         {{- range $key, $coll := .Collections }}
-        { id: '{{ $key }}', title: '{{ $coll.Title }}', link: '{{ $coll.Url }}', radius: {{ randInt 80 120}}, value: {{ divf (randInt 0 99) 100 }} },
+        { id: '{{ $key }}', image: {{ $coll.Image }}, title: '{{ $coll.Title }}', link: '{{ $coll.Url }}', radius: {{ randInt $minRadius $maxRadius}}, value: {{ divf (randInt 0 99) 100 }} },
         {{- end }}
     ]
 
@@ -178,66 +213,52 @@
                 .text(d => d.title).node()
 */
 
-        const leaf = svg.selectAll('g')
+        const leaf = svg.selectAll('a')
             .data(nodes)
-            .join('g')
-//            .attr('cx', d => d.x )
-//            .attr('cy', d  => d.y )
+            .join('a')
+            .attr("xlink:href", d => d.link)
+            .attr("target", "_blank")
             .attr('transform', d => 'translate(' + [d.x, d.y+height/2] + ')')
 
-        leaf.select('circle').node() ?
-            leaf
-                .join('circle')
-                .attr('r', d => d.radius )
-                .style('fill', "green")
-            :
+        /*
+        if( !leaf.select('circle').node()) {
             leaf
                 .append('circle')
-                .attr('r', d => d.radius )
+                .attr('r', d => d.radius)
                 .style('fill', "green")
-
-        leaf.select('text').node() ?
-            nil
-            :
+        }
+        if( !leaf.select('text').node()) {
             leaf
                 .append('text')
-                .attr('dx', 0 ) // d => `-${d.title.length/2}em` )
-                .attr('dy', 0 )
-                .attr('fill-opacity', 1)
+                .attr('dx', 0) // d => `-${d.title.length/2}em` )
+                .attr('dy', 0)
+                .attr('fill-opacity', 0.7)
                 .style("stroke", "black")
-                .text(d => d.title).node()
+                .text(d => d.title)
+        }
+        */
+        if( !leaf.select('clipPath').node()) {
+            leaf.append("clipPath")
+                .attr("id", d => `clip-${d.id}`)
+                .append("circle")
+                .attr('transform', d => 'translate(' + [d.radius, d.radius] + ')')
+                .attr("r", d => d.radius);
+        }
+        if( !leaf.select('image').node()) {
+            let maxDiameter = {{ $maxDiameter }};
+            leaf.append("image")
+                .attr("width", d => d.radius*2)
+                .attr("height", d => d.radius*2)
+                .attr("clip-path", d => `url(#clip-${d.id})`)
+                .attr('transform', d => 'translate(' + [-d.radius, -d.radius] + ')')
+                .attr("xlink:href", d => `https://cms.basel-collections.ch/assets/${ d.image }?fit=cover&width=${maxDiameter}&height=${maxDiameter}`);
+        }
     }
 
     let container = document.getElementById('bubbleArea');
 
     // Append the SVG element.
     container.append(svg.node());
-
-/*
-    let collections =  [
-        {{- range $coll := .Collections }}
-           { title: '{{ $coll.Title }}', link: '{{ $coll.Url }}', value: {{ randInt 100 2000}} },
-        {{- end }}
-    ]
-
-    let area = document.getElementById('bubbleArea');
-    let width = area.offsetWidth;
-
-    let chart = BubbleChart2(collections, {
-        label: d => d.title,
-        value: d => d.value,
-        //group: d => d.id.split(".")[1],
-        title: d => d.title,
-        link: d => d.link,
-        width: width,
-        height: 300,
-    })
-
-    let container = document.getElementById('bubbleArea');
-
-    // Append the SVG element.
-    container.append(chart);
-    */
 </script>
 </body>
 </html>

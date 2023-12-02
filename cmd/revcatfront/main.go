@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/Yamashou/gqlgenc/clientv2"
 	"github.com/je4/basel-collections/v2/directus"
+	"github.com/je4/revcat/v2/tools/client"
 	"github.com/je4/revcatfront/v2/config"
 	"github.com/je4/revcatfront/v2/data/certs"
 	"github.com/je4/revcatfront/v2/data/web/static"
@@ -127,7 +128,16 @@ func main() {
 
 	dir := directus.NewDirectus(conf.Directus.BaseUrl, string(conf.Directus.Token), time.Duration(conf.Directus.CacheTime))
 
-	ctrl := server.NewController(conf.LocalAddr, conf.ExternalAddr, cert, templateFS, staticFS, dir, conf.Directus.CatalogID, conf.Templates != "", logger)
+	if conf.Revcat.Insecure {
+		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	}
+	httpClient := &http.Client{}
+	revcatClient := client.NewClient(httpClient, conf.Revcat.Endpoint, nil, func(ctx context.Context, req *http.Request, gqlInfo *clientv2.GQLRequestInfo, res interface{}, next clientv2.RequestInterceptorFunc) error {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", conf.Revcat.Apikey))
+		return next(ctx, req, gqlInfo, res)
+	})
+
+	ctrl := server.NewController(conf.LocalAddr, conf.ExternalAddr, cert, templateFS, staticFS, dir, revcatClient, conf.Directus.CatalogID, conf.MediaserverBase, conf.Templates != "", logger)
 	ctrl.Start()
 
 	done := make(chan os.Signal, 1)

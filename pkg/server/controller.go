@@ -4,11 +4,13 @@ import (
 	"context"
 	"crypto/tls"
 	"emperror.dev/errors"
+	"encoding/json"
 	"fmt"
 	"github.com/Masterminds/sprig/v3"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/je4/basel-collections/v2/directus"
+	"github.com/je4/revcat/v2/tools/client"
 	"github.com/je4/utils/v2/pkg/zLogger"
 	"html/template"
 	"io/fs"
@@ -23,20 +25,22 @@ func funcMap() template.FuncMap {
 	return fm
 }
 
-func NewController(localAddr, externalAddr string, cert *tls.Certificate, templateFS, staticFS fs.FS, dir *directus.Directus, catalogID int, templateDebug bool, logger zLogger.ZLogger) *Controller {
+func NewController(localAddr, externalAddr string, cert *tls.Certificate, templateFS, staticFS fs.FS, dir *directus.Directus, client client.RevCatGraphQLClient, catalogID int, mediaserverBase string, templateDebug bool, logger zLogger.ZLogger) *Controller {
 
 	ctrl := &Controller{
-		localAddr:     localAddr,
-		externalAddr:  externalAddr,
-		srv:           nil,
-		cert:          cert,
-		templateFS:    templateFS,
-		staticFS:      staticFS,
-		templateDebug: templateDebug,
-		templateCache: make(map[string]*template.Template),
-		logger:        logger,
-		dir:           dir,
-		catalogID:     int64(catalogID),
+		localAddr:       localAddr,
+		externalAddr:    externalAddr,
+		srv:             nil,
+		cert:            cert,
+		templateFS:      templateFS,
+		staticFS:        staticFS,
+		templateDebug:   templateDebug,
+		templateCache:   make(map[string]*template.Template),
+		logger:          logger,
+		dir:             dir,
+		catalogID:       int64(catalogID),
+		client:          client,
+		mediaserverBase: mediaserverBase,
 	}
 	router := gin.Default()
 	corsConfig := cors.DefaultConfig()
@@ -71,17 +75,19 @@ func NewController(localAddr, externalAddr string, cert *tls.Certificate, templa
 }
 
 type Controller struct {
-	localAddr     string
-	externalAddr  string
-	srv           *http.Server
-	cert          *tls.Certificate
-	logger        zLogger.ZLogger
-	templateFS    fs.FS
-	staticFS      fs.FS
-	dir           *directus.Directus
-	templateDebug bool
-	templateCache map[string]*template.Template
-	catalogID     int64
+	localAddr       string
+	externalAddr    string
+	srv             *http.Server
+	cert            *tls.Certificate
+	logger          zLogger.ZLogger
+	templateFS      fs.FS
+	staticFS        fs.FS
+	dir             *directus.Directus
+	templateDebug   bool
+	templateCache   map[string]*template.Template
+	catalogID       int64
+	client          client.RevCatGraphQLClient
+	mediaserverBase string
 }
 
 func (ctrl *Controller) Start() error {
@@ -176,7 +182,28 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 			ctrl.templateCache[templateName] = tmpl
 		}
 	}
-	if err := tmpl.Execute(c.Writer, nil); err != nil {
+	searchString := c.Query("search")
+	result, err := ctrl.client.Search(context.Background(), searchString, []*client.FacetInput{}, []*client.FilterInput{}, nil, nil, nil, nil)
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", searchString)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", searchString, err))
+		return
+	}
+	data := struct {
+		Result          client.Search_Search `json:"result"`
+		MediaserverBase string               `json:"mediaserverBase"`
+	}{
+		Result:          result.Search,
+		MediaserverBase: ctrl.mediaserverBase,
+	}
+	b, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot marshal result")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot marshal result: %v", err))
+		return
+	}
+	print(string(b))
+	if err := tmpl.Execute(c.Writer, data); err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
 		return
