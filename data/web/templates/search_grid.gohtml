@@ -2,6 +2,7 @@
 <html lang="de">
 <head>
     {{- $mediaserverBase := .MediaserverBase }}
+    {{- $lang := .Lang}}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
@@ -66,13 +67,17 @@
             white-space: nowrap;
             -webkit-overflow-scrolling: touch;
         }
+
+        body {
+            font-family: "IBM Plex Sans", sans-serif;
+        }
     </style>
 
 
     <!-- Custom styles for this template -->
-    <link href="static/css/ibm-plex-serif.css" rel="stylesheet">
+    <link href="../static/css/ibm-plex-serif.css" rel="stylesheet">
     <!-- Custom styles for this template -->
-    <link href="static/css/blog.css" rel="stylesheet">
+    <link href="../static/css/blog.css" rel="stylesheet">
 </head>
 <body class="w-100">
 
@@ -80,10 +85,7 @@
     <header class="col-12">
         <div class="row">
             <div class="col" style="-ms-flex: 0 0 192px; flex: 0 0 192px">
-                <img style="height: 55px" src="static/img/revolving.png" alt="Title: REVOLVING HI:STORIES" />
-            </div>
-            <div class="col" style="-ms-flex: 0 0 143px; flex: 0 0 143px">
-                <img style="height: 55px" src="static/img/histories.png" alt="Title: HI:STORIES" />
+                <a href="../"><img style="height: 55px" src="../static/img/title_{{ $lang }}_1024x110.png" alt="Title: REVOLVING HI:STORIES" /></a>
             </div>
         </div>
     </header>
@@ -122,11 +124,12 @@
         <div class="container-fluid">
             <div class="row g-12">
                 {{- range $edge := .Result.Edges }}
-                    <div class="col p-0" style='background-image: url("static/img/frame.svg"); background-size: 100% 100%;'>
+                    <div class="col p-0" style='max-width: 320px; background-image: url("../static/img/frame.svg"); background-size: 100% 100%;'>
                         <div class="m-5" style="transform: rotate(-{{randInt 3 12}}deg)">
-                            <div style="align-content: center;">
+                            <div style="align-content: center; text-align: center">
                                 {{- if $edge.Base.Poster }}
-                                    <img class="bd-placeholder-img card-img-top"  src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $edge.Base.Poster.URI }}/resize/resize/size100x200/formatPNG/autorotate" />
+                                    {{- $size := calcAspectSize $edge.Base.Poster.Width $edge.Base.Poster.Height 200 200 }}
+                                    <img class="bd-placeholder-img card-img-top" style="width: {{$size.Width}}px; height: {{$size.Height}}px" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $edge.Base.Poster.URI }}/resize/resize/size200x200/formatPNG/autorotate" />
                                 {{- else }}
                                 <svg class="bd-placeholder-img card-img-top" style="width: 200px; height: 200px;" width="100px" height="200px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em"></text></svg>
                                 {{- end }}
@@ -157,7 +160,7 @@
     </p>
 </footer>
 
-<script src="static/bootstrap/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script src="../static/bootstrap/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>
 </html>
 

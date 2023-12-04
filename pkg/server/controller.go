@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"emperror.dev/errors"
-	"encoding/json"
 	"fmt"
 	"github.com/Masterminds/sprig/v3"
 	"github.com/gin-contrib/cors"
@@ -15,12 +14,33 @@ import (
 	"html/template"
 	"io/fs"
 	"net/http"
+	"slices"
 )
 
 func funcMap() template.FuncMap {
+	type size struct {
+		Width  int64 `json:"width"`
+		Height int64 `json:"height"`
+	}
+
 	fm := sprig.FuncMap()
 	fm["toHTML"] = func(s string) template.HTML {
 		return template.HTML(s)
+	}
+	fm["calcAspectSize"] = func(width, height, maxWidth, maxHeight int64) size {
+		aspect := float64(width) / float64(height)
+		maxAspect := float64(maxWidth) / float64(maxHeight)
+		if aspect > maxAspect {
+			return size{
+				Width:  maxWidth,
+				Height: int64(float64(maxWidth) / aspect),
+			}
+		} else {
+			return size{
+				Width:  int64(float64(maxHeight) * aspect),
+				Height: maxHeight,
+			}
+		}
 	}
 	return fm
 }
@@ -50,13 +70,22 @@ func NewController(localAddr, externalAddr string, cert *tls.Certificate, templa
 	router.StaticFS("/static", http.FS(ctrl.staticFS))
 
 	router.GET("/", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/de")
+	})
+
+	router.GET("/:lang", func(c *gin.Context) {
 		ctrl.indexPage(c)
 	})
 
-	router.POST("/search", func(c *gin.Context) {
+	router.GET("/search", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/search/de")
+	})
+
+	router.POST("/search/:lang", func(c *gin.Context) {
 		ctrl.searchGridPage(c)
 	})
-	router.GET("/search", func(c *gin.Context) {
+
+	router.GET("/search/:lang", func(c *gin.Context) {
 		ctrl.searchGridPage(c)
 	})
 
@@ -116,6 +145,11 @@ func (ctrl *Controller) Stop() error {
 }
 
 func (ctrl *Controller) indexPage(c *gin.Context) {
+	var lang = c.Param("lang")
+	if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
+		lang = "de"
+	}
+
 	templateName := "index.gohtml"
 	tmpl, ok := ctrl.templateCache[templateName]
 	if !ok {
@@ -140,9 +174,11 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 
 	type tplData struct {
 		Collections []*directus.Collection `json:"collections"`
+		Lang        string
 	}
 	var data = &tplData{
 		Collections: []*directus.Collection{},
+		Lang:        lang,
 	}
 	for _, collid := range cat.Collections {
 		coll, err := ctrl.dir.GetCollection(collid.CollectionID.Id)
@@ -168,6 +204,10 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 }
 
 func (ctrl *Controller) searchGridPage(c *gin.Context) {
+	var lang = c.Param("lang")
+	if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
+		lang = "de"
+	}
 	templateName := "search_grid.gohtml"
 	tmpl, ok := ctrl.templateCache[templateName]
 	if !ok {
@@ -192,17 +232,21 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 	data := struct {
 		Result          client.Search_Search `json:"result"`
 		MediaserverBase string               `json:"mediaserverBase"`
+		Lang            string               `json:"lang"`
 	}{
 		Result:          result.Search,
 		MediaserverBase: ctrl.mediaserverBase,
+		Lang:            lang,
 	}
-	b, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-		ctrl.logger.Error().Err(err).Msgf("cannot marshal result")
-		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot marshal result: %v", err))
-		return
-	}
-	print(string(b))
+	/*
+		b, err := json.MarshalIndent(data, "", "  ")
+		if err != nil {
+			ctrl.logger.Error().Err(err).Msgf("cannot marshal result")
+			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot marshal result: %v", err))
+			return
+		}
+		print(string(b))
+	*/
 	if err := tmpl.Execute(c.Writer, data); err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
