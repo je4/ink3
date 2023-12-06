@@ -1,0 +1,23 @@
+[collection]
+hash = "sha1-30c54a96f8011b39819ba18bcb53fcbb092d650d"
+other = "Collezioni"
+
+[language]
+hash = "sha1-89b86ab0e66f527166d98df92ddbcf5416ed58f6"
+other = "Language"
+
+[search]
+hash = "sha1-bce06414177f72ab70e6387b6af9f8ceef0d6049"
+other = "Search"
+
+[searchtext]
+hash = "sha1-50d467d38ca07cf6135dea01091b4eb6c67fb4f8"
+other = "Search Text"
+
+[test]
+hash = "sha1-640ab2bae07bedc4c163f679a746f7ab7fb5d1fa"
+other = "TestIT"
+
+[title]
+hash = "sha1-e6b855db7a39c3adaba456fa22d0215a6220712c"
+other = "Collezioni Performance Art Svizzera"

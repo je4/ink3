@@ -1,0 +1,38 @@
+@media (prefers-color-scheme: dark) {
+
+    .csp-brand-image {
+        height: 55px;
+        filter: invert(1);
+    }
+
+    .pborder {
+        border-image-source: url("../img/border4_inv.png");
+        border-image-slice: 20;
+        border-image-repeat: repeat;
+        border-width: medium;
+    }
+    .pborder:checked {
+        background-color: var(--bs-form-check-bg);
+        border-color: var(--bs-form-check-);
+    }
+
+}
+/* Style rules for light mode */
+@media not (prefers-color-scheme: dark) {
+
+    .csp-brand-image {
+        height: 55px;
+    }
+
+    .pborder {
+        border-image-source: url("../img/border4.png");
+        border-image-slice: 20;
+        border-image-repeat: repeat;
+        border-width: medium;
+    }
+    .pborder:checked {
+        background-color: var(--bs-dark);
+        border-color: var(--bs-dark);
+    }
+
+}

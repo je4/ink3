@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
+	"github.com/BurntSushi/toml"
 	"github.com/Yamashou/gqlgenc/clientv2"
 	"github.com/je4/basel-collections/v2/directus"
 	"github.com/je4/revcat/v2/tools/client"
@@ -14,7 +15,9 @@ import (
 	"github.com/je4/revcatfront/v2/data/web/templates"
 	"github.com/je4/revcatfront/v2/pkg/server"
 	"github.com/je4/utils/v2/pkg/zLogger"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/rs/zerolog"
+	"golang.org/x/text/language"
 	"io"
 	"io/fs"
 	"log"
@@ -92,6 +95,31 @@ func main() {
 	}
 	var logger zLogger.ZLogger = &_logger
 
+	var localeFS fs.FS
+	if conf.Locale.Folder == "" {
+		localeFS = cfgFS
+	} else {
+		localeFS = os.DirFS(conf.Locale.Folder)
+	}
+
+	glang, err := language.Parse(conf.Locale.Default)
+	if err != nil {
+		logger.Fatal().Msgf("cannot parse language %s: %v", conf.Locale.Default, err)
+	}
+	bundle := i18n.NewBundle(glang)
+	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
+	for _, lang := range conf.Locale.Available {
+		localeFile := fmt.Sprintf("active.%s.toml", lang)
+		if _, err := fs.Stat(localeFS, localeFile); err != nil {
+			logger.Fatal().Msgf("cannot find locale file [%v] %s", localeFS, localeFile)
+		}
+
+		if _, err := bundle.LoadMessageFileFS(localeFS, localeFile); err != nil {
+			logger.Fatal().Msgf("cannot load locale file [%v] %s: %v", localeFS, localeFile, err)
+		}
+
+	}
+
 	var cert *tls.Certificate
 	if conf.TLSCert != "" {
 		c, err := tls.LoadX509KeyPair(conf.TLSCert, conf.TLSKey)
@@ -137,7 +165,19 @@ func main() {
 		return next(ctx, req, gqlInfo, res)
 	})
 
-	ctrl := server.NewController(conf.LocalAddr, conf.ExternalAddr, cert, templateFS, staticFS, dir, revcatClient, conf.Directus.CatalogID, conf.MediaserverBase, conf.Templates != "", logger)
+	ctrl := server.NewController(
+		conf.LocalAddr,
+		conf.ExternalAddr,
+		cert,
+		templateFS,
+		staticFS,
+		dir,
+		revcatClient,
+		conf.Directus.CatalogID,
+		conf.MediaserverBase,
+		bundle,
+		conf.Templates != "",
+		logger)
 	ctrl.Start()
 
 	done := make(chan os.Signal, 1)

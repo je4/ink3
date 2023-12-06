@@ -11,21 +11,34 @@ import (
 	"github.com/je4/basel-collections/v2/directus"
 	"github.com/je4/revcat/v2/tools/client"
 	"github.com/je4/utils/v2/pkg/zLogger"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"html/template"
 	"io/fs"
 	"net/http"
 	"slices"
 )
 
-func funcMap() template.FuncMap {
+func (ctrl *Controller) funcMap() template.FuncMap {
+	fm := sprig.FuncMap()
+
+	fm["toHTML"] = func(s string) template.HTML {
+		return template.HTML(s)
+	}
+	fm["localize"] = func(key, lang string) string {
+		localizer := i18n.NewLocalizer(ctrl.bundle, lang)
+
+		result, err := localizer.LocalizeMessage(&i18n.Message{
+			ID: key,
+		})
+		if err != nil {
+			result = fmt.Sprintf("cannot localize '%s': %v", key, err)
+		}
+		return result
+	}
+
 	type size struct {
 		Width  int64 `json:"width"`
 		Height int64 `json:"height"`
-	}
-
-	fm := sprig.FuncMap()
-	fm["toHTML"] = func(s string) template.HTML {
-		return template.HTML(s)
 	}
 	fm["calcAspectSize"] = func(width, height, maxWidth, maxHeight int64) size {
 		aspect := float64(width) / float64(height)
@@ -45,7 +58,7 @@ func funcMap() template.FuncMap {
 	return fm
 }
 
-func NewController(localAddr, externalAddr string, cert *tls.Certificate, templateFS, staticFS fs.FS, dir *directus.Directus, client client.RevCatGraphQLClient, catalogID int, mediaserverBase string, templateDebug bool, logger zLogger.ZLogger) *Controller {
+func NewController(localAddr, externalAddr string, cert *tls.Certificate, templateFS, staticFS fs.FS, dir *directus.Directus, client client.RevCatGraphQLClient, catalogID int, mediaserverBase string, bundle *i18n.Bundle, templateDebug bool, logger zLogger.ZLogger) *Controller {
 
 	ctrl := &Controller{
 		localAddr:       localAddr,
@@ -61,12 +74,12 @@ func NewController(localAddr, externalAddr string, cert *tls.Certificate, templa
 		catalogID:       int64(catalogID),
 		client:          client,
 		mediaserverBase: mediaserverBase,
+		bundle:          bundle,
 	}
 	router := gin.Default()
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
 	router.Use(cors.New(corsConfig))
-
 	router.StaticFS("/static", http.FS(ctrl.staticFS))
 
 	router.GET("/", func(c *gin.Context) {
@@ -117,6 +130,7 @@ type Controller struct {
 	catalogID       int64
 	client          client.RevCatGraphQLClient
 	mediaserverBase string
+	bundle          *i18n.Bundle
 }
 
 func (ctrl *Controller) Start() error {
@@ -154,7 +168,7 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 	tmpl, ok := ctrl.templateCache[templateName]
 	if !ok {
 		var err error
-		tmpl, err = template.New(templateName).Funcs(funcMap()).ParseFS(ctrl.templateFS, templateName)
+		tmpl, err = template.New(templateName).Funcs(ctrl.funcMap()).ParseFS(ctrl.templateFS, templateName)
 		if err != nil {
 			ctrl.logger.Error().Err(err).Msgf("cannot parse template '%s'", templateName)
 			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot parse template '%s': %v", templateName, err))
@@ -212,7 +226,7 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 	tmpl, ok := ctrl.templateCache[templateName]
 	if !ok {
 		var err error
-		tmpl, err = template.New(templateName).Funcs(funcMap()).ParseFS(ctrl.templateFS, templateName)
+		tmpl, err = template.New(templateName).Funcs(ctrl.funcMap()).ParseFS(ctrl.templateFS, templateName)
 		if err != nil {
 			ctrl.logger.Error().Err(err).Msgf("cannot parse template '%s'", templateName)
 			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot parse template '%s': %v", templateName, err))

@@ -20,3 +20,8 @@ baseurl = "https://cms.basel-collections.ch"
 token = "%%DIRECTUS_TOKEN%%"
 cachetime = "10s"
 catalogid = 2
+
+[locale]
+default = "de"
+folder = ""
+available = ["de", "fr", "it", "en"]

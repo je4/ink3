@@ -21,6 +21,12 @@ type Directus struct {
 	CatalogID int                  `toml:"catalogid"`
 }
 
+type LocaleConfig struct {
+	Default   string   `toml:"default"`
+	Folder    string   `toml:"folder"`
+	Available []string `toml:"available"`
+}
+
 type RevCatFrontConfig struct {
 	LocalAddr    string `toml:"localaddr"`
 	ExternalAddr string `toml:"externaladdr"`
@@ -29,6 +35,8 @@ type RevCatFrontConfig struct {
 
 	Templates   string `toml:"templates"`
 	StaticFiles string `toml:"staticfiles"`
+
+	Locale LocaleConfig `toml:"locale"`
 
 	LogFile  string `toml:"logfile"`
 	LogLevel string `toml:"loglevel"`
