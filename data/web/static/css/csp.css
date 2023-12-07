@@ -1,34 +1,58 @@
+:root {
+    --bs-focus-ring-opacity: 0;
+    --bs-focus-ring-width: 0px;
+}
+
+.csp-bubble-area {
+    height: 400px;
+    background-size: 100% auto;
+}
+
+.csp-brand-image {
+    height: 55px;
+}
+
+
+.pborder {
+    border-image-slice: 20;
+    border-image-repeat: repeat;
+    border-width: medium;
+}
+
+
 @media (prefers-color-scheme: dark) {
+    :root {
+        --bs-focus-ring-color: #fff;
+    }
+
+    .csp-bubble-area {
+        background-image: url('../img/7373_inv.svg');
+    }
 
     .csp-brand-image {
-        height: 55px;
         filter: invert(1);
     }
 
     .pborder {
         border-image-source: url("../img/border4_inv.png");
-        border-image-slice: 20;
-        border-image-repeat: repeat;
-        border-width: medium;
     }
     .pborder:checked {
         background-color: var(--bs-form-check-bg);
-        border-color: var(--bs-form-check-);
     }
 
 }
 /* Style rules for light mode */
 @media not (prefers-color-scheme: dark) {
+    :root {
+        --bs-focus-ring-color: #000;
+    }
 
-    .csp-brand-image {
-        height: 55px;
+    .csp-bubble-area {
+        background-image: url('../img/7373.svg');
     }
 
     .pborder {
         border-image-source: url("../img/border4.png");
-        border-image-slice: 20;
-        border-image-repeat: repeat;
-        border-width: medium;
     }
     .pborder:checked {
         background-color: var(--bs-dark);
