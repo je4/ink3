@@ -26,6 +26,10 @@
     <style>
         :root {
             color-scheme: light dark;
+
+            --bs-focus-ring-opacity: 0;
+            --bs-focus-ring-width: 0px;
+            --bs-pagination-active-bg: #dee2e6;
         }
 
         .bd-placeholder-img {
@@ -93,9 +97,9 @@
 <body class="w-100">
     <nav class="navbar bg-body-tertiary">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#"><img class="csp-brand-image" src="static/img/title_{{ $lang }}_1024x110.png" alt="Title: {{ localize "title" $lang }}" /></a>
-            <a href="de"><span class="fi fi-gr"></span></a>
-            <div class="" id="navbarSupportedContent">
+            <a class="navbar-brand" href="#"><img class="csp-brand-image" src="static/img/title_{{ $lang }}_1024x117.png" alt="Title: {{ localize "title" $lang }}" /></a>
+            <a class="me-auto" href="de"><span class="fi fi-gr"></span></a>
+            <!-- div class="" id="navbarSupportedContent">
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -109,7 +113,13 @@
                         </ul>
                     </li>
                 </ul>
-            </div>
+            </div -->
+            <ul class="pagination">
+                <li class="page-item"><a class="page-link{{if eq $lang "de" }} active{{ end }}" href="de">DE</a></li>
+                <li class="page-item"><a class="page-link{{if eq $lang "en" }} active{{ end }}" href="en">EN</a></li>
+                <li class="page-item"><a class="page-link{{if eq $lang "it" }} active{{ end }}" href="it">IT</a></li>
+                <li class="page-item"><a class="page-link{{if eq $lang "fr" }} active{{ end }}" href="fr">FR</a></li>
+            </ul>
         </div>
     </nav>
     <!-- header class="col-12">
@@ -131,7 +141,7 @@
             <div class="row">
                 <div class="col-md d-flex justify-content-end align-items-center">
                     <div class="input-group">
-                        <input name="search" class="form-control w-auto pborder focus-ring" type="search" placeholder="{{ localize "searchtext" $lang }}" aria-label="{{ localize "search" $lang }}">&nbsp;
+                        <input name="search" class="form-control w-auto longborder" type="search" placeholder="{{ localize "searchtext" $lang }}" aria-label="{{ localize "search" $lang }}">&nbsp;
                     </div>
                     <button class="col btn pborder" type="submit">{{ localize "search" $lang }}</button>
                 </div>
@@ -176,7 +186,7 @@
     {{- $maxDiameter := mul $maxRadius 2 }}
     const collections =  [
         {{- range $key, $coll := .Collections }}
-        { id: '{{ $key }}', image: {{ $coll.Image }}, title: '{{ $coll.Title }}', link: '{{ $coll.Url }}', radius: {{ randInt $minRadius $maxRadius}}, value: {{ divf (randInt 0 99) 100 }} },
+        { id: '{{ $key }}', image: {{ $coll.Image }}, title: '{{ $coll.Title }}', link: '{{ $coll.Url }}', radius: {{ randInt $minRadius $maxRadius}}, value: {{ divf (randInt 10 99) 100 }} },
         {{- end }}
     ]
 

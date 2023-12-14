@@ -1,6 +1,7 @@
 :root {
     --bs-focus-ring-opacity: 0;
     --bs-focus-ring-width: 0px;
+    --bs-pagination-active-bg: #dee2e6;
 }
 
 .csp-bubble-area {
@@ -15,10 +16,16 @@
 
 .pborder {
     border-image-slice: 20;
-    border-image-repeat: repeat;
+    border-image-repeat: stretch;
     border-width: medium;
 }
 
+
+.longborder {
+    border-image-slice: 46 30 46 30;
+    border-image-repeat: stretch;
+    border-width: medium;
+}
 
 @media (prefers-color-scheme: dark) {
     :root {
@@ -34,9 +41,15 @@
     }
 
     .pborder {
-        border-image-source: url("../img/border4_inv.png");
+        border-image-source: url("../img/border_inv.png");
     }
     .pborder:checked {
+        background-color: var(--bs-form-check-bg);
+    }
+    .longborder {
+        border-image-source: url("../img/border_lang_inv.png");
+    }
+    .longborder:checked {
         background-color: var(--bs-form-check-bg);
     }
 
@@ -52,9 +65,16 @@
     }
 
     .pborder {
-        border-image-source: url("../img/border4.png");
+        border-image-source: url("../img/border.png");
     }
     .pborder:checked {
+        background-color: var(--bs-dark);
+        border-color: var(--bs-dark);
+    }
+    .longborder {
+        border-image-source: url("../img/border_lang_inv.png");
+    }
+    .longborder:checked {
         background-color: var(--bs-dark);
         border-color: var(--bs-dark);
     }
