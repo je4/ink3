@@ -1,119 +1,14 @@
 <!doctype html>
 <html lang="de">
-<head>
-    <script>
-        const darkMode = window.matchMedia("(prefers-color-scheme:dark)").matches;
-        if(darkMode) {
-            document.getElementsByTagName("html")[0].setAttribute("data-bs-theme", "dark");
-        }
-        else {
-            document.getElementsByTagName("html")[0].setAttribute("data-bs-theme", "light");
-        }
+{{- $lang := .Lang}}
 
-    </script>
-    {{- $lang := .Lang}}
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
-    <meta name="generator" content="Hugo 0.104.2">
-    <title>{{ localize "title" $lang }}</title>
+{{template "head.gohtml" . }}
 
-
-    <link href="../static/bootstrap/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
-    <link href="../static/bootstrap-icons/font/bootstrap-icons.min.css" rel="stylesheet" crossorigin="anonymous">
-
-    <style>
-        :root {
-            color-scheme: light dark;
-
-            --bs-focus-ring-opacity: 0;
-            --bs-focus-ring-width: 0px;
-            --bs-pagination-active-bg: #dee2e6;
-        }
-
-        .bd-placeholder-img {
-            font-size: 1.125rem;
-            text-anchor: middle;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            user-select: none;
-        }
-
-        @media (min-width: 768px) {
-            .bd-placeholder-img-lg {
-                font-size: 3.5rem;
-            }
-        }
-
-        .b-example-divider {
-            height: 3rem;
-            background-color: rgba(0, 0, 0, .1);
-            border: solid rgba(0, 0, 0, .15);
-            border-width: 1px 0;
-            box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
-        }
-
-        .b-example-vr {
-            flex-shrink: 0;
-            width: 1.5rem;
-            height: 100vh;
-        }
-
-        .bi {
-            vertical-align: -.125em;
-            fill: currentColor;
-        }
-
-        .nav-scroller {
-            position: relative;
-            z-index: 2;
-            height: 2.75rem;
-            overflow-y: hidden;
-        }
-
-        .nav-scroller .nav {
-            display: flex;
-            flex-wrap: nowrap;
-            padding-bottom: 1rem;
-            margin-top: -1px;
-            overflow-x: auto;
-            text-align: center;
-            white-space: nowrap;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        body {
-            font-family: "IBM Plex Sans", sans-serif;
-        }
-    </style>
-
-
-    <!-- Custom styles for this template -->
-    <link href="static/css/ibm-plex-serif.css" rel="stylesheet">
-    <!-- Custom styles for this template -->
-    <link href="static/css/csp.css" rel="stylesheet">
-</head>
 <body class="w-100">
     <nav class="navbar bg-body-tertiary">
         <div class="container-fluid">
             <a class="navbar-brand" href="#"><img class="csp-brand-image" src="static/img/title_{{ $lang }}_1024x117.png" alt="Title: {{ localize "title" $lang }}" /></a>
             <a class="me-auto" href="de"><span class="fi fi-gr"></span></a>
-            <!-- div class="" id="navbarSupportedContent">
-                <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-globe2"></i>
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="de">Deutsch</a></li>
-                            <li><a class="dropdown-item" href="en">English</a></li>
-                            <li><a class="dropdown-item" href="it">Italiano</a></li>
-                            <li><a class="dropdown-item" href="fr">Français</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </div -->
             <ul class="pagination">
                 <li class="page-item"><a class="page-link{{if eq $lang "de" }} active{{ end }}" href="de">DE</a></li>
                 <li class="page-item"><a class="page-link{{if eq $lang "en" }} active{{ end }}" href="en">EN</a></li>
@@ -122,186 +17,206 @@
             </ul>
         </div>
     </nav>
-    <!-- header class="col-12">
-        <div class="row">
-            <div class="col" style="-ms-flex: 0 0 192px; flex: 0 0 192px">
-                <img style="height: 55px" src="static/img/title_{{ $lang }}_1024x110.png" alt="Title: REVOLVING HI:STORIES" />
+
+    <main class="container-fluid">
+            <div class="row d-none d-md-block">
+                <div class="col p-0 csp-bubble-area" style="" id="bubbleArea"></div>
             </div>
-
-        </div>
-    </header -->
-
-
-<main class="container-fluid">
-        <div class="row d-none d-md-block">
-            <div class="col p-0 csp-bubble-area" style="" id="bubbleArea"></div>
-        </div>
-    <div class="container mt-3 mb-3">
-        <form method="get" action="search/{{ $lang }}">
-            <div class="row">
-                <div class="col-md d-flex justify-content-end align-items-center">
-                    <div class="input-group">
-                        <input name="search" class="form-control w-auto longborder" type="search" placeholder="{{ localize "searchtext" $lang }}" aria-label="{{ localize "search" $lang }}">&nbsp;
+        <div class="container mt-3 mb-3">
+            <form method="get" action="search/{{ $lang }}">
+                <div class="row">
+                    <div class="col-md d-flex justify-content-end align-items-center">
+                        <div class="input-group">
+                            <input name="search" class="form-control w-auto longborder" type="search" placeholder="{{ localize "searchtext" $lang }}" aria-label="{{ localize "search" $lang }}">&nbsp;
+                        </div>
+                        <button class="col btn pborder" type="submit">{{ localize "search" $lang }}</button>
                     </div>
-                    <button class="col btn pborder" type="submit">{{ localize "search" $lang }}</button>
                 </div>
-            </div>
-            <div class="container mt-5">
-                <table class="table">
-                    <tbody>
-                {{- range $key, $coll := .Collections }}
-                        <tr>
-                            <td>
-                                <div class="form-check">
-                                    <input name="collection_{{ $coll.Id }}" class="form-check-input pborder" type="checkbox" id="collSwitch_{{ $key }}">
-                                    <label class="form-check-label" for="collSwitch_{{ $key }}">{{ $coll.Title }}</label>
-                                </div>
-                            </td>
-                            <td>
-                                <a style="white-space: nowrap;" href="{{ $coll.Url }}" target="_blank" type="button" class="btn btn-sm pborder"><span class="bi-box-arrow-up-right"></span>&nbsp{{ localize "collection" $lang }}</a>
-                            </td>
-                        </tr>
-                {{- end }}
-                    </tbody>
-                </table>
-            </div>
-        </form>
+                <div class="container mt-5">
+                    <table class="table">
+                        <tbody>
+                    {{- range $key, $coll := .Collections }}
+                            <tr>
+                                <td>
+                                    <div class="form-check">
+                                        <input name="collection_{{ $coll.Id }}" class="form-check-input pborder" type="checkbox" id="collSwitch_{{ $key }}">
+                                        <label class="form-check-label" for="collSwitch_{{ $key }}">{{ $coll.Title }}</label>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a style="white-space: nowrap;" href="{{ $coll.Url }}" target="_blank" type="button" class="btn btn-sm pborder"><span class="bi-box-arrow-up-right"></span>&nbsp{{ localize "collection" $lang }}</a>
+                                </td>
+                            </tr>
+                    {{- end }}
+                        </tbody>
+                    </table>
+                </div>
+            </form>
 
-    </div>
-</main>
-<footer class="blog-footer">
-    <p>REVOLVING HI:STORIES build by info-age GmbH Basel<br/>
-    Background Frame designed by <a href="http://www.freepik.com">kjpargeter / Freepik</a></p>
-    <p>
-        <a href="#">Back to top</a>
-    </p>
-</footer>
+        </div>
+    </main>
+    <footer class="blog-footer">
+        <p>REVOLVING HI:STORIES build by info-age GmbH Basel<br/>
+        Background Frame designed by <a href="http://www.freepik.com">kjpargeter / Freepik</a></p>
+        <p>
+            <a href="#">Back to top</a>
+        </p>
+    </footer>
 
-<script src="static/bootstrap/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-<script src="static/js/d3.js"></script>
-<script src="static/js/d3bubble.js"></script>
-<script>
-    {{- $maxRadius := 100 }}
-    {{- $minRadius := 60 }}
-    {{- $maxDiameter := mul $maxRadius 2 }}
-    const collections =  [
-        {{- range $key, $coll := .Collections }}
-        { id: '{{ $key }}', image: {{ $coll.Image }}, title: '{{ $coll.Title }}', link: '{{ $coll.Url }}', radius: {{ randInt $minRadius $maxRadius}}, value: {{ divf (randInt 10 99) 100 }} },
-        {{- end }}
-    ]
-
-
-    const area = document.getElementById('bubbleArea');
-    const width = area.offsetWidth;
-    const height = area.offsetHeight;
-
-    const svg = d3.create("svg")
-        .attr("width", width)
-        .attr("height", height)
-        .attr("viewBox", [0, 0, width, height])
-        .attr("style", "max-width: 100%; height: auto; height: intrinsic;")
-        .attr("fill", "currentColor")
-        .attr("font-size", "0.7em")
-        .attr("font-family", "sans-serif")
-        .attr("text-anchor", "middle");
+    <script src="static/bootstrap/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="static/js/d3.js"></script>
+    <script src="static/js/d3bubble.js"></script>
+    <script>
+        {{- $maxRadius := 100 }}
+        {{- $minRadius := 60 }}
+        {{- $maxDiameter := mul $maxRadius 2 }}
+        const collections =  [
+            {{- range $key, $coll := .Collections }}
+            { id: '{{ $key }}', image: {{ $coll.Image }}, title: '{{ $coll.Title }}', link: '{{ $coll.Url }}', radius: {{ randInt $minRadius $maxRadius}}, value: {{ divf (randInt 10 99) 100 }} },
+            {{- end }}
+        ]
 
 
-//    const width = 600, height = 400;
+        const area = document.getElementById('bubbleArea');
+        const width = area.offsetWidth;
+        const height = area.offsetHeight;
 
-    const xScale = d3.scaleLinear().domain([0, 1]).range([0, width-100]);
+        const svg = d3.create("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("viewBox", [0, 0, width, height])
+            .attr("style", "max-width: 100%; height: auto; height: intrinsic;")
+            .attr("fill", "currentColor")
+            .attr("font-size", "0.7em")
+            .attr("font-family", "sans-serif")
+            .attr("text-anchor", "middle");
 
-    const numNodes = {{ len .Collections }}; // 40;
-    const nodes = collections;
+
+    //    const width = 600, height = 400;
+
+        const xScale = d3.scaleLinear().domain([0, 1]).range([0, width-100]);
+
+        const numNodes = {{ len .Collections }}; // 40;
+        const nodes = collections;
 
 
-    const simulation = d3.forceSimulation(nodes)
-        .force('charge', d3.forceManyBody().strength(5))
-        .force('x', d3.forceX().x(function (d) {
-            return xScale(d.value);
-        }))
-        .force('y', d3.forceY().y(function (d) {
-            return 0;
-        }))
-        .force('collision', d3.forceCollide().radius(function (d) {
-            return d.radius;
-        }))
-        .on('tick', ticked);
-
-    function ticked() {
-        const uid = `O-${Math.random().toString(16).slice(2)}`;
-        /*
-        const leaf = svg.selectAll('circle')
-                .data(nodes)
-                .join('circle')
-                .attr('r', d => d.radius )
-                .style('fill', "green")
-                .attr('cx', d => d.x )
-                .attr('cy', d  => d.y )
-                .attr('transform', 'translate(' + [0, height/2] + ')')
-
-        leaf.select('text').node() ?
-            leaf
-                .join('text')
-                .join("tspan")
-                .attr('x', d => d.x )
-                .attr('y', d  => d.y )
-                .text(d => d.title)
-            :
-            leaf
-                .append('text')
-                .append("tspan")
-                .attr('x', d => d.x )
-                .attr('y', d  => d.y )
-                .text(d => d.title).node()
-*/
+        const simulation = d3.forceSimulation(nodes)
+            .force('charge', d3.forceManyBody().strength(5))
+            .force('x', d3.forceX().x(function (d) {
+                return xScale(d.value);
+            }))
+            .force('y', d3.forceY().y(function (d) {
+                return 0;
+            }))
+            .force('collision', d3.forceCollide().radius(function (d) {
+                return d.radius;
+            }))
+            .on('tick', ticked);
 
         const leaf = svg.selectAll('a')
             .data(nodes)
             .join('a')
             .attr("xlink:href", d => d.link)
             .attr("target", "_blank")
-            .attr('transform', d => 'translate(' + [d.x, d.y+height/2] + ')')
 
-        /*
-        if( !leaf.select('circle').node()) {
-            leaf
-                .append('circle')
-                .attr('r', d => d.radius)
-                .style('fill', "green")
-        }
-        if( !leaf.select('text').node()) {
-            leaf
-                .append('text')
-                .attr('dx', 0) // d => `-${d.title.length/2}em` )
-                .attr('dy', 0)
-                .attr('fill-opacity', 0.7)
-                .style("stroke", "black")
-                .text(d => d.title)
-        }
-        */
-        if( !leaf.select('clipPath').node()) {
-            leaf.append("clipPath")
-                .attr("id", d => `clip-${d.id}`)
-                .append("circle")
-                .attr('transform', d => 'translate(' + [d.radius, d.radius] + ')')
-                .attr("r", d => d.radius);
-        }
-        if( !leaf.select('image').node()) {
-            let maxDiameter = {{ $maxDiameter }};
-            leaf.append("image")
-                .attr("width", d => d.radius*2)
-                .attr("height", d => d.radius*2)
-                .attr("clip-path", d => `url(#clip-${d.id})`)
-                .attr('transform', d => 'translate(' + [-d.radius, -d.radius] + ')')
-                .attr("xlink:href", d => `https://cms.basel-collections.ch/assets/${ d.image }?fit=cover&width=${maxDiameter}&height=${maxDiameter}`);
-        }
-    }
+        leaf.append("clipPath")
+            .attr("id", d => `clip-${d.id}`)
+            .append("circle")
+            .attr('transform', d => 'translate(' + [d.radius, d.radius] + ')')
+            .attr("r", d => d.radius);
 
-    let container = document.getElementById('bubbleArea');
+        let maxDiameter = {{ $maxDiameter }};
+        leaf.append("image")
+            .attr("width", d => d.radius*2)
+            .attr("height", d => d.radius*2)
+            .attr("clip-path", d => `url(#clip-${d.id})`)
+            .attr('transform', d => 'translate(' + [-d.radius, -d.radius] + ')')
+            .attr("xlink:href", d => `https://cms.basel-collections.ch/assets/${ d.image }?fit=cover&width=${maxDiameter}&height=${maxDiameter}`);
 
-    // Append the SVG element.
-    container.append(svg.node());
-</script>
+
+        var ticksPerRender = 2;
+        var tickCount = 0;
+        function ticked() {
+            tickCount++;
+            if (tickCount <= ticksPerRender) {
+                return;
+            }
+            tickCount = 0;
+
+            /*
+            const uid = `O-${Math.random().toString(16).slice(2)}`;
+            const leaf = svg.selectAll('circle')
+                    .data(nodes)
+                    .join('circle')
+                    .attr('r', d => d.radius )
+                    .style('fill', "green")
+                    .attr('cx', d => d.x )
+                    .attr('cy', d  => d.y )
+                    .attr('transform', 'translate(' + [0, height/2] + ')')
+
+            leaf.select('text').node() ?
+                leaf
+                    .join('text')
+                    .join("tspan")
+                    .attr('x', d => d.x )
+                    .attr('y', d  => d.y )
+                    .text(d => d.title)
+                :
+                leaf
+                    .append('text')
+                    .append("tspan")
+                    .attr('x', d => d.x )
+                    .attr('y', d  => d.y )
+                    .text(d => d.title).node()
+    */
+
+            const leaf = svg.selectAll('a')
+                .data(nodes)
+                .join('a')
+                .attr('transform', d => 'translate(' + [d.x, d.y+height/2] + ')')
+
+            /*
+            if( !leaf.select('circle').node()) {
+                leaf
+                    .append('circle')
+                    .attr('r', d => d.radius)
+                    .style('fill', "green")
+            }
+            if( !leaf.select('text').node()) {
+                leaf
+                    .append('text')
+                    .attr('dx', 0) // d => `-${d.title.length/2}em` )
+                    .attr('dy', 0)
+                    .attr('fill-opacity', 0.7)
+                    .style("stroke", "black")
+                    .text(d => d.title)
+            }
+            */
+            /*
+            if( !leaf.select('clipPath').node()) {
+                leaf.append("clipPath")
+                    .attr("id", d => `clip-${d.id}`)
+                    .append("circle")
+                    .attr('transform', d => 'translate(' + [d.radius, d.radius] + ')')
+                    .attr("r", d => d.radius);
+            }
+            if( !leaf.select('image').node()) {
+                let maxDiameter = {{ $maxDiameter }};
+                leaf.append("image")
+                    .attr("width", d => d.radius*2)
+                    .attr("height", d => d.radius*2)
+                    .attr("clip-path", d => `url(#clip-${d.id})`)
+                    .attr('transform', d => 'translate(' + [-d.radius, -d.radius] + ')')
+                    .attr("xlink:href", d => `https://cms.basel-collections.ch/assets/${ d.image }?fit=cover&width=${maxDiameter}&height=${maxDiameter}`);
+            }
+            */
+        }
+
+        let container = document.getElementById('bubbleArea');
+
+        // Append the SVG element.
+        container.append(svg.node());
+    </script>
 </body>
 </html>
 

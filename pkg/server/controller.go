@@ -12,17 +12,30 @@ import (
 	"github.com/je4/revcat/v2/tools/client"
 	"github.com/je4/utils/v2/pkg/zLogger"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"golang.org/x/text/language"
 	"html/template"
 	"io/fs"
 	"net/http"
 	"slices"
 )
 
+type baseData struct {
+	Lang     string
+	RootPath string
+	Params   template.URL
+}
+
 func (ctrl *Controller) funcMap() template.FuncMap {
 	fm := sprig.FuncMap()
 
 	fm["toHTML"] = func(s string) template.HTML {
 		return template.HTML(s)
+	}
+	fm["toURL"] = func(s string) template.URL {
+		return template.URL(s)
+	}
+	fm["toJS"] = func(s string) template.JS {
+		return template.JS(s)
 	}
 	fm["localize"] = func(key, lang string) string {
 		localizer := i18n.NewLocalizer(ctrl.bundle, lang)
@@ -75,6 +88,12 @@ func NewController(localAddr, externalAddr string, cert *tls.Certificate, templa
 		client:          client,
 		mediaserverBase: mediaserverBase,
 		bundle:          bundle,
+		languageMatcher: language.NewMatcher([]language.Tag{
+			language.English, // The first language is used as fallback.
+			language.German,
+			language.French,
+			language.Italian,
+		}),
 	}
 	router := gin.Default()
 	corsConfig := cors.DefaultConfig()
@@ -83,7 +102,15 @@ func NewController(localAddr, externalAddr string, cert *tls.Certificate, templa
 	router.StaticFS("/static", http.FS(ctrl.staticFS))
 
 	router.GET("/", func(c *gin.Context) {
-		c.Redirect(http.StatusMovedPermanently, "/de")
+		cookieLang, _ := c.Request.Cookie("lang")
+		accept := c.Request.Header.Get("Accept-Language")
+		langTag, _ := language.MatchStrings(ctrl.languageMatcher, cookieLang.String(), accept)
+		langBase, _ := langTag.Base()
+		lang := langBase.String()
+		if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
+			lang = "en"
+		}
+		c.Redirect(http.StatusTemporaryRedirect, "/"+lang)
 	})
 
 	router.GET("/:lang", func(c *gin.Context) {
@@ -131,6 +158,7 @@ type Controller struct {
 	client          client.RevCatGraphQLClient
 	mediaserverBase string
 	bundle          *i18n.Bundle
+	languageMatcher language.Matcher
 }
 
 func (ctrl *Controller) Start() error {
@@ -160,23 +188,19 @@ func (ctrl *Controller) Stop() error {
 
 func (ctrl *Controller) indexPage(c *gin.Context) {
 	var lang = c.Param("lang")
+	if lang == "" {
+		lang = "de"
+	}
 	if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
 		lang = "de"
 	}
 
 	templateName := "index.gohtml"
-	tmpl, ok := ctrl.templateCache[templateName]
-	if !ok {
-		var err error
-		tmpl, err = template.New(templateName).Funcs(ctrl.funcMap()).ParseFS(ctrl.templateFS, templateName)
-		if err != nil {
-			ctrl.logger.Error().Err(err).Msgf("cannot parse template '%s'", templateName)
-			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot parse template '%s': %v", templateName, err))
-			return
-		}
-		if !ctrl.templateDebug {
-			ctrl.templateCache[templateName] = tmpl
-		}
+	tmpl, err := ctrl.loadTemplate(templateName, []string{"head.gohtml", "nav.gohtml", templateName})
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
+		return
 	}
 
 	cat, err := ctrl.dir.GetCatalogue(ctrl.catalogID)
@@ -187,12 +211,15 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 	}
 
 	type tplData struct {
+		baseData
 		Collections []*directus.Collection `json:"collections"`
-		Lang        string
 	}
 	var data = &tplData{
 		Collections: []*directus.Collection{},
-		Lang:        lang,
+		baseData: baseData{
+			Lang:     lang,
+			RootPath: "",
+		},
 	}
 	for _, collid := range cat.Collections {
 		coll, err := ctrl.dir.GetCollection(collid.CollectionID.Id)
@@ -216,6 +243,20 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 		return
 	}
 }
+func (ctrl *Controller) loadTemplate(name string, files []string) (*template.Template, error) {
+	tmpl, ok := ctrl.templateCache[name]
+	if !ok {
+		var err error
+		tmpl, err = template.New(name).Funcs(ctrl.funcMap()).ParseFS(ctrl.templateFS, files...)
+		if err != nil {
+			return nil, errors.Wrapf(err, "cannot parse template '%s'", name)
+		}
+		if !ctrl.templateDebug {
+			ctrl.templateCache[name] = tmpl
+		}
+	}
+	return tmpl, nil
+}
 
 func (ctrl *Controller) searchGridPage(c *gin.Context) {
 	var lang = c.Param("lang")
@@ -223,18 +264,11 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		lang = "de"
 	}
 	templateName := "search_grid.gohtml"
-	tmpl, ok := ctrl.templateCache[templateName]
-	if !ok {
-		var err error
-		tmpl, err = template.New(templateName).Funcs(ctrl.funcMap()).ParseFS(ctrl.templateFS, templateName)
-		if err != nil {
-			ctrl.logger.Error().Err(err).Msgf("cannot parse template '%s'", templateName)
-			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot parse template '%s': %v", templateName, err))
-			return
-		}
-		if !ctrl.templateDebug {
-			ctrl.templateCache[templateName] = tmpl
-		}
+	tmpl, err := ctrl.loadTemplate(templateName, []string{"head.gohtml", "nav.gohtml", templateName})
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
+		return
 	}
 	searchString := c.Query("search")
 	result, err := ctrl.client.Search(context.Background(), searchString, []*client.FacetInput{}, []*client.FilterInput{}, nil, nil, nil, nil)
@@ -244,13 +278,17 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		return
 	}
 	data := struct {
+		baseData
 		Result          client.Search_Search `json:"result"`
 		MediaserverBase string               `json:"mediaserverBase"`
-		Lang            string               `json:"lang"`
 	}{
 		Result:          result.Search,
 		MediaserverBase: ctrl.mediaserverBase,
-		Lang:            lang,
+		baseData: baseData{
+			Lang:     lang,
+			Params:   template.URL(c.Request.URL.Query().Encode()),
+			RootPath: "../",
+		},
 	}
 	/*
 		b, err := json.MarshalIndent(data, "", "  ")

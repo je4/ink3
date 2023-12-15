@@ -1,0 +1,13 @@
+{{- $lang := .Lang }}
+<nav class="navbar bg-body-tertiary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ .RootPath }}{{ $lang }}"><img class="csp-brand-image" src="{{ .RootPath }}static/img/title_{{ $lang }}_1024x117.png" alt="Title: {{ localize "title" $lang }}" /></a>
+        <a class="me-auto" href="de"><span class="fi fi-gr"></span></a>
+        <ul class="pagination">
+            <li class="page-item"><a class="page-link{{if eq $lang "de" }} active{{ end }}" href="de{{ if ne .Params "" }}?{{ .Params }}{{ end }}">DE</a></li>
+            <li class="page-item"><a class="page-link{{if eq $lang "en" }} active{{ end }}" href="en{{ if ne .Params "" }}?{{ .Params }}{{ end }}">EN</a></li>
+            <li class="page-item"><a class="page-link{{if eq $lang "it" }} active{{ end }}" href="it{{ if ne .Params "" }}?{{ .Params }}{{ end }}">IT</a></li>
+            <li class="page-item"><a class="page-link{{if eq $lang "fr" }} active{{ end }}" href="fr{{ if ne .Params "" }}?{{ .Params }}{{ end }}">FR</a></li>
+        </ul>
+    </div>
+</nav>

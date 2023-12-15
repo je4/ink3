@@ -1,0 +1,27 @@
+{{- $lang := .Lang}}
+<head>
+    <script>
+        const darkMode = window.matchMedia("(prefers-color-scheme:dark)").matches;
+        if(darkMode) {
+            document.getElementsByTagName("html")[0].setAttribute("data-bs-theme", "dark");
+        }
+        else {
+            document.getElementsByTagName("html")[0].setAttribute("data-bs-theme", "light");
+        }
+
+    </script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="Jürgen Enge <juergen@info-age.net>">
+    <title>{{ localize "title" $lang }}</title>
+
+
+    <link href="{{ .RootPath }}static/bootstrap/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="{{ .RootPath }}static/bootstrap-icons/font/bootstrap-icons.min.css" rel="stylesheet" crossorigin="anonymous">
+    <!-- Custom styles for this template -->
+    <link href="{{ .RootPath }}static/css/ibm-plex-serif.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="{{ .RootPath }}static/css/csp.css" rel="stylesheet">
+
+</head>

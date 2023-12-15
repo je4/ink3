@@ -1,7 +1,13 @@
 :root {
-    --bs-focus-ring-opacity: 0;
-    --bs-focus-ring-width: 0px;
-    --bs-pagination-active-bg: #dee2e6;
+    color-scheme: light dark;
+
+    --bs-focus-ring-opacity: 0 !important;
+    --bs-focus-ring-width: 0px !important;
+    --bs-pagination-active-bg: #dee2e6 !important;
+}
+
+body {
+    font-family: "IBM Plex Sans", sans-serif;
 }
 
 .csp-bubble-area {
@@ -28,8 +34,16 @@
 }
 
 @media (prefers-color-scheme: dark) {
+/* [data-bs-theme=dark] { */
     :root {
+        --bs-link-color: #d0d0ff;
+        --bs-link-hover-color: #fff;
+    }
+    .pagination {
         --bs-focus-ring-color: #fff;
+        --bs-pagination-active-bg: #dee2e6;
+        --bs-pagination-active-color: #000;
+        --bs-pagination-active-border-color: #fff;
     }
 
     .csp-bubble-area {
@@ -56,9 +70,11 @@
 }
 /* Style rules for light mode */
 @media not (prefers-color-scheme: dark) {
-    :root {
-        --bs-focus-ring-color: #000;
-    }
+/* [data-bs-theme=light] { */
+
+        :root {
+        --bs-focus-ring-color: #000 !important;
+        }
 
     .csp-bubble-area {
         background-image: url('../img/7373.svg');
