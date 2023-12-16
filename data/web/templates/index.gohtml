@@ -2,21 +2,10 @@
 <html lang="de">
 {{- $lang := .Lang}}
 
-{{template "head.gohtml" . }}
+{{ template "head.gohtml" . }}
 
 <body class="w-100">
-    <nav class="navbar bg-body-tertiary">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#"><img class="csp-brand-image" src="static/img/title_{{ $lang }}_1024x117.png" alt="Title: {{ localize "title" $lang }}" /></a>
-            <a class="me-auto" href="de"><span class="fi fi-gr"></span></a>
-            <ul class="pagination">
-                <li class="page-item"><a class="page-link{{if eq $lang "de" }} active{{ end }}" href="de">DE</a></li>
-                <li class="page-item"><a class="page-link{{if eq $lang "en" }} active{{ end }}" href="en">EN</a></li>
-                <li class="page-item"><a class="page-link{{if eq $lang "it" }} active{{ end }}" href="it">IT</a></li>
-                <li class="page-item"><a class="page-link{{if eq $lang "fr" }} active{{ end }}" href="fr">FR</a></li>
-            </ul>
-        </div>
-    </nav>
+    {{ template "nav.gohtml" . }}
 
     <main class="container-fluid">
             <div class="row d-none d-md-block">
@@ -55,13 +44,8 @@
 
         </div>
     </main>
-    <footer class="blog-footer">
-        <p>REVOLVING HI:STORIES build by info-age GmbH Basel<br/>
-        Background Frame designed by <a href="http://www.freepik.com">kjpargeter / Freepik</a></p>
-        <p>
-            <a href="#">Back to top</a>
-        </p>
-    </footer>
+
+    {{ template "footer.gohtml" . }}
 
     <script src="static/bootstrap/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="static/js/d3.js"></script>
@@ -90,9 +74,6 @@
             .attr("font-size", "0.7em")
             .attr("font-family", "sans-serif")
             .attr("text-anchor", "middle");
-
-
-    //    const width = 600, height = 400;
 
         const xScale = d3.scaleLinear().domain([0, 1]).range([0, width-100]);
 
@@ -143,73 +124,11 @@
             }
             tickCount = 0;
 
-            /*
-            const uid = `O-${Math.random().toString(16).slice(2)}`;
-            const leaf = svg.selectAll('circle')
-                    .data(nodes)
-                    .join('circle')
-                    .attr('r', d => d.radius )
-                    .style('fill', "green")
-                    .attr('cx', d => d.x )
-                    .attr('cy', d  => d.y )
-                    .attr('transform', 'translate(' + [0, height/2] + ')')
-
-            leaf.select('text').node() ?
-                leaf
-                    .join('text')
-                    .join("tspan")
-                    .attr('x', d => d.x )
-                    .attr('y', d  => d.y )
-                    .text(d => d.title)
-                :
-                leaf
-                    .append('text')
-                    .append("tspan")
-                    .attr('x', d => d.x )
-                    .attr('y', d  => d.y )
-                    .text(d => d.title).node()
-    */
-
             const leaf = svg.selectAll('a')
                 .data(nodes)
                 .join('a')
                 .attr('transform', d => 'translate(' + [d.x, d.y+height/2] + ')')
 
-            /*
-            if( !leaf.select('circle').node()) {
-                leaf
-                    .append('circle')
-                    .attr('r', d => d.radius)
-                    .style('fill', "green")
-            }
-            if( !leaf.select('text').node()) {
-                leaf
-                    .append('text')
-                    .attr('dx', 0) // d => `-${d.title.length/2}em` )
-                    .attr('dy', 0)
-                    .attr('fill-opacity', 0.7)
-                    .style("stroke", "black")
-                    .text(d => d.title)
-            }
-            */
-            /*
-            if( !leaf.select('clipPath').node()) {
-                leaf.append("clipPath")
-                    .attr("id", d => `clip-${d.id}`)
-                    .append("circle")
-                    .attr('transform', d => 'translate(' + [d.radius, d.radius] + ')')
-                    .attr("r", d => d.radius);
-            }
-            if( !leaf.select('image').node()) {
-                let maxDiameter = {{ $maxDiameter }};
-                leaf.append("image")
-                    .attr("width", d => d.radius*2)
-                    .attr("height", d => d.radius*2)
-                    .attr("clip-path", d => `url(#clip-${d.id})`)
-                    .attr('transform', d => 'translate(' + [-d.radius, -d.radius] + ')')
-                    .attr("xlink:href", d => `https://cms.basel-collections.ch/assets/${ d.image }?fit=cover&width=${maxDiameter}&height=${maxDiameter}`);
-            }
-            */
         }
 
         let container = document.getElementById('bubbleArea');

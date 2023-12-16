@@ -9,8 +9,175 @@
 
 {{ template "nav.gohtml" . }}
 
-<div class="container-fluid">
+<nav class="navbar navbar-expand-lg">
+    <div class="container-fluid">
+        <a class="btn" data-bs-toggle="collapse" href="#sidebar" role="button" aria-controls="sidebar-nav">
+            <span class="bi-sliders2"></span>
+        </a>
 
+        <a class="navbar-brand" href="#">Navbar</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#searchNavbar" aria-controls="searchNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="searchNavbar">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="#">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Link</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Dropdown
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#">Action</a></li>
+                        <li><a class="dropdown-item" href="#">Another action</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#">Something else here</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link disabled" aria-disabled="true">Disabled</a>
+                </li>
+            </ul>
+            <form class="d-flex" role="search">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+        </div>
+    </div>
+</nav>
+<div class="container-fluid p-0 d-flex h-100">
+    <div class="flex-fill">
+        <div class="p-2 d-lg-none d-flex">
+            <a href="#" class=""
+               data-bs-toggle="offcanvas"
+               data-bs-target="#bdSidebar">
+                <i class="fa-solid fa-bars"></i>X
+            </a>
+            <span class="ms-3">Tags & Cols</span>
+        </div>
+        <div class="p-4">
+            <div class="row">
+                <div class="col">
+                    <div class="album py-5">
+                        <div class="container-fluid">
+                            <div class="row g-12">
+                                {{- range $edge := .Result.Edges }}
+                                    <div class="col p-0" style='max-width: 320px; background-image: url("../static/img/frame0.png"); background-size: 100% 100%;'>
+                                        <div class="m-5" style="transform: rotate(-{{randInt 3 12}}deg)">
+                                            <div style="align-content: center; text-align: center">
+                                                {{- if $edge.Base.Poster }}
+                                                    {{- $size := calcAspectSize $edge.Base.Poster.Width $edge.Base.Poster.Height 200 200 }}
+                                                    <img class="bd-placeholder-img card-img-top" style="width: {{$size.Width}}px; height: {{$size.Height}}px" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $edge.Base.Poster.URI }}/resize/resize/size200x200/formatPNG/autorotate" />
+                                                {{- else }}
+                                                    <svg class="bd-placeholder-img card-img-top" style="width: 200px; height: 200px;" width="100px" height="200px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em"></text></svg>
+                                                {{- end }}
+                                            </div>
+                                            <div class="card-body pb-2">
+                                                <p class="card-title">
+                                                    {{$edge.Base.Title}}
+                                                </p>
+                                                <p class="card-text"></p>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div class="btn-group">
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary">Suche</button>
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary">Sammlungsseite</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {{- end }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div style="width: 400px;" id="bdSidebar"
+         class="d-flex flex-column flex-shrink-0
+					p-3 offcanvas-lg offcanvas-start">
+        <a href="#"
+           class="navbar-brand">xxx
+        </a><hr>
+        <ul class="mynav nav nav-pills flex-column mb-auto">
+            <li class="nav-item mb-1">
+                <a href="#">
+                    <i class="fa-regular fa-user"></i>
+                    Profile
+                </a>
+            </li>
+
+            <li class="nav-item mb-1">
+                <a href="#">
+                    <i class="fa-regular fa-bookmark"></i>
+                    Saved Articles
+                    <span class="notification-badge">5</span>
+                </a>
+            </li>
+            <li class="nav-item mb-1">
+                <a href="#">
+                    <i class="fa-regular fa-newspaper"></i>
+                    Articles
+                </a>
+            </li>
+            <li class="nav-item mb-1">
+                <a href="#">
+                    <i class="fa-solid fa-archway"></i>
+                    Institutions
+                </a>
+            </li>
+            <li class="nav-item mb-1">
+                <a href="#">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    Organizations
+                </a>
+            </li>
+
+            <li class="sidebar-item nav-item mb-1">
+                <a href="#"
+                   class="sidebar-link collapsed"
+                   data-bs-toggle="collapse"
+                   data-bs-target="#settings"
+                   aria-expanded="false"
+                   aria-controls="settings">
+                    <i class="fas fa-cog pe-2"></i>
+                    <span class="topic">Settings </span>
+                </a>
+                <ul id="settings"
+                    class="sidebar-dropdown list-unstyled collapse"
+                    data-bs-parent="#sidebar">
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link">
+                            <i class="fas fa-sign-in-alt pe-2"></i>
+                            <span class="topic"> Login</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link">
+                            <i class="fas fa-user-plus pe-2"></i>
+                            <span class="topic">Register</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link">
+                            <i class="fas fa-sign-out-alt pe-2"></i>
+                            <span class="topic">Log Out</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <!--
+<div class="container-fluid overflow-hidden">
     <div class="row flex-nowrap">
         <div class="col-auto px-0">
             <div id="sidebar" class="collapse collapse-horizontal show border-end">
@@ -106,7 +273,11 @@
 
         </main>
     </div>
+    -->
 </div>
+
+{{ template "footer.gohtml" . }}
+
 
 <script src="../static/bootstrap/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>

@@ -196,7 +196,7 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 	}
 
 	templateName := "index.gohtml"
-	tmpl, err := ctrl.loadTemplate(templateName, []string{"head.gohtml", "nav.gohtml", templateName})
+	tmpl, err := ctrl.loadTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
@@ -264,7 +264,7 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		lang = "de"
 	}
 	templateName := "search_grid.gohtml"
-	tmpl, err := ctrl.loadTemplate(templateName, []string{"head.gohtml", "nav.gohtml", templateName})
+	tmpl, err := ctrl.loadTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
