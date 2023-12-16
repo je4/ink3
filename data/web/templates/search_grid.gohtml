@@ -4,78 +4,109 @@
 {{- $mediaserverBase := .MediaserverBase }}
 
 {{template "head.gohtml" . }}
+
 <body class="w-100">
 
 {{ template "nav.gohtml" . }}
 
+<div class="container-fluid">
 
-<main class="container-fluid">
-
-    <a class="btn btn-dark" data-bs-toggle="offcanvas" href="#offcanvasExample" role="button" aria-controls="offcanvasExample">
-        <span class="bi-sliders2"></span>
-    </a>
-
-    <div style='background-image: url("../static/img/frame0.png"); background-size: 100% 100%;' class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="offcanvasExampleLabel">Offcanvas</h5>
-            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body">
-            <div>
-                Some text as placeholder. In real life you can have the elements you have chosen. Like, text, images, lists, etc.
-            </div>
-            <div class="dropdown mt-3">
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown">
-                    Dropdown button
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <li><a class="dropdown-item" href="#">Action</a></li>
-                    <li><a class="dropdown-item" href="#">Another action</a></li>
-                    <li><a class="dropdown-item" href="#">Something else here</a></li>
-                </ul>
+    <div class="row flex-nowrap">
+        <div class="col-auto px-0">
+            <div id="sidebar" class="collapse collapse-horizontal show border-end">
+                <div id="sidebar-nav" class="list-group border-0 rounded-0 text-sm-start min-vh-100">
+                    <a href="#" class="list-group-item border-end-0 d-inline-block text-truncate" data-bs-parent="#sidebar"><i class="bi bi-bootstrap"></i> <span>Item</span> </a>
+                    <a href="#" class="list-group-item border-end-0 d-inline-block text-truncate" data-bs-parent="#sidebar"><i class="bi bi-film"></i> <span>Item</span></a>
+                    <a href="#" class="list-group-item border-end-0 d-inline-block text-truncate" data-bs-parent="#sidebar"><i class="bi bi-heart"></i> <span>Item</span></a>
+                    <a href="#" class="list-group-item border-end-0 d-inline-block text-truncate" data-bs-parent="#sidebar"><i class="bi bi-bricks"></i> <span>Item</span></a>
+                    <a href="#" class="list-group-item border-end-0 d-inline-block text-truncate" data-bs-parent="#sidebar"><i class="bi bi-clock"></i> <span>Item</span></a>
+                    <a href="#" class="list-group-item border-end-0 d-inline-block text-truncate" data-bs-parent="#sidebar"><i class="bi bi-archive"></i> <span>Item</span></a>
+                    <a href="#" class="list-group-item border-end-0 d-inline-block text-truncate" data-bs-parent="#sidebar"><i class="bi bi-gear"></i> <span>Item</span></a>
+                    <a href="#" class="list-group-item border-end-0 d-inline-block text-truncate" data-bs-parent="#sidebar"><i class="bi bi-calendar"></i> <span>Item</span></a>
+                    <a href="#" class="list-group-item border-end-0 d-inline-block text-truncate" data-bs-parent="#sidebar"><i class="bi bi-envelope"></i> <span>Item</span></a>
+                </div>
             </div>
         </div>
-    </div>
+        <main class="col container-fluid bg-body-tertiary">
+            <nav class="navbar navbar-expand-lg">
+                <div class="container-fluid">
+                    <a class="btn" data-bs-toggle="collapse" href="#sidebar" role="button" aria-controls="sidebar-nav">
+                        <span class="bi-sliders2"></span>
+                    </a>
 
-    <div class="album py-5 bg-body-tertiary">
-        <div class="container-fluid">
-            <div class="row g-12">
-                {{- range $edge := .Result.Edges }}
-                    <div class="col p-0" style='max-width: 320px; background-image: url("../static/img/frame0.png"); background-size: 100% 100%;'>
-                        <div class="m-5" style="transform: rotate(-{{randInt 3 12}}deg)">
-                            <div style="align-content: center; text-align: center">
-                                {{- if $edge.Base.Poster }}
-                                    {{- $size := calcAspectSize $edge.Base.Poster.Width $edge.Base.Poster.Height 200 200 }}
-                                    <img class="bd-placeholder-img card-img-top" style="width: {{$size.Width}}px; height: {{$size.Height}}px" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $edge.Base.Poster.URI }}/resize/resize/size200x200/formatPNG/autorotate" />
-                                {{- else }}
-                                <svg class="bd-placeholder-img card-img-top" style="width: 200px; height: 200px;" width="100px" height="200px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em"></text></svg>
-                                {{- end }}
-                            </div>
-                            <div class="card-body pb-2">
-                                <p class="card-title">
-                                    {{$edge.Base.Title}}
-                                </p>
-                                <p class="card-text"></p>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="btn-group">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary">Suche</button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary">Sammlungsseite</button>
+                    <a class="navbar-brand" href="#">Navbar</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#searchNavbar" aria-controls="searchNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="searchNavbar">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            <li class="nav-item">
+                                <a class="nav-link active" aria-current="page" href="#">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Link</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Dropdown
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#">Action</a></li>
+                                    <li><a class="dropdown-item" href="#">Another action</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#">Something else here</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link disabled" aria-disabled="true">Disabled</a>
+                            </li>
+                        </ul>
+                        <form class="d-flex" role="search">
+                            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                            <button class="btn btn-outline-success" type="submit">Search</button>
+                        </form>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="album py-5">
+                <div class="container-fluid">
+                    <div class="row g-12">
+                        {{- range $edge := .Result.Edges }}
+                            <div class="col p-0" style='max-width: 320px; background-image: url("../static/img/frame0.png"); background-size: 100% 100%;'>
+                                <div class="m-5" style="transform: rotate(-{{randInt 3 12}}deg)">
+                                    <div style="align-content: center; text-align: center">
+                                        {{- if $edge.Base.Poster }}
+                                            {{- $size := calcAspectSize $edge.Base.Poster.Width $edge.Base.Poster.Height 200 200 }}
+                                            <img class="bd-placeholder-img card-img-top" style="width: {{$size.Width}}px; height: {{$size.Height}}px" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $edge.Base.Poster.URI }}/resize/resize/size200x200/formatPNG/autorotate" />
+                                        {{- else }}
+                                        <svg class="bd-placeholder-img card-img-top" style="width: 200px; height: 200px;" width="100px" height="200px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em"></text></svg>
+                                        {{- end }}
+                                    </div>
+                                    <div class="card-body pb-2">
+                                        <p class="card-title">
+                                            {{$edge.Base.Title}}
+                                        </p>
+                                        <p class="card-text"></p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary">Suche</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary">Sammlungsseite</button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        {{- end }}
                     </div>
-                {{- end }}
+                </div>
             </div>
-        </div>
+
+        {{ template "footer.gohtml" . }}
+
+        </main>
     </div>
-</main>
-<footer class="blog-footer">
-    <p>REVOLVING HI:STORIES build by info-age GmbH Basel</p>
-    <p>
-        <a href="#">Back to top</a>
-    </p>
-</footer>
+</div>
 
 <script src="../static/bootstrap/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>
