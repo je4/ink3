@@ -9,59 +9,26 @@
 
 {{ template "nav.gohtml" . }}
 
-<nav class="navbar navbar-expand-lg">
-    <div class="container-fluid">
-        <a class="btn" data-bs-toggle="collapse" href="#sidebar" role="button" aria-controls="sidebar-nav">
-            <span class="bi-sliders2"></span>
-        </a>
-
-        <a class="navbar-brand" href="#">Navbar</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#searchNavbar" aria-controls="searchNavbar" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="searchNavbar">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="#">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Link</a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Dropdown
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#">Action</a></li>
-                        <li><a class="dropdown-item" href="#">Another action</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#">Something else here</a></li>
-                    </ul>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link disabled" aria-disabled="true">Disabled</a>
-                </li>
-            </ul>
-            <form class="d-flex" role="search">
-                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                <button class="btn btn-outline-success" type="submit">Search</button>
-            </form>
-        </div>
-    </div>
-</nav>
 <div class="container-fluid p-0 d-flex h-100">
     <div class="flex-fill">
-        <div class="p-2 d-lg-none d-flex">
-            <a href="#" class=""
-               data-bs-toggle="offcanvas"
-               data-bs-target="#bdSidebar">
-                <i class="fa-solid fa-bars"></i>X
-            </a>
-            <span class="ms-3">Tags & Cols</span>
-        </div>
         <div class="p-4">
             <div class="row">
                 <div class="col">
+                    <nav class="navbar navbar-expand-lg">
+                        <div class="container-fluid">
+                            <form class="d-flex w-100" role="search">
+                                <div class="input-group">
+                                <input class="form-control" type="search" placeholder="Search" aria-label="Search" />
+                                <button class="btn btn-outline-secondary" type="submit">Search</button>
+                                </div>
+                                <div class="ms-2 d-lg-none d-flex">
+                                    <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#facetBar" aria-controls="facetBar" aria-expanded="false" aria-label="Toggle navigation">
+                                        <span class="navbar-toggler-icon"></span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </nav>
                     <div class="album py-5">
                         <div class="container-fluid">
                             <div class="row g-12">
@@ -100,12 +67,13 @@
 
     </div>
 
-    <div style="width: 400px;" id="bdSidebar"
+    <div style="width: 400px;" id="facetBar"
          class="d-flex flex-column flex-shrink-0
-					p-3 offcanvas-lg offcanvas-start">
-        <a href="#"
-           class="navbar-brand">xxx
-        </a><hr>
+					p-3 offcanvas-lg offcanvas-end">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasRightLabel">Offcanvas right</h5>
+            <button type="button" class="btn-close" data-bs-toggle="offcanvas" data-bs-target="#facetBar" aria-controls="facetBar" aria-label="Close"></button>
+        </div>
         <ul class="mynav nav nav-pills flex-column mb-auto">
             <li class="nav-item mb-1">
                 <a href="#">
