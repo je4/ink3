@@ -1,10 +1,22 @@
+[back]
+hash = "sha1-b52b36b7269fbfc58ec24bb724691951a3decbe8"
+other = "Zurück"
+
 [collection]
 hash = "sha1-30c54a96f8011b39819ba18bcb53fcbb092d650d"
 other = "Sammlung"
 
+[founditems]
+hash = "sha1-732a314bd6033d0dec4b2e9b51eb97075bfbbfc6"
+other = "Gefundene Objekte"
+
 [language]
 hash = "sha1-89b86ab0e66f527166d98df92ddbcf5416ed58f6"
 other = "Sprache"
+
+[next]
+hash = "sha1-bc981983e7f547dc62e19a1e383acfe00782a6d5"
+other = "Weiter"
 
 [search]
 hash = "sha1-bce06414177f72ab70e6387b6af9f8ceef0d6049"

@@ -1,5 +1,8 @@
+back = "Back"
 collection = "Collection"
+founditems = "Found Items"
 language = "Language"
+next = "Next"
 search = "Search"
 searchtext = "Search Text"
 test = "Test"

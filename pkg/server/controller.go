@@ -17,6 +17,8 @@ import (
 	"io/fs"
 	"net/http"
 	"slices"
+	"strconv"
+	"strings"
 )
 
 type baseData struct {
@@ -36,6 +38,9 @@ func (ctrl *Controller) funcMap() template.FuncMap {
 	}
 	fm["toJS"] = func(s string) template.JS {
 		return template.JS(s)
+	}
+	fm["toJSStr"] = func(s string) template.JSStr {
+		return template.JSStr(s)
 	}
 	fm["localize"] = func(key, lang string) string {
 		localizer := i18n.NewLocalizer(ctrl.bundle, lang)
@@ -258,6 +263,10 @@ func (ctrl *Controller) loadTemplate(name string, files []string) (*template.Tem
 	return tmpl, nil
 }
 
+type queryData struct {
+	Search string
+}
+
 func (ctrl *Controller) searchGridPage(c *gin.Context) {
 	var lang = c.Param("lang")
 	if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
@@ -271,7 +280,67 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		return
 	}
 	searchString := c.Query("search")
-	result, err := ctrl.client.Search(context.Background(), searchString, []*client.FacetInput{}, []*client.FilterInput{}, nil, nil, nil, nil)
+	afterString := c.Query("after")
+	beforeString := c.Query("before")
+	collections := []int{}
+	for key, q := range c.Request.URL.Query() {
+		key = strings.ToLower(key)
+		if !strings.HasPrefix(key, "collection_") {
+			continue
+		}
+		if len(q) == 0 || strings.ToLower(q[0]) != "on" {
+			continue
+		}
+		collectionID, err := strconv.Atoi(key[11:])
+		if err != nil {
+			ctrl.logger.Error().Err(err).Msgf("cannot convert collection id '%s' to int", key[11:])
+			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot convert collection id '%s' to int: %v", key[11:], err))
+			return
+		}
+		collections = append(collections, collectionID)
+	}
+	cat, err := ctrl.dir.GetCatalogue(ctrl.catalogID)
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot get catalogue #%v", ctrl.catalogID)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot get catalogue #%v: %v", ctrl.catalogID, err))
+		return
+	}
+	var and bool = false
+	collFilter := &client.FilterInput{
+		Field:        "category.keyword",
+		And:          &and,
+		ValuesString: []string{},
+	}
+	for _, collid := range cat.Collections {
+		coll, err := ctrl.dir.GetCollection(collid.CollectionID.Id)
+		if err != nil {
+			continue
+			/*
+				ctrl.logger.Error().Err(err).Msgf("cannot get collection #%v", collid.CollectionID.Id)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot get collection #%v: %v", collid.CollectionID.Id, err))
+				return
+			*/
+		}
+		if coll.Status != "published" {
+			continue
+		}
+		if len(collections) == 0 || slices.Contains(collections, int(coll.Id)) {
+			parts := strings.SplitN(coll.Identifier, ":", 2)
+			if len(parts) != 2 {
+				continue
+			}
+			switch parts[0] {
+			case "cat":
+				collFilter.ValuesString = append(collFilter.ValuesString, strings.Trim(parts[1], "\""))
+			default:
+				ctrl.logger.Error().Err(err).Msgf("unknown collection identifier '%s'", coll.Identifier)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("unknown collection identifier '%s'", coll.Identifier))
+				return
+			}
+		}
+	}
+
+	result, err := ctrl.client.Search(context.Background(), searchString, []*client.FacetInput{}, []*client.FilterInput{collFilter}, nil, &afterString, nil, &beforeString)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", searchString)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", searchString, err))
@@ -281,6 +350,7 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		baseData
 		Result          client.Search_Search `json:"result"`
 		MediaserverBase string               `json:"mediaserverBase"`
+		RequestQuery    *queryData           `json:"request"`
 	}{
 		Result:          result.Search,
 		MediaserverBase: ctrl.mediaserverBase,
@@ -288,6 +358,9 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 			Lang:     lang,
 			Params:   template.URL(c.Request.URL.Query().Encode()),
 			RootPath: "../",
+		},
+		RequestQuery: &queryData{
+			Search: searchString,
 		},
 	}
 	/*
