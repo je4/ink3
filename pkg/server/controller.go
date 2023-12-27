@@ -305,11 +305,20 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot get catalogue #%v: %v", ctrl.catalogID, err))
 		return
 	}
-	var and bool = false
-	collFilter := &client.FilterInput{
-		Field:        "category.keyword",
-		And:          &and,
-		ValuesString: []string{},
+	collFacet := &client.InFacet{
+		Term: &client.InFacetTerm{
+			Name:    "collections",
+			Field:   "category.keyword",
+			Include: []string{},
+			Exclude: []string{},
+		},
+		Query: client.InFilter{
+			BoolTerm: &client.InFilterBoolTerm{
+				Field:  "category.keyword",
+				Values: []string{},
+				And:    false,
+			},
+		},
 	}
 	for _, collid := range cat.Collections {
 		coll, err := ctrl.dir.GetCollection(collid.CollectionID.Id)
@@ -324,14 +333,16 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		if coll.Status != "published" {
 			continue
 		}
+		parts := strings.SplitN(coll.Identifier, ":", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		val := strings.Trim(parts[1], "\" ")
+		collFacet.Term.Include = append(collFacet.Term.Include, val)
 		if len(collections) == 0 || slices.Contains(collections, int(coll.Id)) {
-			parts := strings.SplitN(coll.Identifier, ":", 2)
-			if len(parts) != 2 {
-				continue
-			}
 			switch parts[0] {
 			case "cat":
-				collFilter.ValuesString = append(collFilter.ValuesString, strings.Trim(parts[1], "\""))
+				collFacet.Query.BoolTerm.Values = append(collFacet.Query.BoolTerm.Values, val)
 			default:
 				ctrl.logger.Error().Err(err).Msgf("unknown collection identifier '%s'", coll.Identifier)
 				c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("unknown collection identifier '%s'", coll.Identifier))
@@ -340,7 +351,7 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		}
 	}
 
-	result, err := ctrl.client.Search(context.Background(), searchString, []*client.FacetInput{}, []*client.FilterInput{collFilter}, nil, &afterString, nil, &beforeString)
+	result, err := ctrl.client.Search(context.Background(), searchString, []*client.InFacet{collFacet}, []*client.InFilter{}, nil, &afterString, nil, &beforeString)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", searchString)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", searchString, err))
