@@ -8,6 +8,7 @@ import (
 	"github.com/Masterminds/sprig/v3"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/gosimple/slug"
 	"github.com/je4/basel-collections/v2/directus"
 	"github.com/je4/revcat/v2/tools/client"
 	"github.com/je4/utils/v2/pkg/zLogger"
@@ -52,6 +53,9 @@ func (ctrl *Controller) funcMap() template.FuncMap {
 			result = fmt.Sprintf("cannot localize '%s': %v", key, err)
 		}
 		return result
+	}
+	fm["slug"] = func(s string, lang string) string {
+		return strings.Replace(slug.MakeLang(s, lang), "-", "_", -1)
 	}
 
 	type size struct {
@@ -282,28 +286,36 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 	searchString := c.Query("search")
 	afterString := c.Query("after")
 	beforeString := c.Query("before")
-	collections := []int{}
-	for key, q := range c.Request.URL.Query() {
-		key = strings.ToLower(key)
-		if !strings.HasPrefix(key, "collection_") {
+	collectionsString := c.Query("collections")
+	parts := strings.Split(collectionsString, ",")
+	collectionIDs := []int{}
+	for _, part := range parts {
+		collID, err := strconv.Atoi(part)
+		if err != nil || collID == 0 {
 			continue
 		}
-		if len(q) == 0 || strings.ToLower(q[0]) != "on" {
-			continue
-		}
-		collectionID, err := strconv.Atoi(key[11:])
-		if err != nil {
-			ctrl.logger.Error().Err(err).Msgf("cannot convert collection id '%s' to int", key[11:])
-			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot convert collection id '%s' to int: %v", key[11:], err))
-			return
-		}
-		collections = append(collections, collectionID)
+		collectionIDs = append(collectionIDs, collID)
 	}
 	cat, err := ctrl.dir.GetCatalogue(ctrl.catalogID)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot get catalogue #%v", ctrl.catalogID)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot get catalogue #%v: %v", ctrl.catalogID, err))
 		return
+	}
+	vocFacet := &client.InFacet{
+		Term: &client.InFacetTerm{
+			Name:    "vocabulary",
+			Field:   "tags.keyword",
+			Include: []string{"voc:.*"},
+			Exclude: []string{},
+		},
+		Query: client.InFilter{
+			BoolTerm: &client.InFilterBoolTerm{
+				Field:  "category.keyword",
+				Values: []string{},
+				And:    false,
+			},
+		},
 	}
 	collFacet := &client.InFacet{
 		Term: &client.InFacetTerm{
@@ -324,11 +336,6 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		coll, err := ctrl.dir.GetCollection(collid.CollectionID.Id)
 		if err != nil {
 			continue
-			/*
-				ctrl.logger.Error().Err(err).Msgf("cannot get collection #%v", collid.CollectionID.Id)
-				c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot get collection #%v: %v", collid.CollectionID.Id, err))
-				return
-			*/
 		}
 		if coll.Status != "published" {
 			continue
@@ -339,7 +346,7 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		}
 		val := strings.Trim(parts[1], "\" ")
 		collFacet.Term.Include = append(collFacet.Term.Include, val)
-		if len(collections) == 0 || slices.Contains(collections, int(coll.Id)) {
+		if len(collectionIDs) == 0 || slices.Contains(collectionIDs, int(coll.Id)) {
 			switch parts[0] {
 			case "cat":
 				collFacet.Query.BoolTerm.Values = append(collFacet.Query.BoolTerm.Values, val)
@@ -351,19 +358,34 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		}
 	}
 
-	result, err := ctrl.client.Search(context.Background(), searchString, []*client.InFacet{collFacet}, []*client.InFilter{}, nil, &afterString, nil, &beforeString)
+	result, err := ctrl.client.Search(context.Background(), searchString, []*client.InFacet{collFacet, vocFacet}, []*client.InFilter{}, nil, &afterString, nil, &beforeString)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", searchString)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", searchString, err))
 		return
 	}
+
+	type vocFacetType struct {
+		Name    string `json:"name"`
+		Count   int    `json:"count"`
+		Checked bool   `json:"checked"`
+	}
+
+	type collFacetType struct {
+		ID      int    `json:"id"`
+		Name    string `json:"name"`
+		Count   int    `json:"count"`
+		Checked bool   `json:"checked"`
+	}
 	data := struct {
 		baseData
-		Result          client.Search_Search `json:"result"`
-		MediaserverBase string               `json:"mediaserverBase"`
-		RequestQuery    *queryData           `json:"request"`
+		Result           *client.Search_Search      `json:"result"`
+		MediaserverBase  string                     `json:"mediaserverBase"`
+		RequestQuery     *queryData                 `json:"request"`
+		CollectionFacets []*collFacetType           `json:"collectionFacets"`
+		VocabularyFacets map[string][]*vocFacetType `json:"vocabularyFacets"`
 	}{
-		Result:          result.Search,
+		Result:          result.GetSearch(),
 		MediaserverBase: ctrl.mediaserverBase,
 		baseData: baseData{
 			Lang:     lang,
@@ -373,16 +395,65 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		RequestQuery: &queryData{
 			Search: searchString,
 		},
+		CollectionFacets: []*collFacetType{},
+		VocabularyFacets: map[string][]*vocFacetType{},
 	}
-	/*
-		b, err := json.MarshalIndent(data, "", "  ")
-		if err != nil {
-			ctrl.logger.Error().Err(err).Msgf("cannot marshal result")
-			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot marshal result: %v", err))
-			return
+	for _, facet := range data.Result.GetFacets() {
+		switch facet.GetName() {
+		case "vocabulary":
+			for _, val := range facet.GetValues() {
+				strVal := val.GetFacetValueString()
+				if strVal == nil {
+					continue
+				}
+				facetStr := strVal.GetStrVal()
+				parts := strings.Split(facetStr, ":")
+				if len(parts) != 3 {
+					continue
+				}
+				parent := parts[1] // slug.MakeLang(parts[1], "de")
+				if _, ok := data.VocabularyFacets[parent]; !ok {
+					data.VocabularyFacets[parts[1]] = []*vocFacetType{}
+				}
+				data.VocabularyFacets[parent] = append(data.VocabularyFacets[parent], &vocFacetType{
+					Count: int(strVal.GetCount()),
+					Name:  parts[2],
+				})
+			}
+
+		case "collections":
+			for _, val := range facet.GetValues() {
+				strVal := val.GetFacetValueString()
+				if strVal == nil {
+					continue
+				}
+				facetStr := strVal.GetStrVal()
+				cf := &collFacetType{
+					Count: int(strVal.GetCount()),
+				}
+				colls, err := ctrl.dir.GetCollections()
+				if err != nil {
+					ctrl.logger.Error().Err(err).Msgf("cannot get collections")
+					c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot get collections: %v", err))
+					return
+				}
+				for _, coll := range colls {
+					parts := strings.SplitN(coll.Identifier, ":", 2)
+					if len(parts) != 2 {
+						continue
+					}
+					cVal := strings.Trim(parts[1], "\" ")
+					if cVal == facetStr {
+						cf.ID = int(coll.Id)
+						cf.Name = coll.GetTitle()
+						cf.Checked = slices.Contains(collectionIDs, int(coll.Id))
+						data.CollectionFacets = append(data.CollectionFacets, cf)
+					}
+				}
+			}
 		}
-		print(string(b))
-	*/
+	}
+
 	if err := tmpl.Execute(c.Writer, data); err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))

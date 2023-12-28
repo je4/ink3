@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="de">
 {{- $lang := .Lang}}
+{{- $root := .RootPath }}
+{{- $searchBase := join "" (list $root "search/" $lang)}}
 
 {{ template "head.gohtml" . }}
 
@@ -12,13 +14,12 @@
                 <div class="col p-0 csp-bubble-area" style="" id="bubbleArea"></div>
             </div>
         <div class="container mt-3 mb-3">
-            <form method="get" action="search/{{ $lang }}">
                 <div class="row">
                     <div class="col-md d-flex justify-content-end align-items-center">
                         <div class="input-group">
-                            <input name="search" class="form-control w-auto longborder" type="search" placeholder="{{ localize "searchtext" $lang }}" aria-label="{{ localize "search" $lang }}">&nbsp;
+                            <input id="search" class="form-control w-auto longborder" type="search" placeholder="{{ localize "searchtext" $lang }}" aria-label="{{ localize "search" $lang }}">&nbsp;
                         </div>
-                        <button class="col btn pborder" type="submit">{{ localize "search" $lang }}</button>
+                        <button onclick="search('{{ $searchBase }}')" class="col btn pborder" type="submit">{{ localize "search" $lang }}</button>
                     </div>
                 </div>
                 <div class="container mt-5">
@@ -28,7 +29,7 @@
                             <tr>
                                 <td>
                                     <div class="form-check">
-                                        <input name="collection_{{ $coll.Id }}" class="form-check-input pborder" type="checkbox" id="collSwitch_{{ $key }}">
+                                        <input name="collection_{{ $coll.Id }}" value="{{ $coll.Id }}" class="collectionCheck form-check-input pborder" type="checkbox" id="collSwitch_{{ $key }}">
                                         <label class="form-check-label" for="collSwitch_{{ $key }}">{{ $coll.Title }}</label>
                                     </div>
                                 </td>
@@ -40,7 +41,6 @@
                         </tbody>
                     </table>
                 </div>
-            </form>
 
         </div>
     </main>
@@ -50,6 +50,7 @@
     <script src="static/bootstrap/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="static/js/d3.js"></script>
     <script src="static/js/d3bubble.js"></script>
+    <script src="static/js/search.js"></script>
     <script>
         {{- $maxRadius := 100 }}
         {{- $minRadius := 60 }}

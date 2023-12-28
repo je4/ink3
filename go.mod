@@ -9,11 +9,13 @@ require (
 	github.com/Yamashou/gqlgenc v0.16.0
 	github.com/gin-contrib/cors v1.5.0
 	github.com/gin-gonic/gin v1.9.1
+	github.com/gosimple/slug v1.13.1
 	github.com/je4/basel-collections/v2 v2.0.0
 	github.com/je4/revcat/v2 v2.0.0-20231204154634-5079013edd80
 	github.com/je4/utils/v2 v2.0.17
 	github.com/nicksnyder/go-i18n/v2 v2.3.0
 	github.com/rs/zerolog v1.31.0
+	golang.org/x/text v0.14.0
 )
 
 require (
@@ -30,6 +32,7 @@ require (
 	github.com/go-playground/validator/v10 v10.15.5 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/google/uuid v1.3.1 // indirect
+	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/huandu/xstrings v1.3.3 // indirect
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
@@ -54,7 +57,6 @@ require (
 	golang.org/x/crypto v0.14.0 // indirect
 	golang.org/x/net v0.16.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
