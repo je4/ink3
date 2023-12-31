@@ -12,6 +12,7 @@ import (
 	"github.com/je4/basel-collections/v2/directus"
 	"github.com/je4/revcat/v2/tools/client"
 	"github.com/je4/utils/v2/pkg/zLogger"
+	"github.com/je4/zsearch/v2/pkg/translate"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
 	"html/template"
@@ -76,6 +77,14 @@ func (ctrl *Controller) funcMap() template.FuncMap {
 				Height: maxHeight,
 			}
 		}
+	}
+	fm["multiLang"] = func(mf []*client.MultiLangFragment) *translate.MultiLangString {
+		m := &translate.MultiLangString{}
+		for _, f := range mf {
+			lang, _ := language.Parse(f.Lang)
+			m.Set(f.Value, lang, f.Translated)
+		}
+		return m
 	}
 	return fm
 }
