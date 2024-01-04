@@ -58,6 +58,10 @@ other = "Aktion"
 hash = "sha1-56ae3040aa203c9b2c76439d7c139d1beca9ec29"
 other = "aktiviertes Ausstellungsobjekt"
 
+[voc_aktivismus]
+hash = "sha1-167bf8cf5a2aab44a3234864cbf17626c0681dd6"
+other = "Aktivismus"
+
 [voc_aktivist]
 hash = "sha1-5ab0ac03c99880d94ec1bf8f737e7a696914aa5d"
 other = "Aktivist"
@@ -278,6 +282,10 @@ other = "Feminismus"
 hash = "sha1-084f04b73aaccc376bc15c095755d2692215d52f"
 other = "Feuer"
 
+[voc_figur]
+hash = "sha1-78f2bdcc9f1fe557fc7318026c69adca4dd6a822"
+other = "Figur"
+
 [voc_fiktion]
 hash = "sha1-f068747844ae60bd57c018e7fdd75ed9a1224b73"
 other = "Fiktion"
@@ -346,6 +354,10 @@ other = "Gefäss"
 hash = "sha1-8a754c61c2ced0c5ff79a1827e02c9d643d6d926"
 other = "Gender"
 
+[voc_genre]
+hash = "sha1-2aa31fca5e4f84ebdfaab36c9a6da36cf8d36509"
+other = "Genre"
+
 [voc_genres]
 hash = "sha1-96817ade02e758261256fdfcf062e850b699b8a6"
 other = "Genres"
@@ -373,6 +385,10 @@ other = "giessen"
 [voc_glitzer]
 hash = "sha1-53c38dc2a83fb2e194e10fa2491b3a9a48602ef0"
 other = "Glitzer"
+
+[voc_groessenverhaeltnisse]
+hash = "sha1-df47ca9c529a6ca663cf9806ae7b1c539d3b2563"
+other = "Grössenverhältnisse"
 
 [voc_grotesk]
 hash = "sha1-1d963c16ac2f19e025c4fd2eba13be23b9e08ed7"
@@ -418,6 +434,10 @@ other = "Helm"
 hash = "sha1-6b82906937691b0fec45cba4d81375849c90b0af"
 other = "Homestories"
 
+[voc_humor]
+hash = "sha1-02b7d672f843972dcd342141a522a3ce7ac4cc13"
+other = "Humor"
+
 [voc_humorvoll]
 hash = "sha1-42b86e275682c329fa1fbd9a2216c462f7f294aa"
 other = "humorvoll"
@@ -446,6 +466,10 @@ other = "Inszenierung"
 hash = "sha1-47eeac82233a54e497bd6e12859156bf810a04c3"
 other = "interaktiv"
 
+[voc_interdisziplinaer]
+hash = "sha1-f227e1848fa29013e9a0fef6d5c80ee6b883fbae"
+other = "interdisziplinär"
+
 [voc_intervention]
 hash = "sha1-e9b90c40495e48d97191c4d5aa8c54637b0eabc2"
 other = "Intervention"
@@ -453,6 +477,10 @@ other = "Intervention"
 [voc_kamera]
 hash = "sha1-83008f45ae90faa6f7a27cb74f811319401f3f46"
 other = "Kamera"
+
+[voc_kamera_als_performer]
+hash = "sha1-ff4aa30122ccd3111c1996f510fff18d873759f8"
+other = "Kamera als Performer"
 
 [voc_karaoke]
 hash = "sha1-2ab372ea94c82e20f8a327587a815be3dce54136"
@@ -478,6 +506,10 @@ other = "Klebeband"
 hash = "sha1-cbe682587413c69c69a00bc692994e480a4a07ef"
 other = "Klischee"
 
+[voc_klischees]
+hash = "sha1-e0f5bfd7a33deb9e574c9c4dc03cff89063db9d3"
+other = "Klischees"
+
 [voc_koerper]
 hash = "sha1-0911d2e22a2210d02843b19241b2141b8396d80b"
 other = "Körper"
@@ -493,6 +525,10 @@ other = "Körper als Instrument"
 [voc_koerper_als_material]
 hash = "sha1-2cfc0f61caa4133d90021703e1850073017a3524"
 other = "Körper als Material"
+
+[voc_koerper_raum]
+hash = "sha1-c0bf0aaa9d8f8280ea068136627213af0a410271"
+other = "Körper-Raum"
 
 [voc_koerper_und_raum]
 hash = "sha1-f6a5e4d73ae47bd19ca28a769b7fc5a995a906cc"
@@ -525,6 +561,10 @@ other = "konkrete Poesie"
 [voc_kontrolle]
 hash = "sha1-168d20e2d80eec7f1d60e451e90b6d3fa9920adf"
 other = "Kontrolle"
+
+[voc_konzept]
+hash = "sha1-e76fbb5661c45cfb3a4fc2965ea0a44e9da7f957"
+other = "Konzept"
 
 [voc_konzeptuell]
 hash = "sha1-d13dcfdb78598667279a2672b6d31d16b6772801"
@@ -562,6 +602,10 @@ other = "Künstlerfigur"
 hash = "sha1-cc2ec61c3e60bf12c1ade068df09f08d784a59af"
 other = "künstlerische Forschung"
 
+[voc_kunst_am_bau]
+hash = "sha1-20ed2edc4f7d794df9a8efe4e56dd1fd99fb1232"
+other = "Kunst am Bau"
+
 [voc_kunst_und_leben]
 hash = "sha1-fdad5c1de2813872909f094135a71debeead2f1e"
 other = "Kunst und Leben"
@@ -578,6 +622,10 @@ other = "Kunstfigur"
 hash = "sha1-40f781a968e76dc80cd3445678b9370785e2f9da"
 other = "Kunstmarkt"
 
+[voc_lachen]
+hash = "sha1-824c2c9a42d7d95de80942a4615eba984e46ebf8"
+other = "Lachen"
+
 [voc_land_art]
 hash = "sha1-07e40d4af4340fc9fb5ffd89e93622ee14ee8282"
 other = "Land Art"
@@ -590,6 +638,10 @@ other = "Landschaft"
 hash = "sha1-bb7537501a4338899a76acc9d6c85b1e990c0d06"
 other = "langsam"
 
+[voc_langzeitbelichtung]
+hash = "sha1-6b29157dfeea0dadd3a378e6b7919f45f8991526"
+other = "Langzeitbelichtung"
+
 [voc_langzeitperformance]
 hash = "sha1-bc6271bf312b4b47a38fe41b1ad08edeae3121df"
 other = "Langzeitperformance"
@@ -597,6 +649,10 @@ other = "Langzeitperformance"
 [voc_lebende_bilder]
 hash = "sha1-8d84e748e0feb47a4312fd7e14aa37a8bebc00c4"
 other = "lebende Bilder"
+
+[voc_lebendes_bild]
+hash = "sha1-0498deed292ad5c6caa09b7a572ef0b905d8afde"
+other = "Lebendes Bild"
 
 [voc_lecture_performance]
 hash = "sha1-966f3e0911224d1a19458d0589b6f47adc8770b9"
@@ -650,6 +706,10 @@ other = "Männerbild"
 hash = "sha1-2f61d8e962616f0d4a9b0670800f034247c902d0"
 other = "Männerfigur"
 
+[voc_magischer_realismus]
+hash = "sha1-6f782f5ec86611811c2975d217e7ef9d1c1873c9"
+other = "Magischer Realismus"
+
 [voc_making_of]
 hash = "sha1-5b9deae876dcd292a4098e365ea6d384170d3044"
 other = "Making of"
@@ -673,6 +733,10 @@ other = "Materialuntersuchung"
 [voc_medien]
 hash = "sha1-eb07154c2baf73966bf9845e07284c9c4a407189"
 other = "Medien"
+
+[voc_medienwechsel]
+hash = "sha1-3def810663952085e209f3de0251a496a644a157"
+other = "Medienwechsel"
 
 [voc_medizin]
 hash = "sha1-4df647f98c4ec62cdd9cd01f7c77c88b1bf45e09"
@@ -705,6 +769,14 @@ other = "Mode"
 [voc_monumental]
 hash = "sha1-25ef559643f19e00edf883b7a4465908bc94f56f"
 other = "monumental"
+
+[voc_multimedia]
+hash = "sha1-82dabd0bba3a5f611035c568eaa03187a7117693"
+other = "Multimedia"
+
+[voc_multimedia_performance]
+hash = "sha1-12ec2bced36123fe3b1315a024926bf5df11a489"
+other = "Multimedia Performance"
 
 [voc_multimediaperformance]
 hash = "sha1-9f6007da2aaa60a0c351d91e239d14145157cf52"
@@ -790,6 +862,10 @@ other = "partizipative Performance"
 hash = "sha1-3e76097c09779363f157ae04e93f2c8fbeac39d4"
 other = "Performancebeschreibung"
 
+[voc_performative_skulptur]
+hash = "sha1-32fd24c75d0c98d1af40582bd73a0dcbe71e8703"
+other = "Performative Skulptur"
+
 [voc_persistent_hartnaeckig]
 hash = "sha1-e095a12a8489937df691b9747f91cf210c8b42eb"
 other = "persistent (=hartnäckig)"
@@ -841,6 +917,10 @@ other = "prozessual"
 [voc_publikum]
 hash = "sha1-3fd8c2dac8d8ec6ef54c58b9a4d93cf54195e2ec"
 other = "Publikum"
+
+[voc_qualitaet]
+hash = "sha1-b17ad979388b6c5ae91fbc882180837b5e1d6c30"
+other = "Qualität"
 
 [voc_qualitaeten]
 hash = "sha1-5ce21d4ff7116eaf1b4076234f42a86e76666639"
@@ -925,6 +1005,10 @@ other = "Schnur"
 [voc_schokolade]
 hash = "sha1-21144d84133274995a64c41022c4781bdfd144fc"
 other = "Schokolade"
+
+[voc_schreiben]
+hash = "sha1-f4f5c5f415f3df24ee6ba9c390d153ddf1be02aa"
+other = "Schreiben"
 
 [voc_schweigen]
 hash = "sha1-87c84c6aceeb548acecb91cddeb0ba7d4f7a7c7d"
@@ -1046,6 +1130,10 @@ other = "stumm"
 hash = "sha1-0300c25205a4b60b3c093afdc05e20f8218078e5"
 other = "Stummfilm"
 
+[voc_subjektive_kamera]
+hash = "sha1-c3955cfeb902482e310de16abdc2a9ae8e2d5d7d"
+other = "subjektive Kamera"
+
 [voc_symbolisch]
 hash = "sha1-417d0cecb40dec4cd9e2ce19e2fcb5eb3a9c1629"
 other = "symbolisch"
@@ -1122,9 +1210,17 @@ other = "Übersetzung"
 hash = "sha1-14ea4bc1d0c97b2f3b022e7da7d61b7cac6fd350"
 other = "Unterhaltung"
 
+[voc_verbinden]
+hash = "sha1-cd3336ed3e0ef5ff0ac91fdaf621a6d0e7ab6214"
+other = "Verbinden"
+
 [voc_vergroessert]
 hash = "sha1-1663851994d47f915a23c1ce11d52381df03bb3b"
 other = "vergrössert"
+
+[voc_verkauf]
+hash = "sha1-87fc17e3e086cbd08a3301f395f7a53ac707a6cf"
+other = "Verkauf"
 
 [voc_verkaufen]
 hash = "sha1-01d4d45a3503758e664e83426dde7edd1ce30b41"
@@ -1185,6 +1281,10 @@ other = "Wald"
 [voc_wegweisen]
 hash = "sha1-ed7d9a54d9ed088e9416a4c536faebec7b8e70bd"
 other = "wegweisen"
+
+[voc_weihnachten]
+hash = "sha1-f02df5155eb0e179834839a27dd45be0c490c2dc"
+other = "Weihnachten"
 
 [voc_weiss]
 hash = "sha1-4e95c4512fed58b59d28ee70e17ec8adcf7a8c35"

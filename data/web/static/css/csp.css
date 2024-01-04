@@ -24,6 +24,12 @@ body {
 }
 
 
+.borderedge {
+    border-image-slice: 32;
+    border-image-repeat: stretch;
+    border-width: medium;
+}
+
 .pborder {
     border-image-slice: 20;
     border-image-repeat: stretch;
@@ -58,6 +64,9 @@ body {
         filter: invert(1);
     }
 
+    .borderedge {
+        border-image-source: url("../img/border_right_bottom.png");
+    }
     .pborder {
         border-image-source: url("../img/border_inv.png");
     }

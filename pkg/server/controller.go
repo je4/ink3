@@ -313,10 +313,12 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 	}
 	vocFacet := &client.InFacet{
 		Term: &client.InFacetTerm{
-			Name:    "vocabulary",
-			Field:   "tags.keyword",
-			Include: []string{"voc:.*"},
-			Exclude: []string{},
+			Name:        "vocabulary",
+			Field:       "tags.keyword",
+			Size:        400,
+			MinDocCount: 0,
+			Include:     []string{"voc:.*"},
+			Exclude:     []string{},
 		},
 		Query: client.InFilter{
 			BoolTerm: &client.InFilterBoolTerm{
@@ -328,10 +330,12 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 	}
 	collFacet := &client.InFacet{
 		Term: &client.InFacetTerm{
-			Name:    "collections",
-			Field:   "category.keyword",
-			Include: []string{},
-			Exclude: []string{},
+			Name:        "collections",
+			Field:       "category.keyword",
+			Size:        200,
+			MinDocCount: 0,
+			Include:     []string{},
+			Exclude:     []string{},
 		},
 		Query: client.InFilter{
 			BoolTerm: &client.InFilterBoolTerm{

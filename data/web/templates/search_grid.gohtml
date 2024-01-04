@@ -85,40 +85,32 @@
 
     </div>
 
-    <div style="width: 400px;" id="facetBar"
+    <div style="overflow: auto; width: 600px;" id="facetBar"
          class="d-flex flex-column flex-shrink-0
 					p-3 offcanvas-lg offcanvas-end">
         <div class="offcanvas-header">
             <h5 class="offcanvas-title" id="offcanvasRightLabel">Offcanvas right</h5>
             <button type="button" class="btn-close" data-bs-toggle="offcanvas" data-bs-target="#facetBar" aria-controls="facetBar" aria-label="Close"></button>
         </div>
-        <ul class="mynav nav nav-pills flex-column mb-auto">
+        <div class="d-grid gap-2 d-md-block">
             {{ range $collFacet := .CollectionFacets }}
-            <li class="nav-item mb-1">
-                <div class="form-check">
-                    <input onchange="search('{{ $searchBase }}')" class="collectionCheck form-check-input pborder" type="checkbox" value="{{ $collFacet.ID }}" name="collection_{{ $collFacet.ID }}"{{ if $collFacet.Checked }} checked{{ end }}>
-                    <label class="form-check-label" for="flexCheckChecked">
-                        {{ $collFacet.Name }} ({{ $collFacet.Count }})
-                    </label>
-                </div>
-            </li>
+                <button style="padding: 3px 6px 3px 6px;" onclick="{{ if $collFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}')" type="button" class="btn borderedge btn-dark collectionButton" value="{{ $collFacet.ID }}" selected="{{ if $collFacet.Checked }}true{{ else }}false{{ end }}">
+                    {{ if $collFacet.Checked }}<i class="bi bi-check2"></i>&nbsp;{{ end }}{{ abbrev 16 $collFacet.Name }} ({{ $collFacet.Count }})
+                </button>
             {{ end }}
+        </div>
+        <ul class="mynav nav nav-pills flex-column mb-auto">
             {{ range $parent, $vocabFacets := .VocabularyFacets }}
                 <li class="nav-item mb-1">
                     <hr />
                     {{ localize (nospace (cat "voc_" (slug $parent "de"))) $lang }}
-                    <ul class="mynav nav nav-pills flex-column mb-auto">
+                    <div class="d-grid gap-2 d-md-block">
                     {{ range $vocabFacet := $vocabFacets }}
-                    <li class="nav-item mb-1">
-                        <div class="form-check">
-                            <input onchange="search('{{ $searchBase }}')" class="collectionCheck form-check-input pborder" type="checkbox" value="voc:{{ $parent }}:{{ $vocabFacet }}"{{ if $vocabFacet.Checked }} checked{{ end }}>
-                            <label class="form-check-label" for="flexCheckChecked">
-                                {{ localize (nospace (cat "voc_" (slug $vocabFacet.Name "de"))) $lang }} ({{ $vocabFacet.Count }})
-                            </label>
-                        </div>
-                    </li>
+                        <button style="padding: 3px 6px 3px 6px;" onclick="{{ if $vocabFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}')" type="button" class="btn borderedge btn-dark vocButton" value="{{ $vocabFacet.Name }}" selected="{{ if $vocabFacet.Checked }}true{{ else }}false{{ end }}">
+                            {{ if $vocabFacet.Checked }}<i class="bi bi-check2"></i>&nbsp;{{ end }}{{ abbrev 32 $vocabFacet.Name }} ({{ $vocabFacet.Count }})
+                        </button>
                    {{ end }}
-                    </ul>
+                    </div>
                 </li>
             {{ end }}
     </ul>
