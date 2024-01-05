@@ -2,5 +2,5 @@ package templates
 
 import "embed"
 
-//go:embed index.gohtml search_grid.gohtml head.gohtml nav.gohtml footer.gohtml
+//go:embed index.gohtml search_grid.gohtml head.gohtml nav.gohtml footer.gohtml detail_text.gotext
 var FS embed.FS

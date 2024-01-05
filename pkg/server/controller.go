@@ -21,6 +21,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	texttemplate "text/template"
 )
 
 type baseData struct {
@@ -145,6 +146,14 @@ func NewController(localAddr, externalAddr string, cert *tls.Certificate, templa
 
 	router.GET("/search/:lang", func(c *gin.Context) {
 		ctrl.searchGridPage(c)
+	})
+
+	router.GET("/detailtext/:lang", func(c *gin.Context) {
+		ctrl.detailText(c)
+	})
+
+	router.GET("/detail/:lang", func(c *gin.Context) {
+		ctrl.detail(c)
 	})
 
 	var tlsConfig *tls.Config
@@ -311,6 +320,16 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot get catalogue #%v: %v", ctrl.catalogID, err))
 		return
 	}
+	vocabularyString := c.Query("vocabulary")
+	parts = strings.Split(vocabularyString, ",")
+	vocabularyIDs := []string{}
+	for _, part := range parts {
+		vocabularyID := strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+		vocabularyIDs = append(vocabularyIDs, vocabularyID)
+	}
 	vocFacet := &client.InFacet{
 		Term: &client.InFacetTerm{
 			Name:        "vocabulary",
@@ -323,8 +342,8 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		Query: client.InFilter{
 			BoolTerm: &client.InFilterBoolTerm{
 				Field:  "category.keyword",
-				Values: []string{},
-				And:    false,
+				Values: vocabularyIDs,
+				And:    true,
 			},
 		},
 	}
@@ -465,6 +484,116 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 				}
 			}
 		}
+	}
+
+	if err := tmpl.Execute(c.Writer, data); err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
+		return
+	}
+}
+
+var textTemplate *texttemplate.Template
+
+func (ctrl *Controller) detailText(c *gin.Context) {
+	var lang = c.Param("lang")
+	if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
+		lang = "de"
+	}
+	templateName := "detail_text.gotext"
+	if textTemplate == nil {
+		var err error
+		textTemplate, err = texttemplate.New(templateName).Funcs(ctrl.funcMap()).ParseFS(ctrl.templateFS, []string{templateName}...)
+		if err != nil {
+			ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
+			return
+		}
+	}
+	id := c.Param("id")
+	if id == "" {
+		ctrl.logger.Error().Msgf("id missing")
+		c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("id missing"))
+		return
+	}
+
+	source, err := ctrl.client.MediathekEntries(context.Background(), []string{id})
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot get source '%s'", id)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot get source '%s': %v", id, err))
+		return
+	}
+	if source == nil || len(source.MediathekEntries) == 0 {
+		ctrl.logger.Error().Err(err).Msgf("source '%s' not found", id)
+		c.AbortWithStatusJSON(http.StatusNotFound, fmt.Sprintf("source '%s' not found", id))
+		return
+	}
+
+	type tplData struct {
+		baseData
+		Source          *client.MediathekEntries_MediathekEntries `json:"source"`
+		MediaserverBase string                                    `json:"mediaserverBase"`
+	}
+	var data = &tplData{
+		Source: source.MediathekEntries[0],
+		baseData: baseData{
+			Lang:     lang,
+			RootPath: "../",
+		},
+		MediaserverBase: ctrl.mediaserverBase,
+	}
+
+	c.Set("Content-Type", "text/markdown; charset=utf-8")
+	if err := textTemplate.Execute(c.Writer, data); err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
+		return
+	}
+}
+
+func (ctrl *Controller) detail(c *gin.Context) {
+	var lang = c.Param("lang")
+	if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
+		lang = "de"
+	}
+	templateName := "detail.gohtml"
+	tmpl, err := ctrl.loadTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
+		return
+	}
+	id := c.Param("id")
+	if id == "" {
+		ctrl.logger.Error().Err(err).Msgf("id missing")
+		c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("id missing"))
+		return
+	}
+
+	source, err := ctrl.client.MediathekEntries(context.Background(), []string{id})
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot get source '%s'", id)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot get source '%s': %v", id, err))
+		return
+	}
+	if source == nil || len(source.MediathekEntries) == 0 {
+		ctrl.logger.Error().Err(err).Msgf("source '%s' not found", id)
+		c.AbortWithStatusJSON(http.StatusNotFound, fmt.Sprintf("source '%s' not found", id))
+		return
+	}
+
+	type tplData struct {
+		baseData
+		Source          *client.MediathekEntries_MediathekEntries `json:"source"`
+		MediaserverBase string                                    `json:"mediaserverBase"`
+	}
+	var data = &tplData{
+		Source: source.MediathekEntries[0],
+		baseData: baseData{
+			Lang:     lang,
+			RootPath: "../",
+		},
+		MediaserverBase: ctrl.mediaserverBase,
 	}
 
 	if err := tmpl.Execute(c.Writer, data); err != nil {

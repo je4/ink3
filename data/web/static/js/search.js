@@ -22,7 +22,19 @@ function search(url, before, after) {
     if ( colls.length > 0 ){
         params.set("collections", collParam);
     }
-/*
+
+    let vocs = document.getElementsByClassName("vocButton")
+    let vocParam = "";
+    for (let i = 0; i < vocs.length; i++) {
+        if (vocs[i].getAttribute("selected") === "true") {
+            vocParam += vocs[i].getAttribute("value") + ",";
+        }
+    }
+    if ( vocs.length > 0 ){
+        params.set("vocabulary", vocParam);
+    }
+
+    /*
     let colls = document.getElementsByClassName("collectionCheck")
     let collParam = "";
     for (let i = 0; i < colls.length; i++) {

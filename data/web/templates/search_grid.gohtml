@@ -92,7 +92,7 @@
             <h5 class="offcanvas-title" id="offcanvasRightLabel">Offcanvas right</h5>
             <button type="button" class="btn-close" data-bs-toggle="offcanvas" data-bs-target="#facetBar" aria-controls="facetBar" aria-label="Close"></button>
         </div>
-        <div class="d-grid gap-2 d-md-block">
+        <div class="d-block gap-2">
             {{ range $collFacet := .CollectionFacets }}
                 <button style="padding: 3px 6px 3px 6px;" onclick="{{ if $collFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}')" type="button" class="btn borderedge btn-dark collectionButton" value="{{ $collFacet.ID }}" selected="{{ if $collFacet.Checked }}true{{ else }}false{{ end }}">
                     {{ if $collFacet.Checked }}<i class="bi bi-check2"></i>&nbsp;{{ end }}{{ abbrev 16 $collFacet.Name }} ({{ $collFacet.Count }})
@@ -104,7 +104,7 @@
                 <li class="nav-item mb-1">
                     <hr />
                     {{ localize (nospace (cat "voc_" (slug $parent "de"))) $lang }}
-                    <div class="d-grid gap-2 d-md-block">
+                    <div class="d-block gap-2">
                     {{ range $vocabFacet := $vocabFacets }}
                         <button style="padding: 3px 6px 3px 6px;" onclick="{{ if $vocabFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}')" type="button" class="btn borderedge btn-dark vocButton" value="{{ $vocabFacet.Name }}" selected="{{ if $vocabFacet.Checked }}true{{ else }}false{{ end }}">
                             {{ if $vocabFacet.Checked }}<i class="bi bi-check2"></i>&nbsp;{{ end }}{{ abbrev 32 $vocabFacet.Name }} ({{ $vocabFacet.Count }})
