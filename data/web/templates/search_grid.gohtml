@@ -107,7 +107,7 @@
                     <div class="d-block gap-2">
                     {{ range $vocabFacet := $vocabFacets }}
                         <button style="padding: 3px 6px 3px 6px;" onclick="{{ if $vocabFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}')" type="button" class="btn borderedge btn-dark vocButton" value="{{ $vocabFacet.Name }}" selected="{{ if $vocabFacet.Checked }}true{{ else }}false{{ end }}">
-                            {{ if $vocabFacet.Checked }}<i class="bi bi-check2"></i>&nbsp;{{ end }}{{ abbrev 32 $vocabFacet.Name }} ({{ $vocabFacet.Count }})
+                            {{ if $vocabFacet.Checked }}<i class="bi bi-check2"></i>&nbsp;{{ end }}{{ abbrev 32 (localize (nospace (cat "voc_" (slug $vocabFacet.Name "de"))) $lang) }} ({{ $vocabFacet.Count }})
                         </button>
                    {{ end }}
                     </div>
