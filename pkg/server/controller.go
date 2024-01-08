@@ -54,7 +54,7 @@ func (ctrl *Controller) funcMap() template.FuncMap {
 		if err != nil {
 			result = fmt.Sprintf("cannot localize '%s': %v", key, err)
 		}
-		return result
+		return result // fmt.Sprintf("%s (%s)", result, lang)
 	}
 	fm["slug"] = func(s string, lang string) string {
 		return strings.Replace(slug.MakeLang(s, lang), "-", "_", -1)
@@ -442,6 +442,11 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 				parts := strings.Split(facetStr, ":")
 				if len(parts) != 3 {
 					continue
+				}
+				if val.GetFacetValueInt() == nil || val.GetFacetValueInt().GetIntVal() == 0 {
+					if !strings.HasPrefix(parts[1], "voc_") {
+						continue
+					}
 				}
 				parent := parts[1] // slug.MakeLang(parts[1], "de")
 				if _, ok := data.VocabularyFacets[parent]; !ok {
