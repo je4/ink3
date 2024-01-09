@@ -18,10 +18,12 @@ import (
 	"html/template"
 	"io/fs"
 	"net/http"
+	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
-	texttemplate "text/template"
+	"sync"
+	tmpl "text/template"
 )
 
 type baseData struct {
@@ -100,7 +102,7 @@ func NewController(localAddr, externalAddr string, cert *tls.Certificate, templa
 		templateFS:      templateFS,
 		staticFS:        staticFS,
 		templateDebug:   templateDebug,
-		templateCache:   make(map[string]*template.Template),
+		templateCache:   make(map[string]any),
 		logger:          logger,
 		dir:             dir,
 		catalogID:       int64(catalogID),
@@ -148,7 +150,7 @@ func NewController(localAddr, externalAddr string, cert *tls.Certificate, templa
 		ctrl.searchGridPage(c)
 	})
 
-	router.GET("/detailtext/:lang", func(c *gin.Context) {
+	router.GET("/detailtext/:signature/:lang", func(c *gin.Context) {
 		ctrl.detailText(c)
 	})
 
@@ -180,7 +182,8 @@ type Controller struct {
 	staticFS        fs.FS
 	dir             *directus.Directus
 	templateDebug   bool
-	templateCache   map[string]*template.Template
+	templateCache   map[string]any
+	templateMutex   sync.Mutex
 	catalogID       int64
 	client          client.RevCatGraphQLClient
 	mediaserverBase string
@@ -223,7 +226,7 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 	}
 
 	templateName := "index.gohtml"
-	tmpl, err := ctrl.loadTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
+	tmpl, err := ctrl.loadHTMLTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
@@ -270,19 +273,45 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 		return
 	}
 }
-func (ctrl *Controller) loadTemplate(name string, files []string) (*template.Template, error) {
-	tmpl, ok := ctrl.templateCache[name]
+
+func (ctrl *Controller) loadHTMLTemplate(name string, files []string) (*template.Template, error) {
+	if strings.ToLower(filepath.Ext(name)) != ".gohtml" {
+		return nil, errors.Errorf("template '%s' has wrong extension (should be .gohtml)", name)
+	}
+	ctrl.templateMutex.Lock()
+	defer ctrl.templateMutex.Unlock()
+	tpl, ok := ctrl.templateCache[name]
 	if !ok {
 		var err error
-		tmpl, err = template.New(name).Funcs(ctrl.funcMap()).ParseFS(ctrl.templateFS, files...)
+		tpl, err = template.New(name).Funcs(ctrl.funcMap()).ParseFS(ctrl.templateFS, files...)
 		if err != nil {
 			return nil, errors.Wrapf(err, "cannot parse template '%s'", name)
 		}
 		if !ctrl.templateDebug {
-			ctrl.templateCache[name] = tmpl
+			ctrl.templateCache[name] = tpl
 		}
 	}
-	return tmpl, nil
+	return tpl.(*template.Template), nil
+}
+
+func (ctrl *Controller) loadTextTemplate(name string, files []string) (*tmpl.Template, error) {
+	if strings.ToLower(filepath.Ext(name)) != ".gotmpl" {
+		return nil, errors.Errorf("template '%s' has wrong extension (should be .gotmpl)", name)
+	}
+	ctrl.templateMutex.Lock()
+	defer ctrl.templateMutex.Unlock()
+	tpl, ok := ctrl.templateCache[name]
+	if !ok {
+		var err error
+		tpl, err = tmpl.New(name).Funcs(ctrl.funcMap()).ParseFS(ctrl.templateFS, files...)
+		if err != nil {
+			return nil, errors.Wrapf(err, "cannot parse template '%s'", name)
+		}
+		if !ctrl.templateDebug {
+			ctrl.templateCache[name] = tpl
+		}
+	}
+	return tpl.(*tmpl.Template), nil
 }
 
 type queryData struct {
@@ -295,7 +324,7 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		lang = "de"
 	}
 	templateName := "search_grid.gohtml"
-	tmpl, err := ctrl.loadTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
+	tmpl, err := ctrl.loadHTMLTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
@@ -334,16 +363,16 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		Term: &client.InFacetTerm{
 			Name:        "vocabulary",
 			Field:       "tags.keyword",
-			Size:        400,
+			Size:        1200,
 			MinDocCount: 0,
 			Include:     []string{"voc:.*"},
 			Exclude:     []string{},
 		},
 		Query: client.InFilter{
 			BoolTerm: &client.InFilterBoolTerm{
-				Field:  "category.keyword",
+				Field:  "tags.keyword",
 				Values: vocabularyIDs,
-				And:    true,
+				And:    false,
 			},
 		},
 	}
@@ -453,8 +482,9 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 					data.VocabularyFacets[parts[1]] = []*vocFacetType{}
 				}
 				data.VocabularyFacets[parent] = append(data.VocabularyFacets[parent], &vocFacetType{
-					Count: int(strVal.GetCount()),
-					Name:  parts[2],
+					Count:   int(strVal.GetCount()),
+					Name:    parts[2],
+					Checked: slices.Contains(vocabularyIDs, facetStr),
 				})
 			}
 
@@ -498,24 +528,15 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 	}
 }
 
-var textTemplate *texttemplate.Template
+var textTemplate *tmpl.Template
 
 func (ctrl *Controller) detailText(c *gin.Context) {
 	var lang = c.Param("lang")
 	if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
 		lang = "de"
 	}
-	templateName := "detail_text.gotext"
-	if textTemplate == nil {
-		var err error
-		textTemplate, err = texttemplate.New(templateName).Funcs(ctrl.funcMap()).ParseFS(ctrl.templateFS, []string{templateName}...)
-		if err != nil {
-			ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
-			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
-			return
-		}
-	}
-	id := c.Param("id")
+	templateName := fmt.Sprintf("detail_text.%s.gotmpl", lang)
+	id := c.Param("signature")
 	if id == "" {
 		ctrl.logger.Error().Msgf("id missing")
 		c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("id missing"))
@@ -548,8 +569,14 @@ func (ctrl *Controller) detailText(c *gin.Context) {
 		MediaserverBase: ctrl.mediaserverBase,
 	}
 
+	tpl, err := ctrl.loadTextTemplate(templateName, []string{templateName})
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
+		return
+	}
 	c.Set("Content-Type", "text/markdown; charset=utf-8")
-	if err := textTemplate.Execute(c.Writer, data); err != nil {
+	if err := tpl.Execute(c.Writer, data); err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
 		return
@@ -562,7 +589,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 		lang = "de"
 	}
 	templateName := "detail.gohtml"
-	tmpl, err := ctrl.loadTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
+	tmpl, err := ctrl.loadHTMLTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))

@@ -1,0 +1,4 @@
+{{- $lang := .Lang }}
+{{- $base := .Source.Base }}
+{{ (multiLang $base.Title).String }}{{ if $base.Date }} ({{ $base.Date }}){{ end }}
+
