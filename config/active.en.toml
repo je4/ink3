@@ -1,6 +1,22 @@
+[artist]
+hash = "sha1-ae605594d04b7a4c80784b172a439bed9e13e7cf"
+other = "Artist"
+
+[autor]
+hash = "sha1-099b11916e284de60d952778dd0497dd18e2c975"
+other = "Author"
+
+[autoren]
+hash = "sha1-1225b692bb41c7e13f1a18a82516768f8d47ff7a"
+other = "Authors"
+
 [back]
 hash = "sha1-4080624342b2ce2a088159d7e261edbcbf76ce5f"
 other = "back"
+
+[camera]
+hash = "sha1-83008f45ae90faa6f7a27cb74f811319401f3f46"
+other = "Camera"
 
 [collection]
 hash = "sha1-10b0c1bb17bd964795f161f4f5b9919f583a1cec"

@@ -15,6 +15,7 @@ import (
 	"github.com/je4/zsearch/v2/pkg/translate"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
+	"golang.org/x/text/language/display"
 	"html/template"
 	"io/fs"
 	"net/http"
@@ -54,7 +55,8 @@ func (ctrl *Controller) funcMap() template.FuncMap {
 			ID: key,
 		})
 		if err != nil {
-			result = fmt.Sprintf("cannot localize '%s': %v", key, err)
+			return key
+			// return fmt.Sprintf("cannot localize '%s': %v", key, err)
 		}
 		return result // fmt.Sprintf("%s (%s)", result, lang)
 	}
@@ -152,6 +154,9 @@ func NewController(localAddr, externalAddr string, cert *tls.Certificate, templa
 
 	router.GET("/detailtext/:signature/:lang", func(c *gin.Context) {
 		ctrl.detailText(c)
+	})
+	router.GET("/detailtextlist/:collection", func(c *gin.Context) {
+		ctrl.detailTextList(c)
 	})
 
 	router.GET("/detail/:lang", func(c *gin.Context) {
@@ -535,7 +540,7 @@ func (ctrl *Controller) detailText(c *gin.Context) {
 	if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
 		lang = "de"
 	}
-	templateName := fmt.Sprintf("detail_text.%s.gotmpl", lang)
+	templateName := "detail_text.gotmpl"
 	id := c.Param("signature")
 	if id == "" {
 		ctrl.logger.Error().Msgf("id missing")
@@ -575,7 +580,8 @@ func (ctrl *Controller) detailText(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
 		return
 	}
-	c.Set("Content-Type", "text/markdown; charset=utf-8")
+	c.Header("Content-Type", "text/markdown; charset=utf-8")
+	//	c.Set("Content-Type", "text/markdown; charset=utf-8")
 	if err := tpl.Execute(c.Writer, data); err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
@@ -632,5 +638,81 @@ func (ctrl *Controller) detail(c *gin.Context) {
 		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
 		return
+	}
+}
+
+func (ctrl *Controller) detailTextList(c *gin.Context) {
+	var collectionStr = c.Param("collection")
+	collectionId, err := strconv.Atoi(collectionStr)
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot convert collection '%s' to int", collectionStr)
+		c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("cannot convert collection '%s' to int: %v", collectionStr, err))
+		return
+	}
+	colls, err := ctrl.dir.GetCollections()
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot get collections")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot get collections: %v", err))
+		return
+	}
+	var theColl *directus.Collection
+	for _, coll := range colls {
+		if coll.Id == int64(collectionId) {
+			theColl = coll
+			break
+		}
+	}
+	if theColl == nil {
+		ctrl.logger.Error().Err(err).Msgf("collection '%s' not found", collectionStr)
+		c.AbortWithStatusJSON(http.StatusNotFound, fmt.Sprintf("collection '%s' not found", collectionStr))
+		return
+	}
+	parts := strings.SplitN(theColl.Identifier, ":", 2)
+	if len(parts) != 2 {
+		ctrl.logger.Error().Err(err).Msgf("unknown collection identifier '%s'", theColl.Identifier)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("unknown collection identifier '%s'", theColl.Identifier))
+		return
+	}
+	if parts[0] != "cat" {
+		ctrl.logger.Error().Err(err).Msgf("collection identifier not cat '%s'", theColl.Identifier)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("collection identifier not cat '%s'", theColl.Identifier))
+		return
+	}
+	var afterString, beforeString string
+	cVal := strings.Trim(parts[1], "\" ")
+	var langs = []language.Tag{language.German, language.English, language.French, language.Italian}
+	var en = display.English.Tags()
+	c.Header("Content-Type", "text/plain; charset=utf-8")
+	for {
+		result, err := ctrl.client.Search(
+			context.Background(),
+			"",
+			[]*client.InFacet{},
+			[]*client.InFilter{
+				&client.InFilter{
+					BoolTerm: &client.InFilterBoolTerm{
+						Field:  "category.keyword",
+						And:    false,
+						Values: []string{cVal},
+					},
+				},
+			},
+			nil,
+			&afterString, nil,
+			&beforeString)
+		if err != nil {
+			ctrl.logger.Error().Err(err).Msgf("cannot search for collection '%s'", collectionStr)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for collection '%s': %v", collectionStr, err))
+			return
+		}
+		for _, edge := range result.GetSearch().GetEdges() {
+			for _, lang := range langs {
+				c.Writer.WriteString(fmt.Sprintf("%s/detailtext/%s/%s %s (Document %s)\n", ctrl.externalAddr, edge.Base.Signature, lang.String(), en.Name(lang), edge.Base.Signature))
+			}
+		}
+		if !result.GetSearch().GetPageInfo().GetHasNextPage() {
+			break
+		}
+		afterString = result.GetSearch().GetPageInfo().GetEndCursor()
 	}
 }

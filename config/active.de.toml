@@ -1,4 +1,8 @@
+artist = "KünstlerIn"
+autor = "AutorIn"
+autoren = "AutorInnen"
 back = "Zurück"
+camera = "Kamera"
 collection = "Sammlung"
 founditems = "Gefundene Objekte"
 language = "Sprache"
