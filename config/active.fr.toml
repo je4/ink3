@@ -22,13 +22,17 @@ other = "Caméra"
 hash = "sha1-10b0c1bb17bd964795f161f4f5b9919f583a1cec"
 other = "collection"
 
+[document]
+hash = "sha1-2ccbe1660a99984dace3e1aba156d3ac2516f4e5"
+other = "Document"
+
 [founditems]
 hash = "sha1-7778c735f677becc7fadd9d5b5bb255164804392"
 other = "Gefundene Objekte"
 
 [language]
 hash = "sha1-3d9f5cb4ee692ee0740e7da86ab6cfcc921c5bcb"
-other = "Sprache"
+other = "Langue"
 
 [next]
 hash = "sha1-aeff967b37f098dcdafec93375d42f13b5e9b0a3"

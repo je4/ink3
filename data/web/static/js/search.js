@@ -1,16 +1,12 @@
-function search(url, before, after) {
+function search(url, cursor) {
     let search = document.getElementById("search").value;
 
     const params = new URLSearchParams({
         search: search,
     });
-    if (before && before !== "") {
-        params.set("before", before);
+    if (cursor && cursor !== "") {
+        params.set("cursor", cursor);
     }
-    if (after && after !== "") {
-        params.set("after", after);
-    }
-
 
     let colls = document.getElementsByClassName("collectionButton")
     let collParam = "";
@@ -34,17 +30,5 @@ function search(url, before, after) {
         params.set("vocabulary", vocParam);
     }
 
-    /*
-    let colls = document.getElementsByClassName("collectionCheck")
-    let collParam = "";
-    for (let i = 0; i < colls.length; i++) {
-        if (colls[i].checked) {
-            collParam += colls[i].value + ",";
-        }
-    }
-    if ( colls.length > 0 ){
-        params.set("collections", collParam);
-    }
-*/
     window.location.href = url + "?" + params.toString();
 }

@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="de">
 {{- $lang := .Lang}}
 {{- $root := .RootPath }}
 {{- $mediaserverBase := .MediaserverBase }}
 {{- $searchBase := join "" (list $root "search/" $lang)}}
+<html lang="{{ $lang }}">
 
 {{template "head.gohtml" . }}
 
@@ -31,11 +31,11 @@
                     </nav>
                     <div class="album py-5">
                         <nav class="navbar">
-                            <button {{ if not .Result.PageInfo.HasPreviousPage }}disabled{{ end }} onclick="search('{{ $searchBase }}', '{{ .Result.PageInfo.StartCursor }}', '')" class="btn btn-outline-secondary pborder" type="submit">
+                            <button {{ if not .Result.PageInfo.HasPreviousPage }}disabled{{ end }} onclick="search('{{ $searchBase }}', '{{ .Result.PageInfo.StartCursor }}')" class="btn btn-outline-secondary pborder" type="submit">
                                 <span class="bi-chevron-left"></span>&nbsp;{{ localize "back" $lang }}
                             </button>
                             {{ localize "founditems" $lang }}: {{ .Result.TotalCount }}
-                            <button {{ if not .Result.PageInfo.HasNextPage }}disabled{{ end }} onclick="search('{{ $searchBase }}', '', '{{ .Result.PageInfo.EndCursor }}'), ''" class="btn btn-outline-secondary pborder" type="submit">
+                            <button {{ if not .Result.PageInfo.HasNextPage }}disabled{{ end }} onclick="search('{{ $searchBase }}', '{{ .Result.PageInfo.EndCursor }}'), ''" class="btn btn-outline-secondary pborder" type="submit">
                                 {{ localize "next" $lang }}&nbsp;<span class="bi-chevron-right"></span>
                             </button>
                         </nav>
@@ -72,10 +72,10 @@
                             </div>
                         </div>
                         <nav class="navbar">
-                            <button {{ if not .Result.PageInfo.HasPreviousPage }}disabled{{ end }} onclick="search('{{ $searchBase }}', '{{ .Result.PageInfo.StartCursor }}', '')" class="btn btn-outline-secondary pborder" type="submit">
+                            <button {{ if not .Result.PageInfo.HasPreviousPage }}disabled{{ end }} onclick="search('{{ $searchBase }}', '{{ .Result.PageInfo.StartCursor }}')" class="btn btn-outline-secondary pborder" type="submit">
                                 <span class="bi-chevron-left"></span>&nbsp;{{ localize "back" $lang }}
                             </button>
-                            <button {{ if not .Result.PageInfo.HasNextPage }}disabled{{ end }} onclick="search('{{ $searchBase }}', '', '{{ .Result.PageInfo.EndCursor }}'), ''" class="btn btn-outline-secondary pborder" type="submit">
+                            <button {{ if not .Result.PageInfo.HasNextPage }}disabled{{ end }} onclick="search('{{ $searchBase }}', '{{ .Result.PageInfo.EndCursor }}'), ''" class="btn btn-outline-secondary pborder" type="submit">
                                 {{ localize "next" $lang }}&nbsp;<span class="bi-chevron-right"></span>
                             </button>
                         </nav>
@@ -95,7 +95,7 @@
         </div>
         <div class="d-block gap-2">
             {{ range $collFacet := .CollectionFacets }}
-                <button style="padding: 3px 6px 3px 6px;" onclick="{{ if $collFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}')" type="button" class="btn borderedge btn-dark collectionButton" value="{{ $collFacet.ID }}" selected="{{ if $collFacet.Checked }}true{{ else }}false{{ end }}">
+                <button style="padding: 3px 6px 3px 6px;" onclick="{{ if $collFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}')" type="button" class="btn borderedge btn-csp collectionButton" value="{{ $collFacet.ID }}" selected="{{ if $collFacet.Checked }}true{{ else }}false{{ end }}">
                     {{ if $collFacet.Checked }}<i class="bi bi-check2"></i>&nbsp;{{ end }}{{ abbrev 16 $collFacet.Name }} ({{ $collFacet.Count }})
                 </button>
             {{ end }}
@@ -107,7 +107,7 @@
                     {{ localize $parent $lang }}
                     <div class="d-block gap-2">
                     {{ range $vocabFacet := $vocabFacets }}
-                        <button style="padding: 3px 6px 3px 6px;" onclick="{{ if $vocabFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}')" type="button" class="btn borderedge btn-dark vocButton" value="voc:{{ $parent }}:{{ $vocabFacet.Name }}" selected="{{ if $vocabFacet.Checked }}true{{ else }}false{{ end }}">
+                        <button style="padding: 3px 6px 3px 6px;" onclick="{{ if $vocabFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}')" type="button" class="btn borderedge btn-csp vocButton" value="voc:{{ $parent }}:{{ $vocabFacet.Name }}" selected="{{ if $vocabFacet.Checked }}true{{ else }}false{{ end }}">
                             {{ if $vocabFacet.Checked }}<i class="bi bi-check2"></i>&nbsp;{{ end }}{{ abbrev 32 (localize $vocabFacet.Name $lang) }} ({{ $vocabFacet.Count }})
                         </button>
                    {{ end }}

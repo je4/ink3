@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="de">
 {{- $lang := .Lang}}
 {{- $root := .RootPath }}
 {{- $searchBase := join "" (list $root "search/" $lang)}}
+<html lang="{{ $lang }}">
 
 {{ template "head.gohtml" . }}
 
