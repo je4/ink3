@@ -1,111 +1,143 @@
+@media (prefers-color-scheme: dark) {
+  /* [data-bs-theme=dark] { */
+  :root {
+    --bs-link-color: #d0d0ff;
+    --bs-link-hover-color: #fff;
+  }
+  .pagination {
+    --bs-focus-ring-color: #fff;
+    --bs-pagination-active-bg: #dee2e6;
+    --bs-pagination-active-color: #000;
+    --bs-pagination-active-border-color: #fff;
+    --bs-pagination-color: var(--bs-body-color);
+  }
+  .btn-csp {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: rgba(0, 0, 0, 0);
+    --bs-btn-border-color: #212529;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #424649;
+    --bs-btn-hover-border-color: #373b3e;
+    --bs-btn-focus-shadow-rgb: 66,70,73;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #4d5154;
+    --bs-btn-active-border-color: #373b3e;
+    --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+    --bs-btn-disabled-color: #fff;
+    --bs-btn-disabled-bg: #212529;
+    --bs-btn-disabled-border-color: #212529;
+  }
+  .csp-bubble-area {
+    background-image: linear-gradient(to bottom, rgba(245, 246, 252, 0) 0%, rgba(245, 246, 252, 0) 60%, color-mix(in srgb, var(--bs-body-bg) 40%, transparent) 85%, color-mix(in srgb, var(--bs-body-bg) 100%, transparent) 100%), url("../img/7373_inv.svg");
+  }
+  .csp-brand-image {
+    filter: invert(1);
+  }
+  .borderedge {
+    border-image-source: url("../img/border_right_bottom.png");
+  }
+  .pborder {
+    border-image-source: url("../img/border_inv.png");
+  }
+  .pborder:checked {
+    background-color: var(--bs-form-check-bg);
+  }
+  .longborder {
+    border-image-source: url("../img/border_lang_inv.png");
+  }
+  .longborder:checked {
+    background-color: var(--bs-form-check-bg);
+  }
+}
+@media not (prefers-color-scheme: dark) {
+  /* [data-bs-theme=light] { */
+  :root {
+    --bs-focus-ring-color: #000 !important;
+  }
+  .btn-csp {
+    --bs-btn-color: #000;
+    --bs-btn-bg: rgba(255, 255, 255, 0);
+    --bs-btn-border-color: #f8f9fa;
+    --bs-btn-hover-color: #000;
+    --bs-btn-hover-bg: #d3d4d5;
+    --bs-btn-hover-border-color: #c6c7c8;
+    --bs-btn-focus-shadow-rgb: 211,212,213;
+    --bs-btn-active-color: #000;
+    --bs-btn-active-bg: #c6c7c8;
+    --bs-btn-active-border-color: #babbbc;
+    --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+    --bs-btn-disabled-color: #000;
+    --bs-btn-disabled-bg: #f8f9fa;
+    --bs-btn-disabled-border-color: #f8f9fa;
+  }
+  .csp-bubble-area {
+    background-image: url("../img/7373.svg");
+  }
+  .borderedge {
+    border-image-source: url("../img/border_right_bottom_inv.png");
+  }
+  .pagination {
+    --bs-focus-ring-color: #fff;
+    --bs-pagination-active-bg: #c6c7c8;
+    --bs-pagination-active-color: #000;
+    --bs-pagination-active-border-color: #fff;
+    --bs-pagination-color: var(--bs-body-color);
+  }
+  .pborder {
+    border-image-source: url("../img/border.png");
+  }
+  .pborder:checked {
+    background-color: var(--bs-dark);
+    border-color: var(--bs-dark);
+  }
+  .longborder {
+    border-image-source: url("../img/border_lang.png");
+  }
+  .longborder:checked {
+    background-color: var(--bs-dark);
+    border-color: var(--bs-dark);
+  }
+}
 :root {
-    color-scheme: light dark;
-
-    --bs-focus-ring-opacity: 0 !important;
-    --bs-focus-ring-width: 0px !important;
-    --bs-pagination-active-bg: #dee2e6 !important;
+  color-scheme: light dark;
+  --bs-focus-ring-opacity: 0 !important;
+  --bs-focus-ring-width: 0px !important;
+  --bs-pagination-active-bg: #dee2e6 !important;
 }
 
 body {
-    font-family: "IBM Plex Sans", sans-serif;
+  font-family: "IBM Plex Sans", sans-serif;
 }
 
 .form-control:focus {
-    box-shadow: none;
+  box-shadow: none;
 }
 
 .csp-bubble-area {
-    height: 400px;
-    background-size: 100% auto;
+  height: 400px;
+  background-size: 100% auto;
 }
 
 .csp-brand-image {
-    height: 55px;
+  height: 55px;
 }
 
-
 .borderedge {
-    border-image-slice: 32;
-    border-image-repeat: stretch;
-    border-width: medium;
+  border-image-slice: 32;
+  border-image-repeat: stretch;
+  border-width: medium;
 }
 
 .pborder {
-    border-image-slice: 20;
-    border-image-repeat: stretch;
-    border-width: medium;
+  border-image-slice: 20;
+  border-image-repeat: stretch;
+  border-width: medium;
 }
-
 
 .longborder {
-    border-image-slice: 46 30 46 30;
-    border-image-repeat: stretch;
-    border-width: medium;
+  border-image-slice: 46 30 46 30;
+  border-image-repeat: stretch;
+  border-width: medium;
 }
 
-@media (prefers-color-scheme: dark) {
-/* [data-bs-theme=dark] { */
-    :root {
-        --bs-link-color: #d0d0ff;
-        --bs-link-hover-color: #fff;
-    }
-    .pagination {
-        --bs-focus-ring-color: #fff;
-        --bs-pagination-active-bg: #dee2e6;
-        --bs-pagination-active-color: #000;
-        --bs-pagination-active-border-color: #fff;
-    }
-
-    .csp-bubble-area {
-        background-image: linear-gradient(to bottom, rgba(245, 246, 252, 0) 0%, rgba(245, 246, 252, 0) 60%, color-mix(in srgb, var( --bs-body-bg ) 40%, transparent) 85%, color-mix(in srgb, var( --bs-body-bg ) 100%, transparent) 100%), url('../img/7373_inv.svg')
-    }
-
-    .csp-brand-image {
-        filter: invert(1);
-    }
-
-    .borderedge {
-        border-image-source: url("../img/border_right_bottom.png");
-    }
-    .pborder {
-        border-image-source: url("../img/border_inv.png");
-    }
-    .pborder:checked {
-        background-color: var(--bs-form-check-bg);
-    }
-    .longborder {
-        border-image-source: url("../img/border_lang_inv.png");
-    }
-    .longborder:checked {
-        background-color: var(--bs-form-check-bg);
-    }
-
-}
-/* Style rules for light mode */
-@media not (prefers-color-scheme: dark) {
-/* [data-bs-theme=light] { */
-
-        :root {
-        --bs-focus-ring-color: #000 !important;
-        }
-
-    .csp-bubble-area {
-        background-image: url('../img/7373.svg');
-    }
-
-    .pborder {
-        border-image-source: url("../img/border.png");
-    }
-    .pborder:checked {
-        background-color: var(--bs-dark);
-        border-color: var(--bs-dark);
-    }
-    .longborder {
-        border-image-source: url("../img/border_lang_inv.png");
-    }
-    .longborder:checked {
-        background-color: var(--bs-dark);
-        border-color: var(--bs-dark);
-    }
-
-}
+/*# sourceMappingURL=csp.css.map */

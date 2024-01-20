@@ -1,0 +1,57 @@
+@media not (prefers-color-scheme: dark) {
+    /* [data-bs-theme=light] { */
+
+  :root {
+    --bs-focus-ring-color: #000 !important;
+  }
+
+  .btn-csp {
+    --bs-btn-color: #000;
+    --bs-btn-bg: rgba(255, 255, 255, 0);
+    --bs-btn-border-color: #f8f9fa;
+    --bs-btn-hover-color: #000;
+    --bs-btn-hover-bg: #d3d4d5;
+    --bs-btn-hover-border-color: #c6c7c8;
+    --bs-btn-focus-shadow-rgb: 211,212,213;
+    --bs-btn-active-color: #000;
+    --bs-btn-active-bg: #c6c7c8;
+    --bs-btn-active-border-color: #babbbc;
+    --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+    --bs-btn-disabled-color: #000;
+    --bs-btn-disabled-bg: #f8f9fa;
+    --bs-btn-disabled-border-color: #f8f9fa;
+  }
+
+  .csp-bubble-area {
+    background-image: url('../img/7373.svg');
+  }
+
+  .borderedge {
+    border-image-source: url("../img/border_right_bottom_inv.png");
+  }
+
+  .pagination {
+    --bs-focus-ring-color: #fff;
+    --bs-pagination-active-bg: #c6c7c8;
+    --bs-pagination-active-color: #000;
+    --bs-pagination-active-border-color: #fff;
+    --bs-pagination-color: var(--bs-body-color);
+  }
+
+
+  .pborder {
+    border-image-source: url("../img/border.png");
+  }
+  .pborder:checked {
+    background-color: var(--bs-dark);
+    border-color: var(--bs-dark);
+  }
+  .longborder {
+    border-image-source: url("../img/border_lang.png");
+  }
+  .longborder:checked {
+    background-color: var(--bs-dark);
+    border-color: var(--bs-dark);
+  }
+
+}

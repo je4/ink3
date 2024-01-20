@@ -1,0 +1,49 @@
+@use 'csp_dark';
+@use 'csp_light';
+
+:root {
+  color-scheme: light dark;
+
+  --bs-focus-ring-opacity: 0 !important;
+  --bs-focus-ring-width: 0px !important;
+  --bs-pagination-active-bg: #dee2e6 !important;
+}
+
+body {
+  font-family: "IBM Plex Sans", sans-serif;
+}
+
+.form-control:focus {
+  box-shadow: none;
+}
+
+.csp-bubble-area {
+  height: 400px;
+  background-size: 100% auto;
+}
+
+.csp-brand-image {
+  height: 55px;
+}
+
+
+.borderedge {
+  border-image-slice: 32;
+  border-image-repeat: stretch;
+  border-width: medium;
+}
+
+.pborder {
+  border-image-slice: 20;
+  border-image-repeat: stretch;
+  border-width: medium;
+}
+
+
+.longborder {
+  border-image-slice: 46 30 46 30;
+  border-image-repeat: stretch;
+  border-width: medium;
+}
+
+
