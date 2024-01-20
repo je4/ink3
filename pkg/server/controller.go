@@ -27,6 +27,13 @@ import (
 	tmpl "text/template"
 )
 
+var languageNamer = map[string]display.Namer{
+	"de": display.German.Tags(),
+	"en": display.English.Tags(),
+	"fr": display.French.Tags(),
+	"it": display.Italian.Tags(),
+}
+
 type baseData struct {
 	Lang     string
 	RootPath string
@@ -35,6 +42,13 @@ type baseData struct {
 
 func (ctrl *Controller) funcMap() template.FuncMap {
 	fm := sprig.FuncMap()
+
+	fm["langName"] = func(langSrc, langTarget string) string {
+		if namer, ok := languageNamer[langTarget]; ok {
+			return namer.Name(language.MustParse(langSrc))
+		}
+		return langSrc
+	}
 
 	fm["toHTML"] = func(s string) template.HTML {
 		return template.HTML(s)
@@ -141,7 +155,15 @@ func NewController(localAddr, externalAddr string, cert *tls.Certificate, templa
 	})
 
 	router.GET("/search", func(c *gin.Context) {
-		c.Redirect(http.StatusMovedPermanently, "/search/de")
+		cookieLang, _ := c.Request.Cookie("lang")
+		accept := c.Request.Header.Get("Accept-Language")
+		langTag, _ := language.MatchStrings(ctrl.languageMatcher, cookieLang.String(), accept)
+		langBase, _ := langTag.Base()
+		lang := langBase.String()
+		if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
+			lang = "en"
+		}
+		c.Redirect(http.StatusTemporaryRedirect, "/search/"+lang)
 	})
 
 	router.POST("/search/:lang", func(c *gin.Context) {
@@ -150,6 +172,22 @@ func NewController(localAddr, externalAddr string, cert *tls.Certificate, templa
 
 	router.GET("/search/:lang", func(c *gin.Context) {
 		ctrl.searchGridPage(c)
+	})
+
+	router.GET("/chat", func(c *gin.Context) {
+		cookieLang, _ := c.Request.Cookie("lang")
+		accept := c.Request.Header.Get("Accept-Language")
+		langTag, _ := language.MatchStrings(ctrl.languageMatcher, cookieLang.String(), accept)
+		langBase, _ := langTag.Base()
+		lang := langBase.String()
+		if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
+			lang = "en"
+		}
+		c.Redirect(http.StatusTemporaryRedirect, "/chat/"+lang)
+	})
+
+	router.GET("/chat/:lang", func(c *gin.Context) {
+		ctrl.chat(c)
 	})
 
 	router.GET("/detailtext/:signature/:lang", func(c *gin.Context) {
@@ -336,8 +374,7 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		return
 	}
 	searchString := c.Query("search")
-	afterString := c.Query("after")
-	beforeString := c.Query("before")
+	cursorString := c.Query("cursor")
 	collectionsString := c.Query("collections")
 	parts := strings.Split(collectionsString, ",")
 	collectionIDs := []int{}
@@ -424,7 +461,7 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		}
 	}
 
-	result, err := ctrl.client.Search(context.Background(), searchString, []*client.InFacet{collFacet, vocFacet}, []*client.InFilter{}, nil, &afterString, nil, &beforeString)
+	result, err := ctrl.client.Search(context.Background(), searchString, []*client.InFacet{collFacet, vocFacet}, []*client.InFilter{}, nil, nil, nil, &cursorString)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", searchString)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", searchString, err))
@@ -678,10 +715,10 @@ func (ctrl *Controller) detailTextList(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("collection identifier not cat '%s'", theColl.Identifier))
 		return
 	}
-	var afterString, beforeString string
+	var cursorString string
 	cVal := strings.Trim(parts[1], "\" ")
 	var langs = []language.Tag{language.German, language.English, language.French, language.Italian}
-	var en = display.English.Tags()
+	var languageNamerEN = languageNamer["en"]
 	c.Header("Content-Type", "text/plain; charset=utf-8")
 	for {
 		result, err := ctrl.client.Search(
@@ -698,8 +735,9 @@ func (ctrl *Controller) detailTextList(c *gin.Context) {
 				},
 			},
 			nil,
-			&afterString, nil,
-			&beforeString)
+			nil,
+			nil,
+			&cursorString)
 		if err != nil {
 			ctrl.logger.Error().Err(err).Msgf("cannot search for collection '%s'", collectionStr)
 			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for collection '%s': %v", collectionStr, err))
@@ -707,12 +745,47 @@ func (ctrl *Controller) detailTextList(c *gin.Context) {
 		}
 		for _, edge := range result.GetSearch().GetEdges() {
 			for _, lang := range langs {
-				c.Writer.WriteString(fmt.Sprintf("%s/detailtext/%s/%s %s (Document %s)\n", ctrl.externalAddr, edge.Base.Signature, lang.String(), en.Name(lang), edge.Base.Signature))
+				c.Writer.WriteString(fmt.Sprintf("%s/detailtext/%s/%s %s (Document %s)\n", ctrl.externalAddr, edge.Base.Signature, lang.String(), languageNamerEN.Name(lang), edge.Base.Signature))
 			}
 		}
 		if !result.GetSearch().GetPageInfo().GetHasNextPage() {
 			break
 		}
-		afterString = result.GetSearch().GetPageInfo().GetEndCursor()
+		cursorString = result.GetSearch().GetPageInfo().GetEndCursor()
+	}
+}
+
+func (ctrl *Controller) chat(c *gin.Context) {
+	var lang = c.Param("lang")
+	if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
+		lang = "de"
+	}
+
+	var query = c.Param("query")
+
+	templateName := "chat.gohtml"
+	tmpl, err := ctrl.loadHTMLTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
+		return
+	}
+
+	type tplData struct {
+		baseData
+		Query  string
+		Result string
+	}
+	var data = &tplData{
+		baseData: baseData{
+			Lang:     lang,
+			RootPath: "../",
+		},
+	}
+
+	if err := tmpl.Execute(c.Writer, data); err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
+		return
 	}
 }
