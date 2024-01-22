@@ -480,28 +480,65 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		Count   int    `json:"count"`
 		Checked bool   `json:"checked"`
 	}
+	type edge struct {
+		Edge    *client.Search_Search_Edges `json:"edge"`
+		Title   *translate.MultiLangString  `json:"title"`
+		Persons string                      `json:"persons"`
+		Type    string                      `json:"type"`
+		Date    string                      `json:"date"`
+	}
 	data := struct {
 		baseData
-		Result           *client.Search_Search      `json:"result"`
+		//Result           *client.Search_Search      `json:"result"`
+		TotalCount       int64                      `json:"totalCount"`
+		PageInfo         *client.PageInfoFragment   `json:"pageInfo"`
+		Edges            []*edge                    `json:"edges"`
 		MediaserverBase  string                     `json:"mediaserverBase"`
 		RequestQuery     *queryData                 `json:"request"`
 		CollectionFacets []*collFacetType           `json:"collectionFacets"`
 		VocabularyFacets map[string][]*vocFacetType `json:"vocabularyFacets"`
 	}{
-		Result:          result.GetSearch(),
+		//Result:          result.GetSearch(),
 		MediaserverBase: ctrl.mediaserverBase,
+		PageInfo:        result.GetSearch().GetPageInfo(),
 		baseData: baseData{
 			Lang:     lang,
 			Params:   template.URL(c.Request.URL.Query().Encode()),
 			RootPath: "../",
 		},
+		TotalCount: result.GetSearch().GetTotalCount(),
 		RequestQuery: &queryData{
 			Search: searchString,
 		},
 		CollectionFacets: []*collFacetType{},
 		VocabularyFacets: map[string][]*vocFacetType{},
 	}
-	for _, facet := range data.Result.GetFacets() {
+	for _, e := range result.GetSearch().GetEdges() {
+		ne := &edge{
+			Edge:  e,
+			Title: &translate.MultiLangString{},
+			Type:  emptyIfNil(e.Base.GetType()),
+			Date:  emptyIfNil(e.Base.GetDate()),
+		}
+		for _, t := range e.Base.GetTitle() {
+			ne.Title.Set(t.Value, language.MustParse(t.Lang), t.Translated)
+		}
+		var firstPerson string
+		for _, p := range e.Base.GetPerson() {
+			if firstPerson == "" {
+				firstPerson = p.GetName()
+			}
+			if ne.Persons != "" {
+				ne.Persons += "; "
+			}
+			ne.Persons += p.GetName()
+		}
+		if len(ne.Persons) > 30 && len(e.Base.GetPerson()) > 1 {
+			ne.Persons = firstPerson + " et al."
+		}
+		data.Edges = append(data.Edges, ne)
+	}
+	for _, facet := range result.GetSearch().GetFacets() {
 		switch facet.GetName() {
 		case "vocabulary":
 			for _, val := range facet.GetValues() {
@@ -761,7 +798,7 @@ func (ctrl *Controller) chat(c *gin.Context) {
 		lang = "de"
 	}
 
-	var query = c.Param("query")
+	//var query = c.Param("query")
 
 	templateName := "chat.gohtml"
 	tmpl, err := ctrl.loadHTMLTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
