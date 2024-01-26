@@ -14,7 +14,7 @@
     <div class="flex-fill">
         <div class="p-4">
             <div class="row">
-                <div class="col col-md-7">
+                <div class="col col-md-7" style="text-align: center;">
                 {{ range $typedMedia := $source.Media }}
                 <h3>{{ $typedMedia.GetName }}</h3>
                     {{ if eq $typedMedia.GetName "image" }}
@@ -26,8 +26,8 @@
                         {{ end }}
                     {{ else if eq $typedMedia.GetName "video" }}
                         {{ range $media := $typedMedia.GetItems }}
-                            {{- $size := calcAspectSize $media.Width $media.Height 640 320 }}
-                                <table style="width: {{ $size.Width }}px; border: none">
+                            {{- $size := calcAspectSize $media.Width $media.Height 600 480 }}
+                                <table style="width: {{ $size.Width }}px; border: none; margin-left:auto;margin-right:auto;">
                                     <tr>
                                         <td colspan="5">
                                             <video
