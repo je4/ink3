@@ -1,4 +1,5 @@
 <!doctype html>
+{{- $data := . }}
 {{- $lang := .Lang}}
 {{- $root := .RootPath }}
 {{- $mediaserverBase := .MediaserverBase }}
@@ -19,7 +20,7 @@
                     <nav class="navbar navbar-expand-lg">
                         <div class="container-fluid">
                             <div class="d-flex w-100" role="search">
-                                <input id="search" class="form-control longborder me-2" type="search" placeholder="{{ localize "search" $lang }}" aria-label="{{ localize "search" $lang }}" value="{{.RequestQuery.Search}}"/>
+                                <input onkeyup="if (event.keyCode === 13) search('{{ $searchBase }}') " id="search" class="form-control longborder me-2" type="search" placeholder="{{ localize "search" $lang }}" aria-label="{{ localize "search" $lang }}" value="{{.RequestQuery.Search}}"/>
                                 <button onclick="search('{{ $searchBase }}')" class="btn btn-outline-secondary pborder" type="submit">{{ localize "search" $lang }}</button>
                                 <div class="ms-2 d-lg-none d-flex">
                                     <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#facetBar" aria-controls="facetBar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,54 +32,59 @@
                     </nav>
                     <div class="album py-5">
                         <nav class="navbar">
-                            <button {{ if not .PageInfo.HasPreviousPage }}disabled{{ end }} onclick="search('{{ $searchBase }}', '{{ .PageInfo.StartCursor }}')" class="btn btn-outline-secondary pborder" type="submit">
+                            <a href="?cursor={{ .PageInfo.StartCursor }}{{ if ne .Search "" }}&{{ .Search }}{{ end }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn btn-outline-secondary pborder">
                                 <span class="bi-chevron-left"></span>&nbsp;{{ localize "back" $lang }}
-                            </button>
+                            </a>
                             {{ localize "founditems" $lang }}: {{ .TotalCount }}
-                            <button {{ if not .PageInfo.HasNextPage }}disabled{{ end }} onclick="search('{{ $searchBase }}', '{{ .PageInfo.EndCursor }}'), ''" class="btn btn-outline-secondary pborder" type="submit">
+                            <a href="?cursor={{ .PageInfo.EndCursor }}{{ if ne .Search "" }}&{{ .Search }}{{ end }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn btn-outline-secondary pborder">
                                 {{ localize "next" $lang }}&nbsp;<span class="bi-chevron-right"></span>
-                            </button>
+                            </a>
                         </nav>
                         <div class="container-fluid">
                             <div class="row g-12">
                                 {{- range $edge := .Edges }}
                                     <!-- div class="col p-0" style='max-width: 320px; background-image: url("../static/img/frame0.png"); background-size: 100% 100%;' -->
                                     <div class="col p-0" style='max-width: 320px;'>
-                                        <div class="m-3 borderedge" style="transform: rotate(-{{randInt 3 12}}deg)">
-                                            <div style="align-content: center; text-align: center">
-                                                {{- if $edge.Edge.Base.Poster }}
-                                                    {{- $size := calcAspectSize $edge.Edge.Base.Poster.Width $edge.Edge.Base.Poster.Height 200 200 }}
-                                                    <img class="bd-placeholder-img card-img-top" style="width: {{$size.Width}}px; height: {{$size.Height}}px" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $edge.Edge.Base.Poster.URI }}/resize/resize/size200x200/formatPNG/autorotate" />
-                                                {{- else }}
-                                                    <svg class="bd-placeholder-img card-img-top" style="width: 200px; height: 200px;" width="100px" height="200px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em"></text></svg>
-                                                {{- end }}
-                                            </div>
-                                            <div class="card-body pb-2">
-                                                <p class="card-title">
-                                                    #{{ $edge.Edge.Base.Signature }}<br />
-                                                    <b>{{$edge.Title.String}}</b>{{ if ne $edge.Date "" }} ({{ $edge.Date }}){{ end }}<br />
-                                                    {{ $edge.Persons }}
-                                                </p>
-                                                <p class="card-text"></p>
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <div class="btn-group">
-                                                        <button type="button" class="btn btn-sm btn-outline-secondary">Suche</button>
-                                                        <button type="button" class="btn btn-sm btn-outline-secondary">Sammlungsseite</button>
+                                        <a style="color: inherit; text-decoration: inherit;" href="../detail/{{ $edge.Edge.Base.Signature }}/{{ $lang }}?cursor={{ $data.Cursor }}{{ if ne $data.Search "" }}&{{ $data.Search }}{{ end }}">
+                                            <div class="m-2 p-2 borderedge" style="transform: rotate(-{{randInt 3 12}}deg)">
+                                                <div style="align-content: center; text-align: center">
+                                                    {{- if $edge.Edge.Base.Poster }}
+                                                        {{- $size := calcAspectSize $edge.Edge.Base.Poster.Width $edge.Edge.Base.Poster.Height 200 200 }}
+                                                        <img class="bd-placeholder-img card-img-top" style="width: {{$size.Width}}px; height: {{$size.Height}}px" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $edge.Edge.Base.Poster.URI }}/resize/resize/size200x200/formatPNG/autorotate" />
+                                                    {{- else }}
+                                                        <svg class="bd-placeholder-img card-img-top" style="width: 200px; height: 200px;" width="100px" height="200px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em"></text></svg>
+                                                    {{- end }}
+                                                </div>
+                                                <div class="card-body pb-2">
+                                                    <p class="card-title">
+                                                        #{{ $edge.Edge.Base.Signature }}<br />
+                                                        <b>{{$edge.Title.String}}</b>{{ if ne $edge.Date "" }} ({{ $edge.Date }}){{ end }}<br />
+                                                        {{ $edge.Persons }}
+                                                    </p>
+                                                    <!--
+                                                    <p class="card-text"></p>
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div class="btn-group">
+                                                            <button type="button" class="btn btn-sm btn-outline-secondary">Suche</button>
+                                                            <button type="button" class="btn btn-sm btn-outline-secondary">Sammlungsseite</button>
+                                                        </div>
                                                     </div>
+                                                    -->
                                                 </div>
                                             </div>
-                                        </div>
+                                        </a>
                                     </div>
                                 {{- end }}
                             </div>
                         </div>
                         <nav class="navbar">
-                            <button {{ if not .PageInfo.HasPreviousPage }}disabled{{ end }} onclick="search('{{ $searchBase }}', '{{ .PageInfo.StartCursor }}')" class="btn btn-outline-secondary pborder" type="submit">
+                            <a href="?cursor={{ .PageInfo.StartCursor }}{{ if ne .Search "" }}&{{ .Search }}{{ end }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn btn-outline-secondary pborder">
                                 <span class="bi-chevron-left"></span>&nbsp;{{ localize "back" $lang }}
-                            </button>
-                            <button {{ if not .PageInfo.HasNextPage }}disabled{{ end }} onclick="search('{{ $searchBase }}', '{{ .PageInfo.EndCursor }}'), ''" class="btn btn-outline-secondary pborder" type="submit">
+                            </a>
+                            {{ localize "founditems" $lang }}: {{ .TotalCount }}
+                            <a href="?cursor={{ .PageInfo.EndCursor }}{{ if ne .Search "" }}&{{ .Search }}{{ end }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn btn-outline-secondary pborder">
                                 {{ localize "next" $lang }}&nbsp;<span class="bi-chevron-right"></span>
-                            </button>
+                            </a>
                         </nav>
                     </div>
                 </div>

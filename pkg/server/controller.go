@@ -19,6 +19,7 @@ import (
 	"html/template"
 	"io/fs"
 	"net/http"
+	"net/url"
 	"path/filepath"
 	"slices"
 	"strconv"
@@ -38,6 +39,8 @@ type baseData struct {
 	Lang     string
 	RootPath string
 	Params   template.URL
+	Search   template.URL
+	Cursor   string
 }
 
 func (ctrl *Controller) funcMap() template.FuncMap {
@@ -108,7 +111,16 @@ func (ctrl *Controller) funcMap() template.FuncMap {
 	return fm
 }
 
-func NewController(localAddr, externalAddr string, cert *tls.Certificate, templateFS, staticFS fs.FS, dir *directus.Directus, client client.RevCatGraphQLClient, catalogID int, mediaserverBase string, bundle *i18n.Bundle, templateDebug bool, logger zLogger.ZLogger) *Controller {
+func NewController(localAddr, externalAddr string,
+	cert *tls.Certificate,
+	templateFS, staticFS fs.FS,
+	dir *directus.Directus,
+	client client.RevCatGraphQLClient,
+	catalogID int,
+	mediaserverBase string,
+	bundle *i18n.Bundle,
+	templateDebug bool,
+	logger zLogger.ZLogger) *Controller {
 
 	ctrl := &Controller{
 		localAddr:       localAddr,
@@ -125,13 +137,13 @@ func NewController(localAddr, externalAddr string, cert *tls.Certificate, templa
 		client:          client,
 		mediaserverBase: mediaserverBase,
 		bundle:          bundle,
-		languageMatcher: language.NewMatcher([]language.Tag{
-			language.English, // The first language is used as fallback.
-			language.German,
-			language.French,
-			language.Italian,
-		}),
+		languageMatcher: language.NewMatcher(bundle.LanguageTags()),
 	}
+	ctrl.init()
+	return ctrl
+}
+
+func (ctrl *Controller) init() error {
 	router := gin.Default()
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
@@ -163,7 +175,11 @@ func NewController(localAddr, externalAddr string, cert *tls.Certificate, templa
 		if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
 			lang = "en"
 		}
-		c.Redirect(http.StatusTemporaryRedirect, "/search/"+lang)
+		newURL := "/search/" + lang
+		if c.Request.URL.RawQuery != "" {
+			newURL += "?" + c.Request.URL.RawQuery
+		}
+		c.Redirect(http.StatusTemporaryRedirect, newURL)
 	})
 
 	router.POST("/search/:lang", func(c *gin.Context) {
@@ -197,8 +213,24 @@ func NewController(localAddr, externalAddr string, cert *tls.Certificate, templa
 		ctrl.detailTextList(c)
 	})
 
-	router.GET("/detail/:lang", func(c *gin.Context) {
+	router.GET("/detail/:signature/:lang", func(c *gin.Context) {
 		ctrl.detail(c)
+	})
+
+	router.GET("/detail/:signature", func(c *gin.Context) {
+		cookieLang, _ := c.Request.Cookie("lang")
+		accept := c.Request.Header.Get("Accept-Language")
+		langTag, _ := language.MatchStrings(ctrl.languageMatcher, cookieLang.String(), accept)
+		langBase, _ := langTag.Base()
+		lang := langBase.String()
+		if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
+			lang = "en"
+		}
+		newURL := fmt.Sprintf("/detail/%s/%s", c.Param("signature"), lang)
+		if c.Request.URL.RawQuery != "" {
+			newURL += "?" + c.Request.URL.RawQuery
+		}
+		c.Redirect(http.StatusTemporaryRedirect, newURL)
 	})
 
 	var tlsConfig *tls.Config
@@ -212,7 +244,16 @@ func NewController(localAddr, externalAddr string, cert *tls.Certificate, templa
 		Handler:   router,
 		TLSConfig: tlsConfig,
 	}
-	return ctrl
+	return nil
+}
+
+func (ctrl *Controller) langAvailable(lang string) bool {
+	for _, l := range ctrl.bundle.LanguageTags() {
+		if l.String() == lang {
+			return true
+		}
+	}
+	return false
 }
 
 type Controller struct {
@@ -363,7 +404,7 @@ type queryData struct {
 
 func (ctrl *Controller) searchGridPage(c *gin.Context) {
 	var lang = c.Param("lang")
-	if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
+	if !ctrl.langAvailable(lang) {
 		lang = "de"
 	}
 	templateName := "search_grid.gohtml"
@@ -487,6 +528,17 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		Type    string                      `json:"type"`
 		Date    string                      `json:"date"`
 	}
+	currentSearchURL := url.Values{}
+	if searchString != "" {
+		currentSearchURL.Set("search", searchString)
+	}
+	if collectionsString != "" {
+		currentSearchURL.Set("collections", collectionsString)
+	}
+	if vocabularyString != "" {
+		currentSearchURL.Set("vocabulary", vocabularyString)
+	}
+
 	data := struct {
 		baseData
 		//Result           *client.Search_Search      `json:"result"`
@@ -503,6 +555,8 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		PageInfo:        result.GetSearch().GetPageInfo(),
 		baseData: baseData{
 			Lang:     lang,
+			Search:   template.URL(currentSearchURL.Encode()),
+			Cursor:   cursorString,
 			Params:   template.URL(c.Request.URL.Query().Encode()),
 			RootPath: "../",
 		},
@@ -611,7 +665,7 @@ var textTemplate *tmpl.Template
 
 func (ctrl *Controller) detailText(c *gin.Context) {
 	var lang = c.Param("lang")
-	if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
+	if !ctrl.langAvailable(lang) {
 		lang = "de"
 	}
 	templateName := "detail_text.gotmpl"
@@ -665,7 +719,7 @@ func (ctrl *Controller) detailText(c *gin.Context) {
 
 func (ctrl *Controller) detail(c *gin.Context) {
 	var lang = c.Param("lang")
-	if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
+	if !ctrl.langAvailable(lang) {
 		lang = "de"
 	}
 	templateName := "detail.gohtml"
