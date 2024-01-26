@@ -109,6 +109,16 @@ body {
   font-family: "IBM Plex Sans", sans-serif;
 }
 
+.masked img {
+  height: 200px;
+  width: 200px;
+  object-fit: cover;
+  -webkit-mask-size: cover;
+  mask-size: cover;
+  -webkit-mask-image: url(../img/image_mask.png);
+  mask-image: url(../img/image_mask.png);
+}
+
 .form-control:focus {
   box-shadow: none;
 }

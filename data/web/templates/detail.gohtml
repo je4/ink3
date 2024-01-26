@@ -1,0 +1,82 @@
+<!doctype html>
+{{- $lang := .Lang}}
+{{- $root := .RootPath }}
+{{- $source := .Source }}
+{{- $mediaserverBase := .MediaserverBase }}
+<html lang="{{ $lang }}">
+{{ template "head.gohtml" . }}
+
+<body class="w-100">
+</body>
+{{ template "nav.gohtml" . }}
+
+<div class="container-fluid p-0 d-flex h-100">
+    <div class="flex-fill">
+        <div class="p-4">
+            <div class="row">
+                <div class="col col-md-7">
+                {{ range $typedMedia := $source.Media }}
+                <h3>{{ $typedMedia.GetName }}</h3>
+                    {{ if eq $typedMedia.GetName "image" }}
+                        {{ range $media := $typedMedia.GetItems }}
+                            <span class="masked">
+                                {{- $size := calcAspectSize $media.Width $media.Height 200 200 }}
+                                <img class="bd-placeholder-img card-img-top" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}/resize/size200x200/formatPNG/autorotate" />
+                            </span>
+                        {{ end }}
+                    {{ else if eq $typedMedia.GetName "video" }}
+                        {{ range $media := $typedMedia.GetItems }}
+                            {{- $size := calcAspectSize $media.Width $media.Height 640 320 }}
+                                <table style="width: {{ $size.Width }}px; border: none">
+                                    <tr>
+                                        <td colspan="5">
+                                            <video
+                                                id="my-video"
+                                                class="video-js"
+                                                controls
+                                                preload="auto"
+                                                width="{{ $size.Width }}"
+                                                height="{{ $size.Height }}"
+                                                poster="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}$$timeshot$$3/resize/size{{ $size.Width }}x{{ $size.Height }}/formatPNG/autorotate"
+                                                data-setup="{}"
+                                            >
+                                            <source src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}$$web/master" type="video/mp4" />
+                                            <p class="vjs-no-js">
+                                                To view this video please enable JavaScript, and consider upgrading to a
+                                                web browser that
+                                                <a href="https://videojs.com/html5-video-support/" target="_blank"
+                                                >supports HTML5 video</a
+                                                >
+                                            </p>
+                                          </video>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        {{ range $num := list 3 8 12 17 22 }}
+                                            <td>
+                                                <img class="bd-placeholder-img card-img-top" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}$$timeshot$${{ $num }}/resize/size{{ div $size.Width 5 }}x{{ div $size.Height 5 }}/formatPNG/autorotate" />
+                                            </td>
+                                        {{ end }}
+                                    </tr>
+                                </table>
+                        {{ end }}
+                    {{ end }}
+                {{ end }}
+                </div>
+                <div class="col col-md-5">
+                    lskjfsdklfj
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{{ template "footer.gohtml" . }}
+<script src="../../static/bootstrap/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script>
+    window.HELP_IMPROVE_VIDEOJS = false;
+</script>
+<script src="../../static/videojs/video.min.js"></script>
+</body>
+</html>

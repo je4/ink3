@@ -111,16 +111,7 @@ func (ctrl *Controller) funcMap() template.FuncMap {
 	return fm
 }
 
-func NewController(localAddr, externalAddr string,
-	cert *tls.Certificate,
-	templateFS, staticFS fs.FS,
-	dir *directus.Directus,
-	client client.RevCatGraphQLClient,
-	catalogID int,
-	mediaserverBase string,
-	bundle *i18n.Bundle,
-	templateDebug bool,
-	logger zLogger.ZLogger) *Controller {
+func NewController(localAddr, externalAddr string, cert *tls.Certificate, templateFS, staticFS fs.FS, dir *directus.Directus, client client.RevCatGraphQLClient, catalogID int, mediaserverBase string, bundle *i18n.Bundle, templateDebug bool, logger zLogger.ZLogger) (*Controller, error) {
 
 	ctrl := &Controller{
 		localAddr:       localAddr,
@@ -139,8 +130,10 @@ func NewController(localAddr, externalAddr string,
 		bundle:          bundle,
 		languageMatcher: language.NewMatcher(bundle.LanguageTags()),
 	}
-	ctrl.init()
-	return ctrl
+	if err := ctrl.init(); err != nil {
+		return nil, errors.Wrap(err, "cannot initialize controller")
+	}
+	return ctrl, nil
 }
 
 func (ctrl *Controller) init() error {
@@ -188,22 +181,6 @@ func (ctrl *Controller) init() error {
 
 	router.GET("/search/:lang", func(c *gin.Context) {
 		ctrl.searchGridPage(c)
-	})
-
-	router.GET("/chat", func(c *gin.Context) {
-		cookieLang, _ := c.Request.Cookie("lang")
-		accept := c.Request.Header.Get("Accept-Language")
-		langTag, _ := language.MatchStrings(ctrl.languageMatcher, cookieLang.String(), accept)
-		langBase, _ := langTag.Base()
-		lang := langBase.String()
-		if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
-			lang = "en"
-		}
-		c.Redirect(http.StatusTemporaryRedirect, "/chat/"+lang)
-	})
-
-	router.GET("/chat/:lang", func(c *gin.Context) {
-		ctrl.chat(c)
 	})
 
 	router.GET("/detailtext/:signature/:lang", func(c *gin.Context) {
@@ -281,13 +258,13 @@ func (ctrl *Controller) Start() error {
 			fmt.Printf("starting server at http://%s\n", ctrl.localAddr)
 			if err := ctrl.srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 				// unexpected error. port in use?
-				fmt.Errorf("server on '%s' ended: %v", ctrl.localAddr, err)
+				ctrl.logger.Err(err).Msgf("server on '%s' ended", ctrl.localAddr)
 			}
 		} else {
 			fmt.Printf("starting server at https://%s\n", ctrl.localAddr)
 			if err := ctrl.srv.ListenAndServeTLS("", ""); !errors.Is(err, http.ErrServerClosed) {
 				// unexpected error. port in use?
-				fmt.Errorf("server on '%s' ended: %v", ctrl.localAddr, err)
+				ctrl.logger.Err(err).Msgf("server on '%s' ended", ctrl.localAddr)
 			}
 		}
 		// always returns error. ErrServerClosed on graceful close
@@ -310,7 +287,7 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 	}
 
 	templateName := "index.gohtml"
-	tmpl, err := ctrl.loadHTMLTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
+	indexTemplate, err := ctrl.loadHTMLTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
@@ -351,7 +328,7 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 		data.Collections = append(data.Collections, coll)
 	}
 
-	if err := tmpl.Execute(c.Writer, data); err != nil {
+	if err := indexTemplate.Execute(c.Writer, data); err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
 		return
@@ -408,7 +385,7 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		lang = "de"
 	}
 	templateName := "search_grid.gohtml"
-	tmpl, err := ctrl.loadHTMLTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
+	gridTemplate, err := ctrl.loadHTMLTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
@@ -654,14 +631,12 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		}
 	}
 
-	if err := tmpl.Execute(c.Writer, data); err != nil {
+	if err := gridTemplate.Execute(c.Writer, data); err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
 		return
 	}
 }
-
-var textTemplate *tmpl.Template
 
 func (ctrl *Controller) detailText(c *gin.Context) {
 	var lang = c.Param("lang")
@@ -723,16 +698,16 @@ func (ctrl *Controller) detail(c *gin.Context) {
 		lang = "de"
 	}
 	templateName := "detail.gohtml"
-	tmpl, err := ctrl.loadHTMLTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
+	textTemplate, err := ctrl.loadHTMLTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
 		return
 	}
-	id := c.Param("id")
+	id := c.Param("signature")
 	if id == "" {
-		ctrl.logger.Error().Err(err).Msgf("id missing")
-		c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("id missing"))
+		ctrl.logger.Error().Err(err).Msgf("signature missing")
+		c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("signature missing"))
 		return
 	}
 
@@ -757,12 +732,12 @@ func (ctrl *Controller) detail(c *gin.Context) {
 		Source: source.MediathekEntries[0],
 		baseData: baseData{
 			Lang:     lang,
-			RootPath: "../",
+			RootPath: "../../",
 		},
 		MediaserverBase: ctrl.mediaserverBase,
 	}
 
-	if err := tmpl.Execute(c.Writer, data); err != nil {
+	if err := textTemplate.Execute(c.Writer, data); err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
 		return
@@ -836,47 +811,12 @@ func (ctrl *Controller) detailTextList(c *gin.Context) {
 		}
 		for _, edge := range result.GetSearch().GetEdges() {
 			for _, lang := range langs {
-				c.Writer.WriteString(fmt.Sprintf("%s/detailtext/%s/%s %s (Document %s)\n", ctrl.externalAddr, edge.Base.Signature, lang.String(), languageNamerEN.Name(lang), edge.Base.Signature))
+				_, _ = c.Writer.WriteString(fmt.Sprintf("%s/detailtext/%s/%s %s (Document %s)\n", ctrl.externalAddr, edge.Base.Signature, lang.String(), languageNamerEN.Name(lang), edge.Base.Signature))
 			}
 		}
 		if !result.GetSearch().GetPageInfo().GetHasNextPage() {
 			break
 		}
 		cursorString = result.GetSearch().GetPageInfo().GetEndCursor()
-	}
-}
-
-func (ctrl *Controller) chat(c *gin.Context) {
-	var lang = c.Param("lang")
-	if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
-		lang = "de"
-	}
-
-	//var query = c.Param("query")
-
-	templateName := "chat.gohtml"
-	tmpl, err := ctrl.loadHTMLTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
-	if err != nil {
-		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
-		return
-	}
-
-	type tplData struct {
-		baseData
-		Query  string
-		Result string
-	}
-	var data = &tplData{
-		baseData: baseData{
-			Lang:     lang,
-			RootPath: "../",
-		},
-	}
-
-	if err := tmpl.Execute(c.Writer, data); err != nil {
-		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
-		return
 	}
 }

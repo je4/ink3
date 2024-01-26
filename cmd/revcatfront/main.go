@@ -165,7 +165,7 @@ func main() {
 		return next(ctx, req, gqlInfo, res)
 	})
 
-	ctrl := server.NewController(
+	ctrl, err := server.NewController(
 		conf.LocalAddr,
 		conf.ExternalAddr,
 		cert,
@@ -178,6 +178,9 @@ func main() {
 		bundle,
 		conf.Templates != "",
 		logger)
+	if err != nil {
+		logger.Fatal().Msgf("cannot create controller: %v", err)
+	}
 	ctrl.Start()
 
 	done := make(chan os.Signal, 1)
