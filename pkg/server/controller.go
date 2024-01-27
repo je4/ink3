@@ -141,7 +141,7 @@ func (ctrl *Controller) init() error {
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
 	router.Use(cors.New(corsConfig))
-	router.StaticFS("/static", http.FS(ctrl.staticFS))
+	router.StaticFS("/static", NewDefaultIndexFS(http.FS(ctrl.staticFS), "index.html"))
 
 	router.GET("/", func(c *gin.Context) {
 		cookieLang, _ := c.Request.Cookie("lang")

@@ -11,4 +11,5 @@ import "embed"
 //go:embed js/d3.js js/d3bubble.js js/search.js js/chat.js
 //go:embed flag-icons/css/flag-icons.min.css flag-icons/flags/4x3/de.svg flag-icons/flags/4x3/gb-eng.svg flag-icons/flags/4x3/fr.svg flag-icons/flags/4x3/it.svg
 //go:embed videojs/video-js.min.css videojs/video.min.js
+//go:embed pdfjs/lib/*
 var FS embed.FS

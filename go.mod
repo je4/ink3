@@ -8,6 +8,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/Yamashou/gqlgenc v0.16.2
 	github.com/gin-contrib/cors v1.5.0
+	github.com/gin-gonic/contrib v0.0.0-20221130124618-7e01895a63f2
 	github.com/gin-gonic/gin v1.9.1
 	github.com/gosimple/slug v1.13.1
 	github.com/je4/basel-collections/v2 v2.0.0

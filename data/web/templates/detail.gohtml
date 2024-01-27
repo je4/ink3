@@ -60,6 +60,39 @@
                                     </tr>
                                 </table>
                         {{ end }}
+                    {{ else if eq $typedMedia.GetName "pdf" }}
+                        <script src="{{ $root }}static/pdfjs/lib/webviewer.min.js"></script>
+                        {{ range $id, $media := $typedMedia.GetItems }}
+                            <div id="viewer-{{ $id }}" style="width:100%; height:800px; margin-left:auto;margin-right:auto;"></div>
+                            <script>
+                                var viewerElement = document.getElementById('viewer-{{ $id }}');
+                                WebViewer({
+                                    path: '{{ $root }}static/pdfjs/lib/',
+                                    initialDoc: '{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}/master',
+                                    licenseKey: 'pLGhQ7NNK8uftoPoSmEn',
+                                }, document.getElementById('viewer-{{ $id }}'))
+                                    .then(instance => {
+                                        // now you can access APIs through the WebViewer instance
+                                        const { Core, UI, Feature } = instance;
+                                        if(darkMode) {
+                                            UI.setTheme('dark');
+                                        }
+
+                                        instance.UI.setLanguage('{{ $lang }}');
+                                        instance.UI.disableFeatures([Feature.Annotations, Feature.FilePicker, Feature.NotesPanel]);
+                                        instance.UI.openElements(['leftPanel']);
+                                        // adding an event listener for when a document is loaded
+                                        Core.documentViewer.addEventListener('documentLoaded', () => {
+                                            console.log('document loaded');
+                                        });
+
+                                        // adding an event listener for when the page number has changed
+                                        Core.documentViewer.addEventListener('pageNumberUpdated', (pageNumber) => {
+                                            console.log(`Page number is: ${pageNumber}`);
+                                        });
+                                    });
+                            </script>
+                        {{ end }}
                     {{ end }}
                 {{ end }}
                 </div>
