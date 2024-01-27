@@ -73,10 +73,10 @@
 
 
 {{ template "footer.gohtml" . }}
-<script src="../../static/bootstrap/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script src="{{ .RootPath }}static/bootstrap/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 <script>
     window.HELP_IMPROVE_VIDEOJS = false;
 </script>
-<script src="../../static/videojs/video.min.js"></script>
+<script src="{{ .RootPath }}static/videojs/video.min.js"></script>
 </body>
 </html>
