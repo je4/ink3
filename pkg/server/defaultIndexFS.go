@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"net/http"
 	"path/filepath"
+	"slices"
 	"strings"
 )
 
@@ -25,7 +26,7 @@ func (d *DefaultIndexFS) Open(name string) (http.File, error) {
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
 			switch {
-			case filepath.ToSlash(filepath.Dir(name)) == "/pdfjs/lib":
+			case slices.Contains([]string{"/pdfjs/lib", "/pdfjs/lib/assets/fonts", "/pdfjs/lib/chunks", "/pdfjs/lib/i18n"}, filepath.ToSlash(filepath.Dir(name))):
 				name = "/pdfjs/lib/ui/" + strings.TrimPrefix(name, "/pdfjs/lib/")
 			case strings.HasPrefix(name, "/pdfjs/core/"):
 				name = "/pdfjs/lib/core/" + strings.TrimPrefix(name, "/pdfjs/core/")

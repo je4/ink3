@@ -11,6 +11,12 @@
     --bs-pagination-active-border-color: #fff;
     --bs-pagination-color: var(--bs-body-color);
   }
+  .accordion {
+    --bs-accordion-btn-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+    --bs-accordion-btn-active-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+    --bs-accordion-active-color: #fff;
+    --bs-accordion-color: #a0a0a0;
+  }
   .btn-csp {
     --bs-btn-color: #fff;
     --bs-btn-bg: rgba(0, 0, 0, 0);
@@ -83,6 +89,12 @@
     --bs-pagination-active-border-color: #fff;
     --bs-pagination-color: var(--bs-body-color);
   }
+  .accordion {
+    --bs-accordion-btn-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000000'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+    --bs-accordion-btn-active-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000000'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+    --bs-accordion-active-color: #000;
+    --bs-accordion-color: #0a0a0a;
+  }
   .pborder {
     border-image-source: url("../img/border.png");
   }
@@ -103,6 +115,20 @@
   --bs-focus-ring-opacity: 0 !important;
   --bs-focus-ring-width: 0px !important;
   --bs-pagination-active-bg: #dee2e6 !important;
+}
+
+.accordion {
+  --bs-accordion-bg: transparent !important;
+  --bs-accordion-active-bg: transparent !important;
+  --bs-accordion-border-color: transparent !important;
+  --bs-accordion-border-width: 0px !important;
+  --bs-accordion-border-radius: 0px !important;
+  --bs-accordion-btn-focus-border-color: transparent !important;
+  --bs-accordion-btn-focus-box-shadow: none !important;
+}
+
+.accordion-body {
+  padding-top: 0px !important;
 }
 
 body {

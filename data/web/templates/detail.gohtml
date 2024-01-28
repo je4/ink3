@@ -15,86 +15,9 @@
         <div class="p-4">
             <div class="row">
                 <div class="col col-md-7" style="text-align: center;">
-                {{ range $typedMedia := $source.Media }}
-                <h3>{{ $typedMedia.GetName }}</h3>
-                    {{ if eq $typedMedia.GetName "image" }}
-                        {{ range $media := $typedMedia.GetItems }}
-                            <span class="masked">
-                                {{- $size := calcAspectSize $media.Width $media.Height 200 200 }}
-                                <img class="bd-placeholder-img card-img-top" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}/resize/size200x200/formatPNG/autorotate" />
-                            </span>
-                        {{ end }}
-                    {{ else if eq $typedMedia.GetName "video" }}
-                        {{ range $media := $typedMedia.GetItems }}
-                            {{- $size := calcAspectSize $media.Width $media.Height 600 480 }}
-                                <table style="width: {{ $size.Width }}px; border: none; margin-left:auto;margin-right:auto;">
-                                    <tr>
-                                        <td colspan="5">
-                                            <video
-                                                id="my-video"
-                                                class="video-js"
-                                                controls
-                                                preload="auto"
-                                                width="{{ $size.Width }}"
-                                                height="{{ $size.Height }}"
-                                                poster="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}$$timeshot$$3/resize/size{{ $size.Width }}x{{ $size.Height }}/formatPNG/autorotate"
-                                                data-setup="{}"
-                                            >
-                                            <source src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}$$web/master" type="video/mp4" />
-                                            <p class="vjs-no-js">
-                                                To view this video please enable JavaScript, and consider upgrading to a
-                                                web browser that
-                                                <a href="https://videojs.com/html5-video-support/" target="_blank"
-                                                >supports HTML5 video</a
-                                                >
-                                            </p>
-                                          </video>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        {{ range $num := list 3 8 12 17 22 }}
-                                            <td>
-                                                <img class="bd-placeholder-img card-img-top" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}$$timeshot$${{ $num }}/resize/size{{ div $size.Width 5 }}x{{ div $size.Height 5 }}/formatPNG/autorotate" />
-                                            </td>
-                                        {{ end }}
-                                    </tr>
-                                </table>
-                        {{ end }}
-                    {{ else if eq $typedMedia.GetName "pdf" }}
-                        <script src="{{ $root }}static/pdfjs/lib/webviewer.min.js"></script>
-                        {{ range $id, $media := $typedMedia.GetItems }}
-                            <div id="viewer-{{ $id }}" style="width:100%; height:800px; margin-left:auto;margin-right:auto;"></div>
-                            <script>
-                                var viewerElement = document.getElementById('viewer-{{ $id }}');
-                                WebViewer({
-                                    path: '{{ $root }}static/pdfjs/lib/',
-                                    initialDoc: '{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}/master',
-                                    licenseKey: 'pLGhQ7NNK8uftoPoSmEn',
-                                }, document.getElementById('viewer-{{ $id }}'))
-                                    .then(instance => {
-                                        // now you can access APIs through the WebViewer instance
-                                        const { Core, UI, Feature } = instance;
-                                        if(darkMode) {
-                                            UI.setTheme('dark');
-                                        }
-
-                                        instance.UI.setLanguage('{{ $lang }}');
-                                        instance.UI.disableFeatures([Feature.Annotations, Feature.FilePicker, Feature.NotesPanel]);
-                                        instance.UI.openElements(['leftPanel']);
-                                        // adding an event listener for when a document is loaded
-                                        Core.documentViewer.addEventListener('documentLoaded', () => {
-                                            console.log('document loaded');
-                                        });
-
-                                        // adding an event listener for when the page number has changed
-                                        Core.documentViewer.addEventListener('pageNumberUpdated', (pageNumber) => {
-                                            console.log(`Page number is: ${pageNumber}`);
-                                        });
-                                    });
-                            </script>
-                        {{ end }}
-                    {{ end }}
-                {{ end }}
+                    {{ template "detail_image.gohtml" . }}
+                    {{ template "detail_video.gohtml" . }}
+                    {{ template "detail_pdf.gohtml" . }}
                 </div>
                 <div class="col col-md-5">
                     lskjfsdklfj

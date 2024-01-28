@@ -1,0 +1,83 @@
+{{- $mediaserverBase := .MediaserverBase }}
+{{- $source := .Source }}
+{{- $root := .RootPath }}
+{{- $lang := .Lang }}
+{{ range $typedMedia := $source.Media }}
+    {{ if eq $typedMedia.GetName "pdf" }}
+        <script src="{{ $root }}static/pdfjs/lib/webviewer.min.js"></script>
+        <script>
+            let viewers = new Map();
+            function showPDF(id, url) {
+                //var viewerElement = document.getElementById('viewer-' + id);
+                WebViewer({
+                    path: '{{ $root }}static/pdfjs/lib/',
+                    initialDoc: url,
+                    licenseKey: 'pLGhQ7NNK8uftoPoSmEn',
+                }, document.getElementById(id))
+                    .then(instance => {
+                        viewers.set(id, instance);
+                        // now you can access APIs through the WebViewer instance
+                        const { Core, UI, Feature } = instance;
+                        if(darkMode) {
+                            UI.setTheme('dark');
+                        }
+
+                        UI.setLanguage('{{ $lang }}');
+                        UI.disableFeatures([Feature.Annotations, Feature.FilePicker, Feature.NotesPanel]);
+                        //instance.UI.openElements(['leftPanel']);
+                        // adding an event listener for when a document is loaded
+                        Core.documentViewer.addEventListener('documentLoaded', () => {
+                            console.log('document loaded');
+                        });
+
+                        // adding an event listener for when the page number has changed
+                        /*
+                        Core.documentViewer.addEventListener('pageNumberUpdated', (pageNumber) => {
+                            console.log(`Page number is: ${pageNumber}`);
+                        });
+                        */
+                    });
+            }
+        </script>
+        <div class="accordion" id="accordionPDF">
+        {{ range $id, $media := $typedMedia.GetItems }}
+            <div class="accordion-item borderedge">
+                <h2 class="accordion-header"    >
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePDF{{ $id }}" aria-expanded="{{ if eq $id 0 }}true{{ else }}false{{ end }}" aria-controls="collapsePDF{{ $id }}">
+                        PDF #{{ $id }}{{ if ne $media.Name "" }} - {{ $media.Name }}{{ end }}
+                    </button>
+                </h2>
+                <div id="collapsePDF{{ $id }}" class="accordion-collapse collapse{{ if eq $id 0 }} show{{ end }}" data-bs-parent="#accordionPDF">
+                    <div class="accordion-body">
+            <div id="viewer-{{ $id }}" style="width:100%; height:800px; margin-left:auto;margin-right:auto;"></div>
+                        {{ $webViewerVar := printf "webViewer%d" $id}}
+                        <script>
+                        {{ if eq $id 0 }}
+                            showPDF('viewer-{{ $id }}', '{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}/master');
+                        {{ end }}
+
+                        {{ $viewerVar := printf "viewer%d" $id}}
+                        let {{ $viewerVar | toJS }} = document.getElementById("viewer-{{ $id }}");
+                        {{ $var := printf "collapsePDF%d" $id }}
+                        let {{ $var | toJS }} = document.getElementById("collapsePDF{{ $id }}");
+                        {{ $var | toJS }}.addEventListener("hide.bs.collapse", function () {
+                            console.log("hide.bs.collapse " + {{ $id }});
+                            let viewer = viewers.get("viewer-{{ $id }}");
+                            if (viewer) {
+                                viewers.delete("viewer-{{ $id }}");
+                                viewer.dispose();
+                            }
+                            {{ $viewerVar | toJS }}.innerHTML = "";
+                        });
+                        {{ $var | toJS }}.addEventListener("show.bs.collapse", function () {
+                            console.log("show.bs.collapse " + {{ $id }});
+                            showPDF('viewer-{{ $id }}', '{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}/master');
+                        });
+                        </script>
+                    </div>
+                </div>
+            </div>
+        {{ end }}
+        </div>
+    {{ end }}
+{{ end }}
