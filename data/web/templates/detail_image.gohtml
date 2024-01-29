@@ -1,12 +1,16 @@
 {{- $mediaserverBase := .MediaserverBase }}
 {{- $source := .Source }}
-{{ range $typedMedia := $source.Media }}
-    {{ if eq $typedMedia.GetName "image" }}
-        {{ range $media := $typedMedia.GetItems }}
+{{- range $typedMedia := $source.Media }}
+    {{- if eq $typedMedia.GetName "image" }}
+        {{- if gt (len $typedMedia.GetItems) 0 }}
+        <div class="borderedge mt-2">
+        {{- range $media := $typedMedia.GetItems }}
             <span class="masked">
                 {{- $size := calcAspectSize $media.Width $media.Height 200 200 }}
                 <img class="bd-placeholder-img card-img-top" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}/resize/size200x200/formatPNG/autorotate" />
             </span>
-        {{ end }}
-    {{ end }}
-{{ end }}
+        {{- end }}
+       </div>
+        {{- end }}
+    {{- end }}
+{{- end }}

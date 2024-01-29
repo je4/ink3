@@ -30,6 +30,8 @@ type LocaleConfig struct {
 type RevCatFrontConfig struct {
 	LocalAddr    string `toml:"localaddr"`
 	ExternalAddr string `toml:"externaladdr"`
+	SearchAddr   string `toml:"searchaddr"`
+	DetailAddr   string `toml:"detailaddr"`
 	TLSCert      string `toml:"tlscert"`
 	TLSKey       string `toml:"tlskey"`
 

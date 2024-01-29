@@ -3,6 +3,8 @@ loglevel = "DEBUG"
 
 localaddr = "localhost:8444"
 externaladdr = "https://localhost:8444"
+searchaddr = "https://localhost:8444"
+detailaddr = "https://localhost:8444"
 
 templates = "data/web/templates"
 staticfiles = "data/web/static"

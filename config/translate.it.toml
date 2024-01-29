@@ -1,3 +1,19 @@
-[document]
-hash = "sha1-2ccbe1660a99984dace3e1aba156d3ac2516f4e5"
-other = "Documento"
+[autotranslatefrom]
+hash = "sha1-b9bbe1966c550ae1ceca980583b95815bdae2192"
+other = "tradotto automaticamente dalla lingua"
+
+[deen]
+hash = "sha1-eba581bb5237a933e08eb942b6662835e1072041"
+other = "tedesco"
+
+[enen]
+hash = "sha1-95abe01c1cfd94f2a7d59df0439707c40a66187e"
+other = "inglese"
+
+[fren]
+hash = "sha1-768d2c61bade0a5ff0b5e5b721bdcc955d7b210f"
+other = "francese"
+
+[iten]
+hash = "sha1-8a9b000dcba62bc43c44698da1f6af909d72bd91"
+other = "italiana"

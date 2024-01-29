@@ -9,7 +9,11 @@
 <body class="w-100">
 </body>
 {{ template "nav.gohtml" . }}
-
+<div class="m-2">
+<a href="{{ .Search }}" class="btn btn-outline-secondary pborder">
+    <span class="bi-chevron-left"></span>&nbsp;{{ localize "backtosearch" $lang }}
+</a>
+</div>
 <div class="container-fluid p-0 d-flex h-100">
     <div class="flex-fill">
         <div class="p-4">
@@ -20,7 +24,47 @@
                     {{ template "detail_pdf.gohtml" . }}
                 </div>
                 <div class="col col-md-5">
-                    lskjfsdklfj
+                    {{- $title := multiLang $source.Base.Title }}
+                    <h1>
+                        {{ $title.String }}
+                        {{ if $source.Base.Date }}<br /><span style="font-weight: normal;">({{ $source.Base.Date }})</span>{{ end }}
+                    </h1>
+                    <div class="p-2 borderedge">
+                    <span style="font-weight: bold;">
+                    {{- range $key, $p := $source.Base.Person}}
+                        {{- if hasPrefix "artist" $p.Role}}
+                            {{- if gt $key 0}}; {{end}}{{$p.Name}}
+                        {{- end}}
+                    {{- end}}
+                    </span>
+                    {{- range $p := $source.Base.Person}}
+                        {{- if not (hasPrefix "artist" $p.Role)}}
+                            {{$p.Name}} ({{camelcase (trimPrefix "performer:" $p.Role)}})<br />
+                        {{- end}}
+                    {{- end}}
+                    </div>
+                    {{- if gt (len $source.Notes) 0 }}
+                    <div class="p-2 borderedge">
+                    {{range $note := $source.Notes}}
+                        <div style="font-weight: bold;">{{$note.Title}}</div>
+                        <div style="text-align: justify;">{{$note.Note}}</div>
+                    {{end}}
+                    </div>
+                    {{- end }}
+
+                    {{- $abstract := multiLang $source.Abstract }}
+                    {{- $abstractStr := $abstract.GetStr $lang }}
+                    {{- $abstractOriginalLang := $abstract.GetNativeLanguage  }}
+                    {{- if ne $abstractStr "" }}
+                    <div class="mt-4 p-2 borderedge" style="text-align: justify;">
+                        {{ $abstractStr }}
+                        {{- if ne $abstractOriginalLang.String $lang }}
+                            <div class="alert alert-secondary p-1 mt-1" role="alert" style="font-size: smaller;">
+                                {{ localize "autotranslatefrom" $lang }} {{ localize (printf "%sen" $abstractOriginalLang.String) $lang }}
+                            </div>
+                        {{- end }}
+                    </div>
+                        {{- end }}
                 </div>
             </div>
         </div>

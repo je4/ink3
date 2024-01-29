@@ -4,6 +4,7 @@
 {{- $root := .RootPath }}
 {{- $mediaserverBase := .MediaserverBase }}
 {{- $searchBase := join "" (list $root "search/" $lang)}}
+{{- $detailAddr := .DetailAddr }}
 <html lang="{{ $lang }}">
 
 {{template "head.gohtml" . }}
@@ -45,7 +46,7 @@
                                 {{- range $edge := .Edges }}
                                     <!-- div class="col p-0" style='max-width: 320px; background-image: url("../static/img/frame0.png"); background-size: 100% 100%;' -->
                                     <div class="col p-0" style='max-width: 320px;'>
-                                        <a style="color: inherit; text-decoration: inherit;" href="../detail/{{ $edge.Edge.Base.Signature }}/{{ $lang }}?{{ if ne $data.Cursor "" }}cursor={{ $data.Cursor }}{{ end }}{{ if ne $data.Search "" }}&{{ $data.Search }}{{ end }}">
+                                        <a style="color: inherit; text-decoration: inherit;" href="{{ $detailAddr }}/detail/{{ $edge.Edge.Base.Signature }}/{{ $lang }}?{{ if ne $data.Cursor "" }}cursor={{ $data.Cursor }}{{ end }}{{ if ne $data.Search "" }}&{{ $data.Search }}{{ end }}">
                                             <div class="m-2 p-2 borderedge" style="transform: rotate(-{{randInt 3 12}}deg)">
                                                 <div style="align-content: center; text-align: center">
                                                     {{- if $edge.Edge.Base.Poster }}

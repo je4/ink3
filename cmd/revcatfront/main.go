@@ -168,6 +168,8 @@ func main() {
 	ctrl, err := server.NewController(
 		conf.LocalAddr,
 		conf.ExternalAddr,
+		conf.SearchAddr,
+		conf.DetailAddr,
 		cert,
 		templateFS,
 		staticFS,

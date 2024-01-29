@@ -4,6 +4,7 @@
     {{ if eq $typedMedia.GetName "video" }}
         {{ range $media := $typedMedia.GetItems }}
             {{- $size := calcAspectSize $media.Width $media.Height 600 480 }}
+        <div class="borderedge mt-2">
             <table style="width: {{ $size.Width }}px; border: none; margin-left:auto;margin-right:auto;">
                 <tr>
                     <td colspan="5">
@@ -36,6 +37,7 @@
                     {{ end }}
                 </tr>
             </table>
+        </div>
         {{ end }}
     {{ end }}
 {{ end }}

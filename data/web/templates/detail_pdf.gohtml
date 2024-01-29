@@ -44,7 +44,7 @@
             <div class="accordion-item borderedge">
                 <h2 class="accordion-header"    >
                     <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePDF{{ $id }}" aria-expanded="{{ if eq $id 0 }}true{{ else }}false{{ end }}" aria-controls="collapsePDF{{ $id }}">
-                        PDF #{{ $id }}{{ if ne $media.Name "" }} - {{ $media.Name }}{{ end }}
+                        PDF #{{ add $id 1 }}{{ if ne $media.Name "" }} - {{ $media.Name }}{{ end }}
                     </button>
                 </h2>
                 <div id="collapsePDF{{ $id }}" class="accordion-collapse collapse{{ if eq $id 0 }} show{{ end }}" data-bs-parent="#accordionPDF">

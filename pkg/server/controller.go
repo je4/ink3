@@ -36,11 +36,13 @@ var languageNamer = map[string]display.Namer{
 }
 
 type baseData struct {
-	Lang     string
-	RootPath string
-	Params   template.URL
-	Search   template.URL
-	Cursor   string
+	Lang       string
+	RootPath   string
+	Params     template.URL
+	Search     template.URL
+	Cursor     string
+	SearchAddr string
+	DetailAddr string
 }
 
 func (ctrl *Controller) funcMap() template.FuncMap {
@@ -111,11 +113,13 @@ func (ctrl *Controller) funcMap() template.FuncMap {
 	return fm
 }
 
-func NewController(localAddr, externalAddr string, cert *tls.Certificate, templateFS, staticFS fs.FS, dir *directus.Directus, client client.RevCatGraphQLClient, catalogID int, mediaserverBase string, bundle *i18n.Bundle, templateDebug bool, logger zLogger.ZLogger) (*Controller, error) {
+func NewController(localAddr, externalAddr, searchAddr, detailAddr string, cert *tls.Certificate, templateFS, staticFS fs.FS, dir *directus.Directus, client client.RevCatGraphQLClient, catalogID int, mediaserverBase string, bundle *i18n.Bundle, templateDebug bool, logger zLogger.ZLogger) (*Controller, error) {
 
 	ctrl := &Controller{
 		localAddr:       localAddr,
 		externalAddr:    externalAddr,
+		searchAddr:      searchAddr,
+		detailAddr:      detailAddr,
 		srv:             nil,
 		cert:            cert,
 		templateFS:      templateFS,
@@ -250,6 +254,8 @@ type Controller struct {
 	mediaserverBase string
 	bundle          *i18n.Bundle
 	languageMatcher language.Matcher
+	searchAddr      string
+	detailAddr      string
 }
 
 func (ctrl *Controller) Start() error {
@@ -531,11 +537,13 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		MediaserverBase: ctrl.mediaserverBase,
 		PageInfo:        result.GetSearch().GetPageInfo(),
 		baseData: baseData{
-			Lang:     lang,
-			Search:   template.URL(currentSearchURL.Encode()),
-			Cursor:   cursorString,
-			Params:   template.URL(c.Request.URL.Query().Encode()),
-			RootPath: "../",
+			Lang:       lang,
+			Search:     template.URL(currentSearchURL.Encode()),
+			Cursor:     cursorString,
+			Params:     template.URL(c.Request.URL.Query().Encode()),
+			RootPath:   "../",
+			SearchAddr: ctrl.searchAddr,
+			DetailAddr: ctrl.detailAddr,
 		},
 		TotalCount: result.GetSearch().GetTotalCount(),
 		RequestQuery: &queryData{
@@ -697,6 +705,19 @@ func (ctrl *Controller) detail(c *gin.Context) {
 	if !ctrl.langAvailable(lang) {
 		lang = "de"
 	}
+	searchString := c.Query("search")
+	cursorString := c.Query("cursor")
+	collectionsString := c.Query("collections")
+	query := url.Values{}
+	if searchString != "" {
+		query.Set("search", searchString)
+	}
+	if collectionsString != "" {
+		query.Set("collections", collectionsString)
+	}
+	if cursorString != "" {
+		query.Set("cursor", cursorString)
+	}
 	templateName := "detail.gohtml"
 	textTemplate, err := ctrl.loadHTMLTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", "detail_image.gohtml", "detail_video.gohtml", "detail_pdf.gohtml", templateName})
 	if err != nil {
@@ -728,11 +749,18 @@ func (ctrl *Controller) detail(c *gin.Context) {
 		Source          *client.MediathekEntries_MediathekEntries `json:"source"`
 		MediaserverBase string                                    `json:"mediaserverBase"`
 	}
+	var searchParams string
+	if len(query) > 0 {
+		searchParams = "?" + query.Encode()
+	}
 	var data = &tplData{
 		Source: source.MediathekEntries[0],
 		baseData: baseData{
-			Lang:     lang,
-			RootPath: "../../",
+			Lang:       lang,
+			RootPath:   "../../",
+			SearchAddr: ctrl.searchAddr,
+			DetailAddr: ctrl.detailAddr,
+			Search:     template.URL(fmt.Sprintf("%s/search/%s%s", ctrl.searchAddr, lang, searchParams)),
 		},
 		MediaserverBase: ctrl.mediaserverBase,
 	}

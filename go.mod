@@ -14,7 +14,7 @@ require (
 	github.com/je4/basel-collections/v2 v2.0.0
 	github.com/je4/revcat/v2 v2.0.0-20240109172856-2918cb10c98a
 	github.com/je4/utils/v2 v2.0.17
-	github.com/je4/zsearch/v2 v2.0.2
+	github.com/je4/zsearch/v2 v2.0.5
 	github.com/nicksnyder/go-i18n/v2 v2.3.0
 	github.com/rs/zerolog v1.31.0
 	golang.org/x/text v0.14.0

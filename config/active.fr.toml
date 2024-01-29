@@ -10,9 +10,17 @@ other = "Auteur"
 hash = "sha1-1225b692bb41c7e13f1a18a82516768f8d47ff7a"
 other = "Auteurs"
 
+[autotranslatefrom]
+hash = "sha1-b9bbe1966c550ae1ceca980583b95815bdae2192"
+other = "traduit automatiquement de la langue "
+
 [back]
 hash = "sha1-4080624342b2ce2a088159d7e261edbcbf76ce5f"
 other = "arrière"
+
+[backtosearch]
+hash = "sha1-ff22a0d49268af06421054c29b83134d1b2cc7c6"
+other = "Retour à la recherche"
 
 [camera]
 hash = "sha1-83008f45ae90faa6f7a27cb74f811319401f3f46"
@@ -22,13 +30,29 @@ other = "Caméra"
 hash = "sha1-10b0c1bb17bd964795f161f4f5b9919f583a1cec"
 other = "collection"
 
+[deen]
+hash = "sha1-eba581bb5237a933e08eb942b6662835e1072041"
+other = "allemande"
+
 [document]
 hash = "sha1-2ccbe1660a99984dace3e1aba156d3ac2516f4e5"
 other = "Document"
 
+[enen]
+hash = "sha1-95abe01c1cfd94f2a7d59df0439707c40a66187e"
+other = "anglaise"
+
 [founditems]
 hash = "sha1-7778c735f677becc7fadd9d5b5bb255164804392"
 other = "Gefundene Objekte"
+
+[fren]
+hash = "sha1-768d2c61bade0a5ff0b5e5b721bdcc955d7b210f"
+other = "française"
+
+[iten]
+hash = "sha1-8a9b000dcba62bc43c44698da1f6af909d72bd91"
+other = "italienne"
 
 [language]
 hash = "sha1-3d9f5cb4ee692ee0740e7da86ab6cfcc921c5bcb"
