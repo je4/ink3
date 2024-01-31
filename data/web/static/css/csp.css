@@ -34,13 +34,16 @@
     --bs-btn-disabled-border-color: #212529;
   }
   .csp-bubble-area {
-    background-image: linear-gradient(to bottom, rgba(245, 246, 252, 0) 0%, rgba(245, 246, 252, 0) 60%, color-mix(in srgb, var(--bs-body-bg) 40%, transparent) 85%, color-mix(in srgb, var(--bs-body-bg) 100%, transparent) 100%), url("../img/7373_inv.svg");
+    /*
+    background-image: linear-gradient(to bottom, rgba(245, 246, 252, 0) 0%, rgba(245, 246, 252, 0) 60%, color-mix(in srgb, var( --bs-body-bg ) 40%, transparent) 85%, color-mix(in srgb, var( --bs-body-bg ) 100%, transparent) 100%), url('../img/7373_inv.svg')
+     */
+    background-image: linear-gradient(to bottom, rgba(245, 246, 252, 0) 0%, rgba(245, 246, 252, 0) 60%, color-mix(in srgb, var(--bs-body-bg) 40%, transparent) 85%, color-mix(in srgb, var(--bs-body-bg) 100%, transparent) 100%), url("../img/title_background.png");
   }
   .csp-brand-image {
     filter: invert(1);
   }
   .borderedge {
-    border-image-source: url("../img/border_right_bottom.png");
+    border-image-source: url("../img/edge_right_bottom.png");
   }
   .pborder {
     border-image-source: url("../img/border_inv.png");
@@ -77,10 +80,10 @@
     --bs-btn-disabled-border-color: #f8f9fa;
   }
   .csp-bubble-area {
-    background-image: url("../img/7373.svg");
+    background-image: linear-gradient(to bottom, rgba(33, 37, 41, 0) 0%, rgba(33, 37, 41, 0) 60%, color-mix(in srgb, var(--bs-body-bg) 40%, transparent) 85%, color-mix(in srgb, var(--bs-body-bg) 100%, transparent) 100%), url("../img/title_background_inv.png");
   }
   .borderedge {
-    border-image-source: url("../img/border_right_bottom_inv.png");
+    border-image-source: url("../img/edge_right_bottom_inv.png");
   }
   .pagination {
     --bs-focus-ring-color: #fff;
@@ -136,8 +139,8 @@ body {
 }
 
 .masked img {
-  height: 200px;
-  width: 200px;
+  height: 100px;
+  width: 100px;
   object-fit: cover;
   -webkit-mask-size: cover;
   mask-size: cover;
@@ -159,10 +162,10 @@ body {
 }
 
 .borderedge {
-  border-image-slice: 32;
   border-image-repeat: stretch;
-  border-width: medium;
+  border-width: 8px;
   border-style: inset;
+  border-image-slice: 52;
 }
 
 .pborder {

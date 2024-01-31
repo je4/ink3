@@ -3,9 +3,9 @@
 {{- $root := .RootPath }}
 {{- $searchBase := join "" (list $root "search/" $lang)}}
 <html lang="{{ $lang }}">
-
-{{ template "head.gohtml" . }}
-
+<head>
+    {{ template "head.gohtml" . }}
+</head>
 <body class="w-100">
     {{ template "nav.gohtml" . }}
 

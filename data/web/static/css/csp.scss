@@ -30,8 +30,8 @@ body {
 }
 
 .masked img {
-  height: 200px;
-  width: 200px;
+  height: 100px;
+  width: 100px;
   object-fit: cover;
   -webkit-mask-size: cover;
   mask-size: cover;
@@ -54,10 +54,10 @@ body {
 
 
 .borderedge {
-  border-image-slice: 32;
   border-image-repeat: stretch;
-  border-width: medium;
+  border-width: 8px;
   border-style: inset;
+  border-image-slice: 52;
 }
 
 .pborder {

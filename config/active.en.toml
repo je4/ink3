@@ -28,7 +28,7 @@ other = "Camera"
 
 [collection]
 hash = "sha1-10b0c1bb17bd964795f161f4f5b9919f583a1cec"
-other = "Sammlung"
+other = "Collection"
 
 [deen]
 hash = "sha1-eba581bb5237a933e08eb942b6662835e1072041"
@@ -44,7 +44,7 @@ other = "english"
 
 [founditems]
 hash = "sha1-7778c735f677becc7fadd9d5b5bb255164804392"
-other = "Gefundene Objekte"
+other = "found items"
 
 [fren]
 hash = "sha1-768d2c61bade0a5ff0b5e5b721bdcc955d7b210f"
@@ -60,15 +60,15 @@ other = "Language"
 
 [next]
 hash = "sha1-aeff967b37f098dcdafec93375d42f13b5e9b0a3"
-other = "Weiter"
+other = "next"
 
 [search]
 hash = "sha1-20a96919554a37d923ebf812038a567fa1de4ef5"
-other = "Suchen"
+other = "search"
 
 [searchtext]
 hash = "sha1-6be083573a417f7bce02ba755a7c4e69dd497185"
-other = "Suchtext"
+other = "search text"
 
 [test]
 hash = "sha1-cfb6122386d5478d9081ed5c9713fce6aa2238d9"
@@ -80,7 +80,7 @@ other = "TestEN"
 
 [title]
 hash = "sha1-59c8a1d6ca82ac727d4b26ab9c654a11aa001411"
-other = "Sammlungen Performance Kunst Schweiz"
+other = "Performance Art Collections Switzerland"
 
 [voc_abfall]
 hash = "sha1-6744c564c35dac77f46148202d979ac71173b189"

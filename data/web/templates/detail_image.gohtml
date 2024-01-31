@@ -4,10 +4,27 @@
     {{- if eq $typedMedia.GetName "image" }}
         {{- if gt (len $typedMedia.GetItems) 0 }}
         <div class="borderedge mt-2">
-        {{- range $media := $typedMedia.GetItems }}
+            <div id="carouselDetailImage" class="mb-2 carousel slide">
+                <div class="carousel-inner">
+            {{- range $key, $media := $typedMedia.GetItems }}
+                    <div style="text-align: center;" class="start-50 carousel-item{{ if eq $key 0 }} active{{ end }}">
+                        {{- $size := calcAspectSize $media.Width $media.Height 800 400 }}
+                        <img style="transform: translate(-50%,0)!important;" width="{{ $size.Width }}" height="{{ $size.Height }}" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}/resize/size800x400/formatJPEG/autorotate" class="d-block" loading="lazy">
+                    </div>
+            {{- end }}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselDetailImage" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselDetailImage" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        {{- range $key, $media := $typedMedia.GetItems }}
             <span class="masked">
-                {{- $size := calcAspectSize $media.Width $media.Height 200 200 }}
-                <img class="bd-placeholder-img card-img-top" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}/resize/size200x200/formatPNG/autorotate" />
+                <img onclick="carouselTo({{ $key }});" class="bd-placeholder-img card-img-top" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}/resize/size100x1000/formatPNG/autorotate" />
             </span>
         {{- end }}
        </div>

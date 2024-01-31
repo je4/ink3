@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"emperror.dev/errors"
@@ -14,6 +15,7 @@ import (
 	"github.com/je4/utils/v2/pkg/zLogger"
 	"github.com/je4/zsearch/v2/pkg/translate"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"golang.org/x/net/html"
 	"golang.org/x/text/language"
 	"golang.org/x/text/language/display"
 	"html/template"
@@ -36,10 +38,10 @@ var languageNamer = map[string]display.Namer{
 }
 
 type baseData struct {
-	Lang       string
-	RootPath   string
-	Params     template.URL
-	Search     template.URL
+	Lang     string
+	RootPath string
+	Params   template.URL
+	//Search       template.URL
 	Cursor     string
 	SearchAddr string
 	DetailAddr string
@@ -55,6 +57,42 @@ func (ctrl *Controller) funcMap() template.FuncMap {
 		return langSrc
 	}
 
+	fm["ptrString"] = func(s *string) string {
+		if s == nil {
+			return ""
+		}
+		return *s
+	}
+
+	fm["toHTMLif"] = func(s string) any {
+		tokens, err := html.ParseFragment(bytes.NewBuffer([]byte(s)), nil)
+		if err != nil {
+			return s
+		}
+		if len(tokens) == 0 {
+			return s
+		}
+		token := tokens[0]
+		var crawler func(node *html.Node) int64
+		crawler = func(node *html.Node) int64 {
+			var num int64
+			for child := node.FirstChild; child != nil; child = child.NextSibling {
+				num += crawler(child)
+			}
+			if len(node.Data) > 0 {
+				if node.Type == html.ElementNode &&
+					!slices.Contains([]string{"html", "head", "body"}, node.Data) {
+					num++
+				}
+			}
+			return num
+		}
+		numToken := crawler(token)
+		if numToken > 0 {
+			return template.HTML(s)
+		}
+		return s
+	}
 	fm["toHTML"] = func(s string) template.HTML {
 		return template.HTML(s)
 	}
@@ -81,6 +119,14 @@ func (ctrl *Controller) funcMap() template.FuncMap {
 	}
 	fm["slug"] = func(s string, lang string) string {
 		return strings.Replace(slug.MakeLang(s, lang), "-", "_", -1)
+	}
+	fm["map"] = func(kvList []*client.KeyValueFragment, key string) string {
+		for _, kv := range kvList {
+			if kv.Key == key {
+				return kv.Value
+			}
+		}
+		return ""
 	}
 
 	type size struct {
@@ -145,6 +191,10 @@ func (ctrl *Controller) init() error {
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
 	router.Use(cors.New(corsConfig))
+	router.Use(gin.BasicAuth(gin.Accounts{
+		"performance": "schweiz",
+		"je":          "test",
+	}))
 	router.StaticFS("/static", NewDefaultIndexFS(http.FS(ctrl.staticFS), "index.html"))
 
 	router.GET("/", func(c *gin.Context) {
@@ -521,7 +571,10 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 	if vocabularyString != "" {
 		currentSearchURL.Set("vocabulary", vocabularyString)
 	}
-
+	var searchParams string
+	if len(currentSearchURL) > 0 {
+		searchParams = "?" + currentSearchURL.Encode()
+	}
 	data := struct {
 		baseData
 		//Result           *client.Search_Search      `json:"result"`
@@ -537,10 +590,12 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		MediaserverBase: ctrl.mediaserverBase,
 		PageInfo:        result.GetSearch().GetPageInfo(),
 		baseData: baseData{
-			Lang:       lang,
-			Search:     template.URL(currentSearchURL.Encode()),
+			Lang: lang,
+			//Search:     template.URL(currentSearchURL.Encode()),
+			//			Search:       template.URL(fmt.Sprintf("%s/search/%s%s", ctrl.searchAddr, lang, searchParams)),
+			//			SearchParams: searchParams,
 			Cursor:     cursorString,
-			Params:     template.URL(c.Request.URL.Query().Encode()),
+			Params:     template.URL(strings.TrimLeft(searchParams, "?&	")),
 			RootPath:   "../",
 			SearchAddr: ctrl.searchAddr,
 			DetailAddr: ctrl.detailAddr,
@@ -760,7 +815,8 @@ func (ctrl *Controller) detail(c *gin.Context) {
 			RootPath:   "../../",
 			SearchAddr: ctrl.searchAddr,
 			DetailAddr: ctrl.detailAddr,
-			Search:     template.URL(fmt.Sprintf("%s/search/%s%s", ctrl.searchAddr, lang, searchParams)),
+			//Search:     template.URL(fmt.Sprintf("%s/search/%s%s", ctrl.searchAddr, lang, searchParams)),
+			Params: template.URL(strings.TrimPrefix(searchParams, "?")),
 		},
 		MediaserverBase: ctrl.mediaserverBase,
 	}

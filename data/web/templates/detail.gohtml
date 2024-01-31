@@ -3,14 +3,20 @@
 {{- $root := .RootPath }}
 {{- $source := .Source }}
 {{- $mediaserverBase := .MediaserverBase }}
+{{- $search := printf "%s/search/%s" .SearchAddr .Lang }}
+{{- $extraIgnore := list }}
+{{- if ne .Params "" }}{{ $search = printf "%s?%s" $search .Params }}{{ end }}
 <html lang="{{ $lang }}">
-{{ template "head.gohtml" . }}
+<head>
+    {{ template "head.gohtml" . }}
+    <link href="{{ .RootPath }}static/videojs/video-js.min.css" rel="stylesheet" />
+</head>
 
 <body class="w-100">
 </body>
 {{ template "nav.gohtml" . }}
 <div class="m-2">
-<a href="{{ .Search }}" class="btn btn-outline-secondary pborder">
+<a href="{{ $search }}" class="btn btn-outline-secondary pborder">
     <span class="bi-chevron-left"></span>&nbsp;{{ localize "backtosearch" $lang }}
 </a>
 </div>
@@ -29,6 +35,7 @@
                         {{ $title.String }}
                         {{ if $source.Base.Date }}<br /><span style="font-weight: normal;">({{ $source.Base.Date }})</span>{{ end }}
                     </h1>
+                    {{ if $source.Base.URL }}<span style="font-weight: normal;"><a target="_blank" href="{{ $source.Base.URL }}">{{ $source.Base.URL }}</a></span><br />{{ end }}
                     <div class="p-2 borderedge">
                     <span style="font-weight: bold;">
                     {{- range $key, $p := $source.Base.Person}}
@@ -43,28 +50,90 @@
                         {{- end}}
                     {{- end}}
                     </div>
-                    {{- if gt (len $source.Notes) 0 }}
-                    <div class="p-2 borderedge">
-                    {{range $note := $source.Notes}}
-                        <div style="font-weight: bold;">{{$note.Title}}</div>
-                        <div style="text-align: justify;">{{$note.Note}}</div>
-                    {{end}}
-                    </div>
-                    {{- end }}
 
                     {{- $abstract := multiLang $source.Abstract }}
                     {{- $abstractStr := $abstract.GetStr $lang }}
                     {{- $abstractOriginalLang := $abstract.GetNativeLanguage  }}
                     {{- if ne $abstractStr "" }}
                     <div class="mt-4 p-2 borderedge" style="text-align: justify;">
-                        {{ $abstractStr }}
+                        {{ toHTML $abstractStr }}
                         {{- if ne $abstractOriginalLang.String $lang }}
                             <div class="alert alert-secondary p-1 mt-1" role="alert" style="font-size: smaller;">
                                 {{ localize "autotranslatefrom" $lang }} {{ localize (printf "%sen" $abstractOriginalLang.String) $lang }}
                             </div>
                         {{- end }}
                     </div>
+                    {{- end }}
+
+                    {{- if gt (len $source.Notes) 0 }}
+                        {{range $note := $source.Notes}}
+                            <div class="p-2 borderedge">
+                                <div style="font-weight: bold;">{{ $note.Title }}</div>
+                                <div style="text-align: justify;">{{ toHTMLif $note.Text }}</div>
+                            </div>
+                        {{end}}
+                    {{- end }}
+
+                    {{/* Event */}}
+                    <div class="p-2" style="margin-top: 20px;">
+                        {{- $festival := map $source.Extra "festival" }}
+                        {{- $extraIgnore = append $extraIgnore "festival"}}
+                        {{ if ne $festival ""}}<div style="font-weight: bold;">{{ $festival }}</div>{{ end }}
+                        <p class="card-text mb-auto">
+                            {{ if ne (ptrString $source.Base.Place) "" }}{{ localize "place" $lang }}: {{ $source.Base.Place }}<br />{{ end }}
+                            {{- $eventcurator := map $source.Extra "eventcurator" }}
+                            {{- $extraIgnore = append $extraIgnore "eventcurator"}}
+                            {{if ne $eventcurator ""}}KuratorIn: {{ $eventcurator }}<br />{{ end }}
+                            {{- $doctype := map $source.Extra "doctype" }}
+                            {{- $extraIgnore = append $extraIgnore "doctype"}}
+                            {{if ne $doctype ""}}Dokumentationstyp: {{ $doctype }}<br />{{ end }}
+                        </p>
+                    </div>
+
+                    {{- $anderesformat := map $source.Extra "anderesformat" }}
+                    {{- $extraIgnore = append $extraIgnore "anderesformat"}}
+                    {{- if ne $anderesformat "" }}
+                        <div class="p-2 borderedge">
+                            <div style="font-weight: bold;">Alternative</div>
+                            <div style="text-align: justify;">{{ $anderesformat }}</div>
+                        </div>
+                    {{- end }}
+
+                    {{/* Medium */}}
+                    {{- if (ne $source.Base.Source "zotero2-1624911")}}
+                        {{- $medium := map $source.Extra "medium" }}
+                        {{- $extraIgnore = append $extraIgnore "medium"}}
+                        {{- if ne $medium "" }}
+                            <div class="p-2 borderedge">
+                            <div style="font-weight: bold; margin-top: 10px;">Medium</div>
+                            <p class="card-text mb-auto">
+                                    {{ $medium }}<br />
+                                {{- $dauer := map $source.Extra "dauer" }}
+                                {{- $extraIgnore = append $extraIgnore "dauer"}}
+                                {{- if ne $dauer "" }}
+                                    Dauer: {{ $dauer }}<br />
+                                {{- end }}
+                            </p>
+                        </div>
                         {{- end }}
+                    {{- end }}
+                    <div class="borderedge">
+                        <div style="font-weight: bold; margin-top: 10px;">Extra</div>
+                        <table style="table-layout: fixed; width: 100%; border: none;">
+                    {{- range $extra := $source.Extra }}
+                        {{- if not (has $extra.Key $extraIgnore) }}
+                        <tr style="vertical-align: text-top;">
+                            <td style="font-weight: bold; width: 30%; border: none; text-align: right;">
+                                {{ $extra.Key }}:&nbsp;
+                            </td>
+                            <td style="width: 70%; border: none; overflow-wrap: break-word;">
+                                <span style="overflow-wrap: break-word;">{{ $extra.Value }}</span>
+                            </td>
+                        </tr>
+                        {{- end }}
+                    {{- end }}
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -78,5 +147,12 @@
     window.HELP_IMPROVE_VIDEOJS = false;
 </script>
 <script src="{{ .RootPath }}static/videojs/video.min.js"></script>
+<script>
+    const carousel = new bootstrap.Carousel('#carouselDetailImage');
+    function carouselTo(index) {
+        carousel.to(index);
+    }
+</script>
+
 </body>
 </html>

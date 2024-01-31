@@ -5,6 +5,8 @@
 {{- $mediaserverBase := .MediaserverBase }}
 {{- $searchBase := join "" (list $root "search/" $lang)}}
 {{- $detailAddr := .DetailAddr }}
+{{- $params := .Params }}
+{{- $search := printf "%s/search/%s%s" .SearchAddr .Lang .Params }}
 <html lang="{{ $lang }}">
 
 {{template "head.gohtml" . }}
@@ -33,11 +35,11 @@
                     </nav>
                     <div class="album py-5">
                         <nav class="navbar">
-                            <a href="?cursor={{ .PageInfo.StartCursor }}{{ if ne .Search "" }}&{{ .Search }}{{ end }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn btn-outline-secondary pborder">
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}cursor={{ toURL .PageInfo.StartCursor }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn btn-outline-secondary pborder">
                                 <span class="bi-chevron-left"></span>&nbsp;{{ localize "back" $lang }}
                             </a>
                             {{ localize "founditems" $lang }}: {{ .TotalCount }}
-                            <a href="?cursor={{ .PageInfo.EndCursor }}{{ if ne .Search "" }}&{{ .Search }}{{ end }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn btn-outline-secondary pborder">
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}cursor={{ toURL .PageInfo.EndCursor }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn btn-outline-secondary pborder">
                                 {{ localize "next" $lang }}&nbsp;<span class="bi-chevron-right"></span>
                             </a>
                         </nav>
@@ -46,7 +48,7 @@
                                 {{- range $edge := .Edges }}
                                     <!-- div class="col p-0" style='max-width: 320px; background-image: url("../static/img/frame0.png"); background-size: 100% 100%;' -->
                                     <div class="col p-0" style='max-width: 320px;'>
-                                        <a style="color: inherit; text-decoration: inherit;" href="{{ $detailAddr }}/detail/{{ $edge.Edge.Base.Signature }}/{{ $lang }}?{{ if ne $data.Cursor "" }}cursor={{ $data.Cursor }}{{ end }}{{ if ne $data.Search "" }}&{{ $data.Search }}{{ end }}">
+                                        <a style="color: inherit; text-decoration: inherit;" href="{{ $detailAddr }}/detail/{{ $edge.Edge.Base.Signature }}/{{ $lang }}?{{ if ne $data.Cursor "" }}cursor={{ $data.Cursor }}{{ end }}{{ if ne $params "" }}&{{ $params }}{{ end }}">
                                             <div class="m-2 p-2 borderedge" style="transform: rotate(-{{randInt 3 12}}deg)">
                                                 <div style="align-content: center; text-align: center">
                                                     {{- if $edge.Edge.Base.Poster }}
@@ -79,11 +81,11 @@
                             </div>
                         </div>
                         <nav class="navbar">
-                            <a href="?cursor={{ .PageInfo.StartCursor }}{{ if ne .Search "" }}&{{ .Search }}{{ end }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn btn-outline-secondary pborder">
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}cursor={{ toURL .PageInfo.StartCursor }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn btn-outline-secondary pborder">
                                 <span class="bi-chevron-left"></span>&nbsp;{{ localize "back" $lang }}
                             </a>
                             {{ localize "founditems" $lang }}: {{ .TotalCount }}
-                            <a href="?cursor={{ .PageInfo.EndCursor }}{{ if ne .Search "" }}&{{ .Search }}{{ end }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn btn-outline-secondary pborder">
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}cursor={{ toURL .PageInfo.EndCursor }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn btn-outline-secondary pborder">
                                 {{ localize "next" $lang }}&nbsp;<span class="bi-chevron-right"></span>
                             </a>
                         </nav>
