@@ -5,6 +5,14 @@
     --bs-focus-ring-color: #000 !important;
   }
 
+  .carousel-control-prev-icon {
+    background-image: url("../img/prev_inv.png");
+  }
+
+  .carousel-control-next-icon {
+    background-image: url("../img/next_inv.png");
+  }
+
   .btn-csp {
     --bs-btn-color: #000;
     --bs-btn-bg: rgba(255, 255, 255, 0);

@@ -4,6 +4,15 @@
     --bs-link-color: #d0d0ff;
     --bs-link-hover-color: #fff;
   }
+
+  .carousel-control-prev-icon {
+    background-image: url("../img/prev.png");
+  }
+
+  .carousel-control-next-icon {
+    background-image: url("../img/next.png");
+  }
+
   .pagination {
     --bs-focus-ring-color: #fff;
     --bs-pagination-active-bg: #dee2e6;
