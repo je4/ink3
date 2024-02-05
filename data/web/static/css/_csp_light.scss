@@ -3,14 +3,7 @@
 
   :root {
     --bs-focus-ring-color: #000 !important;
-  }
-
-  .carousel-control-prev-icon {
-    background-image: url("../img/prev_inv.png");
-  }
-
-  .carousel-control-next-icon {
-    background-image: url("../img/next_inv.png");
+    --bs-body-bg: rgba(245, 245, 245, 0) !important;
   }
 
   .btn-csp {
@@ -28,6 +21,10 @@
     --bs-btn-disabled-color: #000;
     --bs-btn-disabled-bg: #f8f9fa;
     --bs-btn-disabled-border-color: #f8f9fa;
+  }
+
+  .maincolor {
+    background-color: #e8edf1;
   }
 
   .csp-bubble-area {

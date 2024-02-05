@@ -1,11 +1,11 @@
-<nav class="navbar bg-body-tertiary">
+<nav class="maincolor navbar">
     <div class="container-fluid">
         <a class="navbar-brand me-auto" href="{{ .RootPath }}{{ .Lang }}"><img class="object-fit-scale csp-brand-image" style="max-width: 480px;" src="{{ .RootPath }}static/img/title_{{ .Lang }}_1024x117.png" alt="Title: {{ localize "title" .Lang }}" /></a>
         <ul class="pagination">
-            <li class="page-item"><a class="page-link{{if eq .Lang "de" }} active{{ end }}" href="de{{ if ne .Params "" }}?{{ .Params }}{{ end }}">DE</a></li>
-            <li class="page-item"><a class="page-link{{if eq .Lang "en" }} active{{ end }}" href="en{{ if ne .Params "" }}?{{ .Params }}{{ end }}">EN</a></li>
-            <li class="page-item"><a class="page-link{{if eq .Lang "it" }} active{{ end }}" href="it{{ if ne .Params "" }}?{{ .Params }}{{ end }}">IT</a></li>
-            <li class="page-item"><a class="page-link{{if eq .Lang "fr" }} active{{ end }}" href="fr{{ if ne .Params "" }}?{{ .Params }}{{ end }}">FR</a></li>
+            <li class="page-item"><a style="padding: 3px 6px 3px 6px;" class="noborder page-link{{if eq .Lang "de" }} active{{ end }}" href="de{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ .RootPath }}static/img/de.png" /></a></li>
+            <li class="page-item"><a style="padding: 3px 6px 3px 6px;" class="noborder page-link{{if eq .Lang "en" }} active{{ end }}" href="en{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ .RootPath }}static/img/en.png" /></a></li>
+            <li class="page-item"><a style="padding: 3px 6px 3px 6px;" class="noborder page-link{{if eq .Lang "it" }} active{{ end }}" href="it{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ .RootPath }}static/img/it.png" /></a></li>
+            <li class=" page-item"><a style="padding: 3px 6px 3px 6px;" class="noborder page-link{{if eq .Lang "fr" }} active{{ end }}" href="fr{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ .RootPath }}static/img/fr.png" /></a></li>
         </ul>
     </div>
 </nav>

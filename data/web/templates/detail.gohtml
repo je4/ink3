@@ -50,12 +50,12 @@
                         {{- end}}
                     {{- end}}
                     </div>
-
+                    <img class="number" style="width: 376px; height:15px;" src="{{ $root }}static/img/line_short.png" />
                     {{- $abstract := multiLang $source.Abstract }}
                     {{- $abstractStr := $abstract.GetStr $lang }}
                     {{- $abstractOriginalLang := $abstract.GetNativeLanguage  }}
                     {{- if ne $abstractStr "" }}
-                    <div class="mt-4 p-2 borderedge" style="text-align: justify;">
+                    <div class="mt-4 p-2 borderedge" style="text-align: left;">
                         {{ toHTML $abstractStr }}
                         {{- if ne $abstractOriginalLang.String $lang }}
                             <div class="alert alert-secondary p-1 mt-1" role="alert" style="font-size: smaller;">
@@ -63,14 +63,17 @@
                             </div>
                         {{- end }}
                     </div>
+                    <img class="number" style="width: 376px; height:15px;" src="{{ $root }}static/img/line_short.png" />
+
                     {{- end }}
 
                     {{- if gt (len $source.Notes) 0 }}
                         {{range $note := $source.Notes}}
                             <div class="p-2 borderedge">
                                 <div style="font-weight: bold;">{{ $note.Title }}</div>
-                                <div style="text-align: justify;">{{ toHTMLif $note.Text }}</div>
+                                <div style="text-align: left;">{{ toHTMLif $note.Text }}</div>
                             </div>
+                            <img class="number" style="width: 376px; height:15px;" src="{{ $root }}static/img/line_short.png" />
                         {{end}}
                     {{- end }}
 
@@ -95,8 +98,9 @@
                     {{- if ne $anderesformat "" }}
                         <div class="p-2 borderedge">
                             <div style="font-weight: bold;">Alternative</div>
-                            <div style="text-align: justify;">{{ $anderesformat }}</div>
+                            <div style="text-align: left;">{{ $anderesformat }}</div>
                         </div>
+                        <img class="number" style="width: 376px; height:15px;" src="{{ $root }}static/img/line_short.png" />
                     {{- end }}
 
                     {{/* Medium */}}
@@ -134,6 +138,7 @@
                     {{- end }}
                         </table>
                     </div>
+                    <img class="number" style="width: 376px; height:15px;" src="{{ $root }}static/img/line_short.png" />
                 </div>
             </div>
         </div>

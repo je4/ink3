@@ -8,6 +8,19 @@
   --bs-focus-ring-width: 0px !important;
 
   --bs-pagination-active-bg: #dee2e6 !important;
+  --bs-body-font-size: 0.94rem;
+}
+
+.carousel-control-prev-icon {
+  background-image: url("../img/prev.png");
+}
+
+.carousel-control-next-icon {
+  background-image: url("../img/next.png");
+}
+
+.noborder {
+  border: none !important;
 }
 
 .accordion {
@@ -35,8 +48,11 @@ body {
   object-fit: cover;
   -webkit-mask-size: cover;
   mask-size: cover;
+
   -webkit-mask-image: url(../img/image_mask.png);
   mask-image: url(../img/image_mask.png);
+
+
 }
 
 .form-control:focus {
@@ -54,10 +70,14 @@ body {
 
 
 .borderedge {
+  border: none;
+/*
   border-image-repeat: stretch;
   border-width: 8px;
   border-style: inset;
   border-image-slice: 52;
+
+ */
 }
 
 .pborder {

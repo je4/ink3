@@ -15,7 +15,7 @@
 
 {{ template "nav.gohtml" . }}
 
-<div class="container-fluid p-0 d-flex h-100">
+<div class="container-fluid p-0 d-flex h-100 maincolor" style="">
     <div class="flex-fill">
         <div class="p-4">
             <div class="row">
@@ -49,7 +49,7 @@
                                     <!-- div class="col p-0" style='max-width: 320px; background-image: url("../static/img/frame0.png"); background-size: 100% 100%;' -->
                                     <div class="col p-0" style='max-width: 320px;'>
                                         <a style="color: inherit; text-decoration: inherit;" href="{{ $detailAddr }}/detail/{{ $edge.Edge.Base.Signature }}/{{ $lang }}?{{ if ne $data.Cursor "" }}cursor={{ $data.Cursor }}{{ end }}{{ if ne $params "" }}&{{ $params }}{{ end }}">
-                                            <div class="m-2 p-2 borderedge" style="transform: rotate(-{{randInt 3 12}}deg)">
+                                            <div class="m-2 p-2" style="transform: rotate({{randInt -5 5}}deg)">
                                                 <div style="align-content: center; text-align: center">
                                                     {{- if $edge.Edge.Base.Poster }}
                                                         {{- $size := calcAspectSize $edge.Edge.Base.Poster.Width $edge.Edge.Base.Poster.Height 200 200 }}
@@ -60,7 +60,6 @@
                                                 </div>
                                                 <div class="card-body pb-2">
                                                     <p class="card-title">
-                                                        #{{ $edge.Edge.Base.Signature }}<br />
                                                         <b>{{$edge.Title.String}}</b>{{ if ne $edge.Date "" }} ({{ $edge.Date }}){{ end }}<br />
                                                         {{ $edge.Persons }}
                                                     </p>
@@ -96,7 +95,7 @@
 
     </div>
 
-    <div style="overflow: auto; width: 600px;" id="facetBar"
+    <div style="overflow: auto; width:500px;" id="facetBar"
          class="d-flex flex-column flex-shrink-0
 					p-3 offcanvas-lg offcanvas-end">
         <div class="offcanvas-header">
@@ -105,20 +104,28 @@
         </div>
         <div class="d-block gap-2">
             {{ range $collFacet := .CollectionFacets }}
-                <button style="padding: 3px 6px 3px 6px;" onclick="{{ if $collFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}')" type="button" class="btn borderedge btn-csp collectionButton" value="{{ $collFacet.ID }}" selected="{{ if $collFacet.Checked }}true{{ else }}false{{ end }}">
-                    {{ if $collFacet.Checked }}<i class="bi bi-check2"></i>&nbsp;{{ end }}{{ abbrev 16 $collFacet.Name }} ({{ $collFacet.Count }})
+                <button style="padding: 1px 4px 1px 4px;" onclick="{{ if $collFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}')" type="button" class="noborder btn btn-csp collectionButton" value="{{ $collFacet.ID }}" selected="{{ if $collFacet.Checked }}true{{ else }}false{{ end }}">
+                    {{ if $collFacet.Checked }}<img class="number" style="height: 20px;" src="{{ $root }}static/img/hook.png">&nbsp;{{ end }}{{ abbrev 50 $collFacet.Name }}
+                    {{- $ds := digits $collFacet.Count }}
+                    {{- range $digit := $ds }}
+                        <img class="number" style="height:30px;" src="{{ printf "%sstatic/img/%s.png" $root (runeString $digit) }}"/>
+                    {{- end }}
                 </button>
             {{ end }}
         </div>
         <ul class="mynav nav nav-pills flex-column mb-auto">
             {{ range $parent, $vocabFacets := .VocabularyFacets }}
                 <li class="nav-item mb-1">
-                    <hr />
+                    <img class="number" style="width: 376px; height:15px;" src="{{ $root }}static/img/line_short.png" /><br />
                     {{ localize $parent $lang }}
                     <div class="d-block gap-2">
                     {{ range $vocabFacet := $vocabFacets }}
-                        <button style="padding: 3px 6px 3px 6px;" onclick="{{ if $vocabFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}')" type="button" class="btn borderedge btn-csp vocButton" value="voc:{{ $parent }}:{{ $vocabFacet.Name }}" selected="{{ if $vocabFacet.Checked }}true{{ else }}false{{ end }}">
-                            {{ if $vocabFacet.Checked }}<i class="bi bi-check2"></i>&nbsp;{{ end }}{{ abbrev 32 (localize $vocabFacet.Name $lang) }} ({{ $vocabFacet.Count }})
+                        <button style="padding: 1px 4px 1px 4px;" onclick="{{ if $vocabFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}')" type="button" class="noborder btn btn-csp vocButton" value="voc:{{ $parent }}:{{ $vocabFacet.Name }}" selected="{{ if $vocabFacet.Checked }}true{{ else }}false{{ end }}">
+                            {{ if $vocabFacet.Checked }}<img class="number" style="height: 20px;" src="{{ $root }}static/img/hook.png">&nbsp;{{ end }}{{ abbrev 32 (localize $vocabFacet.Name $lang) }}
+                            {{- $ds := digits $vocabFacet.Count }}
+                            {{- range $digit := $ds }}
+                            <img class="number" style="height:30px;" src="{{ printf "../../static/img/%s.png" (runeString $digit) }}"/>
+                            {{- end }}
                         </button>
                    {{ end }}
                     </div>

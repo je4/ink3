@@ -13,9 +13,13 @@
     background-image: url("../img/next.png");
   }
 
+  img.number {
+    filter: invert(1);
+  }
+
   .pagination {
     --bs-focus-ring-color: #fff;
-    --bs-pagination-active-bg: #dee2e6;
+    --bs-pagination-active-bg: #4d5154;
     --bs-pagination-active-color: #000;
     --bs-pagination-active-border-color: #fff;
     --bs-pagination-color: var(--bs-body-color);

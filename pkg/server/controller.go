@@ -57,6 +57,14 @@ func (ctrl *Controller) funcMap() template.FuncMap {
 		return langSrc
 	}
 
+	fm["runeString"] = func(r rune) string {
+		return string(r)
+	}
+
+	fm["digits"] = func(num int) []rune {
+		return []rune(strconv.Itoa(num))
+	}
+
 	fm["ptrString"] = func(s *string) string {
 		if s == nil {
 			return ""
