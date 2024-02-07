@@ -53,7 +53,18 @@
     /*
     background-image: linear-gradient(to bottom, rgba(245, 246, 252, 0) 0%, rgba(245, 246, 252, 0) 60%, color-mix(in srgb, var( --bs-body-bg ) 40%, transparent) 85%, color-mix(in srgb, var( --bs-body-bg ) 100%, transparent) 100%), url('../img/7373_inv.svg')
      */
-    background-image: linear-gradient(to bottom, rgba(245, 246, 252, 0) 0%, rgba(245, 246, 252, 0) 60%, color-mix(in srgb, var( --bs-body-bg ) 40%, transparent) 85%, color-mix(in srgb, var( --bs-body-bg ) 100%, transparent) 100%), url('../img/title_background.png')
+    background-image: linear-gradient(
+                    to bottom, rgba(245, 246, 252, 0) 0%,
+                    rgba(245, 246, 252, 0) 60%,
+                    color-mix(
+                                    in srgb,
+                                    var( --bs-body-bg ) 40%,
+                                    transparent) 85%,
+                    color-mix(
+                                    in srgb,
+                                    var( --bs-body-bg ) 100%,
+                                    transparent) 100%),
+    url('../img/title_background.png')
   }
 
   .csp-brand-image {

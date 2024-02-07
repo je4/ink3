@@ -19,6 +19,7 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/language/display"
 	"html/template"
+	"image"
 	"io/fs"
 	"net/http"
 	"net/url"
@@ -167,7 +168,7 @@ func (ctrl *Controller) funcMap() template.FuncMap {
 	return fm
 }
 
-func NewController(localAddr, externalAddr, searchAddr, detailAddr string, cert *tls.Certificate, templateFS, staticFS fs.FS, dir *directus.Directus, client client.RevCatGraphQLClient, catalogID int, mediaserverBase string, bundle *i18n.Bundle, templateDebug bool, logger zLogger.ZLogger) (*Controller, error) {
+func NewController(localAddr, externalAddr, searchAddr, detailAddr string, cert *tls.Certificate, templateFS, staticFS, dataFS fs.FS, dir *directus.Directus, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, catalogID int, mediaserverBase string, bundle *i18n.Bundle, templateDebug bool, logger zLogger.ZLogger) (*Controller, error) {
 
 	ctrl := &Controller{
 		localAddr:       localAddr,
@@ -178,6 +179,8 @@ func NewController(localAddr, externalAddr, searchAddr, detailAddr string, cert 
 		cert:            cert,
 		templateFS:      templateFS,
 		staticFS:        staticFS,
+		dataFS:          dataFS,
+		zoomPos:         zoomPos,
 		templateDebug:   templateDebug,
 		templateCache:   make(map[string]any),
 		logger:          logger,
@@ -204,6 +207,7 @@ func (ctrl *Controller) init() error {
 		"je":          "test",
 	}))
 	router.StaticFS("/static", NewDefaultIndexFS(http.FS(ctrl.staticFS), "index.html"))
+	router.StaticFS("/data", NewDefaultIndexFS(http.FS(ctrl.dataFS), "index.html"))
 
 	router.GET("/", func(c *gin.Context) {
 		cookieLang, _ := c.Request.Cookie("lang")
@@ -220,6 +224,8 @@ func (ctrl *Controller) init() error {
 	router.GET("/:lang", func(c *gin.Context) {
 		ctrl.indexPage(c)
 	})
+
+	router.GET("/zoom/:PosX/:PosY", ctrl.zoomSignature)
 
 	router.GET("/search", func(c *gin.Context) {
 		cookieLang, _ := c.Request.Cookie("lang")
@@ -303,6 +309,7 @@ type Controller struct {
 	logger          zLogger.ZLogger
 	templateFS      fs.FS
 	staticFS        fs.FS
+	dataFS          fs.FS
 	dir             *directus.Directus
 	templateDebug   bool
 	templateCache   map[string]any
@@ -314,6 +321,7 @@ type Controller struct {
 	languageMatcher language.Matcher
 	searchAddr      string
 	detailAddr      string
+	zoomPos         map[string][]image.Rectangle
 }
 
 func (ctrl *Controller) Start() error {
@@ -441,6 +449,39 @@ func (ctrl *Controller) loadTextTemplate(name string, files []string) (*tmpl.Tem
 
 type queryData struct {
 	Search string
+}
+
+func (ctrl *Controller) zoomSignature(c *gin.Context) {
+	pxs := c.Param("PosX")
+	pys := c.Param("PosY")
+
+	posX, err := strconv.Atoi(pxs)
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("%s is not a number: %v", pxs, err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("%s is not a number: %v", pxs, err))
+		return
+	}
+	posY, err := strconv.Atoi(pys)
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("%s is not a number: %v", pys, err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("%s is not a number: %v", pys, err))
+		return
+	}
+	var signature string
+	for sig, rects := range ctrl.zoomPos {
+		for _, rect := range rects {
+			if posX >= rect.Min.X && posX <= rect.Max.X {
+				if posY >= rect.Min.Y && posY <= rect.Max.Y {
+					signature = sig
+					break
+				}
+			}
+			if signature != "" {
+				break
+			}
+		}
+	}
+	c.JSON(http.StatusOK, signature)
 }
 
 func (ctrl *Controller) searchGridPage(c *gin.Context) {

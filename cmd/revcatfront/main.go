@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/BurntSushi/toml"
@@ -18,6 +19,7 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/rs/zerolog"
 	"golang.org/x/text/language"
+	"image"
 	"io"
 	"io/fs"
 	"log"
@@ -154,6 +156,11 @@ func main() {
 		staticFS = os.DirFS(conf.StaticFiles)
 	}
 
+	var dataFS fs.FS
+	if conf.DataDir != "" {
+		staticFS = os.DirFS(conf.DataDir)
+	}
+
 	dir := directus.NewDirectus(conf.Directus.BaseUrl, string(conf.Directus.Token), time.Duration(conf.Directus.CacheTime))
 
 	if conf.Revcat.Insecure {
@@ -165,6 +172,19 @@ func main() {
 		return next(ctx, req, gqlInfo, res)
 	})
 
+	var collagePos = map[string][]image.Rectangle{}
+	collageFilename := filepath.Join(conf.DataDir, "collage.json")
+	fp, err := os.Open(collageFilename)
+	if err != nil {
+		logger.Panic().Msgf("cannot open %s: %v", collageFilename, err)
+	}
+	jsonDec := json.NewDecoder(fp)
+	if err := jsonDec.Decode(&collagePos); err != nil {
+		fp.Close()
+		logger.Panic().Msgf("cannot decode %s: %v", collageFilename, err)
+	}
+	fp.Close()
+
 	ctrl, err := server.NewController(
 		conf.LocalAddr,
 		conf.ExternalAddr,
@@ -173,8 +193,10 @@ func main() {
 		cert,
 		templateFS,
 		staticFS,
+		dataFS,
 		dir,
 		revcatClient,
+		collagePos,
 		conf.Directus.CatalogID,
 		conf.MediaserverBase,
 		bundle,
