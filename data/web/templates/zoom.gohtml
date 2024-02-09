@@ -1,0 +1,92 @@
+<!doctype html>
+{{- $lang := .Lang}}
+{{- $root := .RootPath }}
+<html lang="{{ $lang }}">
+<head>
+    {{ template "head.gohtml" . }}
+</head>
+
+<body class="w-100">
+
+{{ template "nav.gohtml" . }}
+
+<div class="container-fluid p-0 d-flex h-100">
+</div>
+
+{{ template "footer.gohtml" . }}
+<script src="{{ .RootPath }}static/bootstrap/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script src="{{ .RootPath }}static/openseadragon/openseadragon.min.js" crossorigin="anonymous"></script>
+<script type="text/javascript">
+
+    let documenturl = ""
+    let documenttitle = ""
+
+    var documentModal = new bootstrap.Modal(document.getElementById('documentModal'), null)
+    var documentModalElem = document.getElementById('documentModal')
+    var modalTitle = document.getElementById('documentModal').querySelector('.modal-title')
+    var modalBodyIFrame = document.getElementById('documentModal').querySelector('.modal-body iframe')
+    documentModalElem.addEventListener('show.bs.modal', function (event) {
+        // If necessary, you could initiate an AJAX request here
+        // and then do the updating in a callback.
+        //
+        // Update the modal's content.
+
+        modalTitle.textContent = documenttitle
+        modalBodyIFrame.src = documenturl
+    });
+    /*
+    documentModalElem.onclick = function () {
+        documentModalElem.style.display = "none";
+    }
+    */
+    documentModalElem.addEventListener('hidden.bs.modal', function (event) {
+        modalBodyIFrame.src = ""
+    })
+    var viewer = OpenSeadragon({
+        id: "collage",
+        showNavigator: true,
+        prefixUrl: "{{ .RootPath }}static/openseadragon/images/",
+        tileSources: "{{ .RootPath }}data/collage.dzi" | joinSingle "/"}}",
+        //defaultZoomLevel: 5,
+    });
+    viewer.gestureSettingsMouse.clickToZoom = false;
+    viewer.addHandler('open', function() {
+        viewer.viewport.zoomTo(3, null, true);
+    });
+    viewer.addHandler('canvas-double-click', function(event) {
+        // The canvas-click event gives us a position in web coordinates.
+        var webPoint = event.position;
+
+        // Convert that to viewport coordinates, the lingua franca of OpenSeadragon coordinates.
+        var viewportPoint = viewer.viewport.pointFromPixel(webPoint);
+
+        // Convert from viewport coordinates to image coordinates.
+        var imagePoint = viewer.viewport.viewportToImageCoordinates(viewportPoint);
+
+        // Show the results.
+        console.log(webPoint.toString(), viewportPoint.toString(), imagePoint.toString());
+
+        var xhr = new XMLHttpRequest();
+        var url = "signature/"+Math.round(imagePoint.x)+"x"+Math.round(imagePoint.y);
+        xhr.open("GET", url, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                let json = JSON.parse(xhr.responseText);
+                if (json == null) return;
+                let signature = json;
+                console.log("Signature: "+signature)
+                if( signature == "" ) return
+                documenttitle = signature
+                documenturl = "../document/"+signature
+                documentModal.show();
+            }
+        }
+        xhr.send(null);
+    });
+    documentModal.addEventListener('hidden.bs.modal', function (event) {
+        modalBodyIFrame.src = ""
+    })
+</script>
+</body>
+</html>

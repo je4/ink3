@@ -225,7 +225,23 @@ func (ctrl *Controller) init() error {
 		ctrl.indexPage(c)
 	})
 
-	router.GET("/zoom/:PosX/:PosY", ctrl.zoomSignature)
+	router.GET("/zoom/signature/:PosX/:PosY", ctrl.zoomSignature)
+	router.GET("/zoom/:lang", ctrl.zoomPage)
+	router.GET("/zoom", func(c *gin.Context) {
+		cookieLang, _ := c.Request.Cookie("lang")
+		accept := c.Request.Header.Get("Accept-Language")
+		langTag, _ := language.MatchStrings(ctrl.languageMatcher, cookieLang.String(), accept)
+		langBase, _ := langTag.Base()
+		lang := langBase.String()
+		if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
+			lang = "en"
+		}
+		newURL := "/zoom/" + lang
+		if c.Request.URL.RawQuery != "" {
+			newURL += "?" + c.Request.URL.RawQuery
+		}
+		c.Redirect(http.StatusTemporaryRedirect, newURL)
+	})
 
 	router.GET("/search", func(c *gin.Context) {
 		cookieLang, _ := c.Request.Cookie("lang")
@@ -951,5 +967,24 @@ func (ctrl *Controller) detailTextList(c *gin.Context) {
 			break
 		}
 		cursorString = result.GetSearch().GetPageInfo().GetEndCursor()
+	}
+}
+
+func (ctrl *Controller) zoomPage(c *gin.Context) {
+	var lang = c.Param("lang")
+	if !ctrl.langAvailable(lang) {
+		lang = "de"
+	}
+	templateName := "zoom.gohtml"
+	zoomTemplate, err := ctrl.loadHTMLTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
+		return
+	}
+	if err := zoomTemplate.Execute(c.Writer, &baseData{Lang: lang, RootPath: "../"}); err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
+		return
 	}
 }

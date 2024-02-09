@@ -158,7 +158,7 @@ func main() {
 
 	var dataFS fs.FS
 	if conf.DataDir != "" {
-		staticFS = os.DirFS(conf.DataDir)
+		dataFS = os.DirFS(conf.DataDir)
 	}
 
 	dir := directus.NewDirectus(conf.Directus.BaseUrl, string(conf.Directus.Token), time.Duration(conf.Directus.CacheTime))
