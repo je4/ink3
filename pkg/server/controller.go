@@ -866,6 +866,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 
 	type tplData struct {
 		baseData
+		IFrame          bool
 		Source          *client.MediathekEntries_MediathekEntries `json:"source"`
 		MediaserverBase string                                    `json:"mediaserverBase"`
 	}
@@ -873,8 +874,10 @@ func (ctrl *Controller) detail(c *gin.Context) {
 	if len(query) > 0 {
 		searchParams = "?" + query.Encode()
 	}
+	_, isIFrame := c.GetQuery("iframe")
 	var data = &tplData{
 		Source: source.MediathekEntries[0],
+		IFrame: isIFrame,
 		baseData: baseData{
 			Lang:       lang,
 			RootPath:   "../../",

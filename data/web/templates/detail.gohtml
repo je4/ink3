@@ -13,12 +13,16 @@
 </head>
 
 <body class="w-100">
+{{ if not .IFrame }}
 {{ template "nav.gohtml" . }}
+
 <div class="m-2">
 <a href="{{ $search }}" class="btn btn-outline-secondary pborder">
     <span class="bi-chevron-left"></span>&nbsp;{{ localize "backtosearch" $lang }}
 </a>
 </div>
+{{ end }}
+
 <div class="container-fluid p-0 d-flex h-100">
     <div class="flex-fill">
         <div class="p-4">
@@ -144,8 +148,9 @@
     </div>
 </div>
 
-
+{{ if not .IFrame}}
 {{ template "footer.gohtml" . }}
+{{ end }}
 <script src="{{ .RootPath }}static/bootstrap/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 <script>
     window.HELP_IMPROVE_VIDEOJS = false;

@@ -71,7 +71,8 @@
   /* [data-bs-theme=light] { */
   :root {
     --bs-focus-ring-color: #000 !important;
-    --bs-body-bg: rgba(245, 245, 245, 0) !important;
+    --bs-body-bg: #e8edf1 !important;
+    --bs-body-bg-rgb: rgb(232, 237, 241) !important;
   }
   .btn-csp {
     --bs-btn-color: #000;
@@ -154,6 +155,10 @@
   --bs-accordion-border-radius: 0px !important;
   --bs-accordion-btn-focus-border-color: transparent !important;
   --bs-accordion-btn-focus-box-shadow: none !important;
+}
+
+.dvh-100 {
+  height: 100dvh;
 }
 
 .accordion-body {

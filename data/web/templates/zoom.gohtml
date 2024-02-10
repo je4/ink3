@@ -4,34 +4,101 @@
 <html lang="{{ $lang }}">
 <head>
     {{ template "head.gohtml" . }}
+    <style>
+        .openseadragon-container {
+        }
+    </style>
 </head>
 
-<body class="w-100">
+<body class="w-100 dvh-100 d-flex flex-column">
+<div class="modal fade" id="documentModal" tabindex="-1" aria-labelledby="documentLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen" >
+        <div class="modal-content">
+            <div class="modal-header" data-bs-dismiss="modal">
+                <nav class="maincolor navbar w-100">
+                    <div class="container-fluid">
+                        <img class="object-fit-scale csp-brand-image" style="max-width: 480px;" src="{{ .RootPath }}static/img/title_{{ .Lang }}_1024x117.png" alt="Title: {{ localize "title" .Lang }}" />
+                        <ul class="pagination">
+                            <li class=" page-item"><button type="button" class="ms-4 btn-close" data-bs-dismiss="modal" aria-label="Close"></button></li>
+                        </ul>
 
-{{ template "nav.gohtml" . }}
-
-<div class="container-fluid p-0 d-flex h-100">
+                    </div>
+                </nav>
+            </div>
+            <div class="modal-body">
+                <iframe style="width: 100%;height: 97%;" src=""></iframe>
+            </div>
+            <div class="modal-footer" data-bs-dismiss="modal">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
 </div>
 
-{{ template "footer.gohtml" . }}
+    {{ template "nav.gohtml" . }}
+
+    <div id="collage" class="container-fluid row flex-grow-1 p-0">
+    </div>
+
+    {{ template "footer.gohtml" . }}
+
 <script src="{{ .RootPath }}static/bootstrap/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 <script src="{{ .RootPath }}static/openseadragon/openseadragon.min.js" crossorigin="anonymous"></script>
 <script type="text/javascript">
 
+    function isTouchDevice() {
+        return (('ontouchstart' in window) ||
+            ((typeof navigator.maxTouchPoints !== 'undefined') && (navigator.maxTouchPoints > 0)) ||
+            ((typeof navigator.msTouchPoints !== 'undefined') && (navigator.msMaxTouchPoints > 0)));
+    }
+
+    function doClick(event) {
+        // The canvas-click event gives us a position in web coordinates.
+        let webPoint = event.position;
+
+        // Convert that to viewport coordinates, the lingua franca of OpenSeadragon coordinates.
+        let viewportPoint = viewer.viewport.pointFromPixel(webPoint);
+
+        // Convert from viewport coordinates to image coordinates.
+        let imagePoint = viewer.viewport.viewportToImageCoordinates(viewportPoint);
+
+        // Show the results.
+        console.log(webPoint.toString(), viewportPoint.toString(), imagePoint.toString());
+
+        let xhr = new XMLHttpRequest();
+        let url = "{{ .RootPath }}zoom/signature/" + Math.round(imagePoint.x) + "/" + Math.round(imagePoint.y);
+        xhr.open("GET", url, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                let json = JSON.parse(xhr.responseText);
+                if (json == null) return;
+                let signature = json;
+                console.log("Signature: "+signature)
+                if( signature === "" ) return
+                documenttitle = signature
+                documenturl = "{{ .RootPath }}detail/"+signature+"/{{ .Lang }}?iframe"
+                documentModal.show();
+            }
+        }
+        xhr.send(null);
+    }
+
+    let touchDevice = isTouchDevice()
     let documenturl = ""
     let documenttitle = ""
 
-    var documentModal = new bootstrap.Modal(document.getElementById('documentModal'), null)
-    var documentModalElem = document.getElementById('documentModal')
-    var modalTitle = document.getElementById('documentModal').querySelector('.modal-title')
-    var modalBodyIFrame = document.getElementById('documentModal').querySelector('.modal-body iframe')
+    let documentModal = new bootstrap.Modal(document.getElementById('documentModal'), null)
+    let documentModalElem = document.getElementById('documentModal')
+    //let modalTitle = document.getElementById('documentModal').querySelector('.modal-title')
+    let modalBodyIFrame = document.getElementById('documentModal').querySelector('.modal-body iframe')
     documentModalElem.addEventListener('show.bs.modal', function (event) {
         // If necessary, you could initiate an AJAX request here
         // and then do the updating in a callback.
         //
         // Update the modal's content.
 
-        modalTitle.textContent = documenttitle
+        //modalTitle.textContent = documenttitle
         modalBodyIFrame.src = documenturl
     });
     /*
@@ -45,48 +112,36 @@
     var viewer = OpenSeadragon({
         id: "collage",
         showNavigator: true,
-        prefixUrl: "{{ .RootPath }}static/openseadragon/images/",
+        prefixUrl: "{{ .RootPath | toJSStr }}static/openseadragon/images/",
         tileSources: "{{ .RootPath }}data/collage.dzi",
         //defaultZoomLevel: 5,
     });
+    let parent = document.getElementById('collage');
+    let height = parent.offsetHeight;
+    let width = parent.offsetWidth;
+//    console.log("Size: "+width+"/"+height)
+    let os = document.getElementsByClassName('openseadragon-container')[0];
+    os.style.height = height+"px";
+    os.style.width = width+"px";
+
     viewer.gestureSettingsMouse.clickToZoom = false;
     viewer.addHandler('open', function() {
         viewer.viewport.zoomTo(3, null, true);
     });
-    viewer.addHandler('canvas-double-click', function(event) {
-        // The canvas-click event gives us a position in web coordinates.
-        var webPoint = event.position;
 
-        // Convert that to viewport coordinates, the lingua franca of OpenSeadragon coordinates.
-        var viewportPoint = viewer.viewport.pointFromPixel(webPoint);
-
-        // Convert from viewport coordinates to image coordinates.
-        var imagePoint = viewer.viewport.viewportToImageCoordinates(viewportPoint);
-
-        // Show the results.
-        console.log(webPoint.toString(), viewportPoint.toString(), imagePoint.toString());
-
-        var xhr = new XMLHttpRequest();
-        var url = "{{ .RootPath }}zoom/signature/"+Math.round(imagePoint.x)+"/"+Math.round(imagePoint.y);
-        xhr.open("GET", url, true);
-        xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                let json = JSON.parse(xhr.responseText);
-                if (json == null) return;
-                let signature = json;
-                console.log("Signature: "+signature)
-                if( signature == "" ) return
-                documenttitle = signature
-                documenturl = "../document/"+signature
-                documentModal.show();
-            }
-        }
-        xhr.send(null);
+    viewer.addHandler('canvas-click', function(event) {
+        if (!event.quick) return
+        doClick(event)
     });
-    documentModal.addEventListener('hidden.bs.modal', function (event) {
-        modalBodyIFrame.src = ""
-    })
+
+    addEventListener("resize", (event) => {
+        let parent = document.getElementById('collage');
+        let height = parent.offsetHeight;
+        let width = parent.offsetWidth;
+        let os = document.getElementsByClassName('openseadragon-container')[0];
+        os.style.height = height+"px";
+        os.style.width = width+"px";
+    });
 </script>
 </body>
 </html>
