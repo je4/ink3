@@ -15,9 +15,19 @@ function search(url, cursor) {
             collParam += colls[i].getAttribute("value") + ",";
         }
     }
-    if ( colls.length > 0 ){
+    if ( colls.length == 0 ){
+        colls = document.getElementsByClassName("collectionCheck");
+        for (let i = 0; i < colls.length; i++) {
+            if (colls[i].checked) {
+                collParam += colls[i].getAttribute("value") + ",";
+            }
+        }
+    }
+    if (collParam !== "") {
         params.set("collections", collParam);
     }
+
+
 
     let vocs = document.getElementsByClassName("vocButton")
     let vocParam = "";

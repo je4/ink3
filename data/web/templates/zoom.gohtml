@@ -46,7 +46,7 @@
         id: "collage",
         showNavigator: true,
         prefixUrl: "{{ .RootPath }}static/openseadragon/images/",
-        tileSources: "{{ .RootPath }}data/collage.dzi" | joinSingle "/"}}",
+        tileSources: "{{ .RootPath }}data/collage.dzi",
         //defaultZoomLevel: 5,
     });
     viewer.gestureSettingsMouse.clickToZoom = false;
@@ -67,7 +67,7 @@
         console.log(webPoint.toString(), viewportPoint.toString(), imagePoint.toString());
 
         var xhr = new XMLHttpRequest();
-        var url = "signature/"+Math.round(imagePoint.x)+"x"+Math.round(imagePoint.y);
+        var url = "{{ .RootPath }}zoom/signature/"+Math.round(imagePoint.x)+"/"+Math.round(imagePoint.y);
         xhr.open("GET", url, true);
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.onreadystatechange = function () {
