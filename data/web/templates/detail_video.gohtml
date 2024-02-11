@@ -5,12 +5,12 @@
         {{ range $key, $media := $typedMedia.GetItems }}
             {{- $size := calcAspectSize $media.Width $media.Height 600 480 }}
         <div class="borderedge mt-2">
-            <table style="max-height: 480px; width: 100%; border: none; margin-left:auto;margin-right:auto;">
+            <table style="border: none; margin-left:auto;margin-right:auto;">
                 <tr>
-                    <td colspan="5">
+                    <td colspan="5" style="height: 480px">
                         <video
                                 id="video-{{ $key }}"
-                                class="video-js vjs-fluid"
+                                class="video-js vjs-fill"
                                 controls
                                 preload="auto"
                                 width="{{ $size.Width }}"
@@ -32,7 +32,7 @@
                 <tr>
                     {{ range $num := list 3 8 12 17 22 }}
                         <td>
-                            <img class="bd-placeholder-img card-img-top" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}$$timeshot$${{ $num }}/resize/size{{ div $size.Width 5 }}x{{ div $size.Height 5 }}/formatPNG/autorotate" />
+                            <img width="{{ div $size.Width 5 }}" height="{{ div $size.Height 5 }}" class="bd-placeholder-img" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}$$timeshot$${{ $num }}/resize/size{{ div $size.Width 5 }}x{{ div $size.Height 5 }}/formatPNG/autorotate" />
                         </td>
                     {{ end }}
                 </tr>
