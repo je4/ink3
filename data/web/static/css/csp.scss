@@ -97,4 +97,6 @@ body {
   border-width: medium;
 }
 
-
+audio + .vjs-poster img {
+  object-fit: fill;
+}
