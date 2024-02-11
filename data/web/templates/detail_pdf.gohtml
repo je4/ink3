@@ -2,6 +2,7 @@
 {{- $source := .Source }}
 {{- $root := .RootPath }}
 {{- $lang := .Lang }}
+{{- $isExhibition := .Exhibition }}
 {{ range $typedMedia := $source.Media }}
     {{ if eq $typedMedia.GetName "pdf" }}
         <script src="{{ $root }}static/pdfjs/lib/webviewer.min.js"></script>
@@ -18,10 +19,16 @@
                         viewers.set(id, instance);
                         // now you can access APIs through the WebViewer instance
                         const { Core, UI, Feature } = instance;
+                        instance.setLayoutMode(instance.LayoutMode.FacingCover)
+                        //Core.DisplayModeManager.setDisplayMode(Core.CoverFacing);
+
                         if(darkMode) {
                             UI.setTheme('dark');
                         }
 
+                        {{- if $isExhibition}}
+                        Core.documentViewer.disableAutomaticLinking();
+                        {{- end}}
                         UI.setLanguage('{{ $lang }}');
                         UI.disableFeatures([Feature.Annotations, Feature.FilePicker, Feature.NotesPanel]);
                         //instance.UI.openElements(['leftPanel']);
