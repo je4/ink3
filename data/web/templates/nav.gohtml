@@ -1,11 +1,14 @@
+{{- $isExhibition := .Exhibition }}
+{{- $root := .RootPath }}
+{{- $lang := .Lang }}
 <nav class="maincolor navbar">
     <div class="container-fluid">
-        <a class="navbar-brand me-auto" href="{{ .RootPath }}{{ .Lang }}"><img class="object-fit-scale csp-brand-image" style="max-width: 480px;" src="{{ .RootPath }}static/img/title_{{ .Lang }}_1024x117.png" alt="Title: {{ localize "title" .Lang }}" /></a>
+        <a class="navbar-brand me-auto"{{ if not $isExhibition }} href="{{ $root }}{{ $lang }}"{{ end }}><img class="object-fit-scale csp-brand-image" style="max-width: 480px;" src="{{ $root }}static/img/title_{{ $lang }}_1024x117.png" alt="Title: {{ localize "title" $lang }}" /></a>
         <ul class="pagination">
-            <li class="page-item"><a style="padding: 3px 6px 3px 6px;" class="noborder page-link{{if eq .Lang "de" }} active{{ end }}" href="de{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ .RootPath }}static/img/de.png" /></a></li>
-            <li class="page-item"><a style="padding: 3px 6px 3px 6px;" class="noborder page-link{{if eq .Lang "en" }} active{{ end }}" href="en{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ .RootPath }}static/img/en.png" /></a></li>
-            <li class="page-item"><a style="padding: 3px 6px 3px 6px;" class="noborder page-link{{if eq .Lang "it" }} active{{ end }}" href="it{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ .RootPath }}static/img/it.png" /></a></li>
-            <li class=" page-item"><a style="padding: 3px 6px 3px 6px;" class="noborder page-link{{if eq .Lang "fr" }} active{{ end }}" href="fr{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ .RootPath }}static/img/fr.png" /></a></li>
+            <li class="page-item"><a style="padding: 3px 6px 3px 6px;" class="noborder page-link{{if eq $lang "de" }} active{{ end }}" href="de{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ $root }}static/img/de.png" /></a></li>
+            <li class="page-item"><a style="padding: 3px 6px 3px 6px;" class="noborder page-link{{if eq $lang "en" }} active{{ end }}" href="en{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ $root }}static/img/en.png" /></a></li>
+            <li class="page-item"><a style="padding: 3px 6px 3px 6px;" class="noborder page-link{{if eq $lang "it" }} active{{ end }}" href="it{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ $root }}static/img/it.png" /></a></li>
+            <li class=" page-item"><a style="padding: 3px 6px 3px 6px;" class="noborder page-link{{if eq $lang "fr" }} active{{ end }}" href="fr{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ $root }}static/img/fr.png" /></a></li>
         </ul>
     </div>
 </nav>

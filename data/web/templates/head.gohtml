@@ -1,4 +1,5 @@
-{{- $lang := .Lang}}
+{{- $root := .RootPath }}
+{{- $lang := .Lang }}
     <script>
         const darkMode = window.matchMedia("(prefers-color-scheme:dark)").matches;
         if(darkMode) {
@@ -16,11 +17,11 @@
     <title>{{ localize "title" $lang }}</title>
 
 
-    <link href="{{ .RootPath }}static/bootstrap/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
-    <link href="{{ .RootPath }}static/bootstrap-icons/font/bootstrap-icons.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="{{ $root }}static/bootstrap/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="{{ $root }}static/bootstrap-icons/font/bootstrap-icons.min.css" rel="stylesheet" crossorigin="anonymous">
 
-    <link href="{{ .RootPath }}static/css/ibm-plex-sans.css" rel="stylesheet">
-    <link href="{{ .RootPath }}static/css/ibm-plex-serif.css" rel="stylesheet">
+    <link href="{{ $root }}static/css/ibm-plex-sans.css" rel="stylesheet">
+    <link href="{{ $root }}static/css/ibm-plex-serif.css" rel="stylesheet">
 
-    <link href="{{ .RootPath }}static/css/csp.css" rel="stylesheet">
+    <link href="{{ $root }}static/css/csp.css" rel="stylesheet">
 

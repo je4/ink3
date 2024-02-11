@@ -3,9 +3,11 @@
 {{- $root := .RootPath }}
 {{- $source := .Source }}
 {{- $mediaserverBase := .MediaserverBase }}
-{{- $search := printf "%s/search/%s" .SearchAddr .Lang }}
 {{- $extraIgnore := list }}
-{{- if ne .Params "" }}{{ $search = printf "%s?%s" $search .Params }}{{ end }}
+{{- $isExhibition := .Exhibition }}
+{{- $search := printf "%s/search/%s?" .SearchAddr .Lang }}
+{{- if $isExhibition }}{{ $search = printf "%sexhibition&" $search }}{{ end }}
+{{- if ne .Params "" }}{{ $search = printf "%s%s" $search .Params }}{{ end }}
 <html lang="{{ $lang }}">
 <head>
     {{ template "head.gohtml" . }}
@@ -37,9 +39,9 @@
                     {{- $title := multiLang $source.Base.Title }}
                     <h1>
                         {{ $title.String }}
-                        {{ if $source.Base.Date }}<br /><span style="font-weight: normal;">({{ $source.Base.Date }})</span>{{ end }}
+                        {{ if $source.Base.Date }}<br /><span style="font-weight: normal;">{{ if ne ( ptrString $source.Base.Date) "" }}({{ $source.Base.Date }}){{ end }}</span>{{ end }}
                     </h1>
-                    {{ if $source.Base.URL }}<span style="font-weight: normal;"><a target="_blank" href="{{ $source.Base.URL }}">{{ $source.Base.URL }}</a></span><br />{{ end }}
+                    {{ if $source.Base.URL }}<span style="font-weight: normal;"><a target="_blank"{{ if not $isExhibition }} href="{{ $source.Base.URL }}"{{ end }}>{{ $source.Base.URL }}</a></span><br />{{ end }}
                     <div class="p-2 borderedge">
                     <span style="font-weight: bold;">
                     {{- range $key, $p := $source.Base.Person}}

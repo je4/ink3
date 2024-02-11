@@ -6,6 +6,7 @@
 {{- $searchBase := join "" (list $root "search/" $lang)}}
 {{- $detailAddr := .DetailAddr }}
 {{- $params := .Params }}
+{{- $isExhibition := .Exhibition }}
 {{- $search := printf "%s/search/%s%s" .SearchAddr .Lang .Params }}
 <html lang="{{ $lang }}">
 
@@ -35,11 +36,11 @@
                     </nav>
                     <div class="album py-5">
                         <nav class="navbar">
-                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}cursor={{ toURL .PageInfo.StartCursor }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn btn-outline-secondary pborder">
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.StartCursor }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn btn-outline-secondary pborder">
                                 <span class="bi-chevron-left"></span>&nbsp;{{ localize "back" $lang }}
                             </a>
                             {{ localize "founditems" $lang }}: {{ .TotalCount }}
-                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}cursor={{ toURL .PageInfo.EndCursor }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn btn-outline-secondary pborder">
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.EndCursor }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn btn-outline-secondary pborder">
                                 {{ localize "next" $lang }}&nbsp;<span class="bi-chevron-right"></span>
                             </a>
                         </nav>
@@ -48,7 +49,12 @@
                                 {{- range $edge := .Edges }}
                                     <!-- div class="col p-0" style='max-width: 320px; background-image: url("../static/img/frame0.png"); background-size: 100% 100%;' -->
                                     <div class="col p-0" style='max-width: 320px;'>
-                                        <a style="color: inherit; text-decoration: inherit;" href="{{ $detailAddr }}/detail/{{ $edge.Edge.Base.Signature }}/{{ $lang }}?{{ if ne $data.Cursor "" }}cursor={{ $data.Cursor }}{{ end }}{{ if ne $params "" }}&{{ $params }}{{ end }}">
+                                        {{- $query := "" }}
+                                        {{- if ne $data.Cursor "" }}{{- $query = printf "%s&cursor=%s" $query $data.Cursor }}{{- end }}
+                                        {{- if ne $params "" }}{{- $query = printf "%s&%s" $query $params }}{{- end }}
+                                        {{- if $isExhibition }}{{- $query = printf "%s&exhibition" $query }}{{- end }}
+                                        {{- $query = trimPrefix "&" $query }}
+                                        <a style="color: inherit; text-decoration: inherit;" href="{{ $detailAddr }}/detail/{{ $edge.Edge.Base.Signature }}/{{ $lang }}{{ if ne $query "" }}?{{ $query | toURL }}{{ end }}">
                                             <div class="m-2 p-2" style="transform: rotate({{randInt -5 5}}deg)">
                                                 <div style="align-content: center; text-align: center">
                                                     {{- if $edge.Edge.Base.Poster }}
@@ -80,11 +86,11 @@
                             </div>
                         </div>
                         <nav class="navbar">
-                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}cursor={{ toURL .PageInfo.StartCursor }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn btn-outline-secondary pborder">
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.StartCursor }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn btn-outline-secondary pborder">
                                 <span class="bi-chevron-left"></span>&nbsp;{{ localize "back" $lang }}
                             </a>
                             {{ localize "founditems" $lang }}: {{ .TotalCount }}
-                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}cursor={{ toURL .PageInfo.EndCursor }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn btn-outline-secondary pborder">
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.EndCursor }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn btn-outline-secondary pborder">
                                 {{ localize "next" $lang }}&nbsp;<span class="bi-chevron-right"></span>
                             </a>
                         </nav>
@@ -104,7 +110,7 @@
         </div>
         <div class="d-block gap-2">
             {{ range $collFacet := .CollectionFacets }}
-                <button style="padding: 1px 4px 1px 4px;" onclick="{{ if $collFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}')" type="button" class="noborder btn btn-csp collectionButton" value="{{ $collFacet.ID }}" selected="{{ if $collFacet.Checked }}true{{ else }}false{{ end }}">
+                <button style="padding: 1px 4px 1px 4px;" onclick="{{ if $collFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}'{{ if $isExhibition }}, '', true{{ end }})" type="button" class="noborder btn btn-csp collectionButton" value="{{ $collFacet.ID }}" selected="{{ if $collFacet.Checked }}true{{ else }}false{{ end }}">
                     {{ if $collFacet.Checked }}<img class="number" style="height: 20px;" src="{{ $root }}static/img/hook.png">&nbsp;{{ end }}{{ abbrev 50 $collFacet.Name }}
                     {{- $ds := digits $collFacet.Count }}
                     {{- range $digit := $ds }}
@@ -120,7 +126,7 @@
                     {{ localize $parent $lang }}
                     <div class="d-block gap-2">
                     {{ range $vocabFacet := $vocabFacets }}
-                        <button style="padding: 1px 4px 1px 4px;" onclick="{{ if $vocabFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}')" type="button" class="noborder btn btn-csp vocButton" value="voc:{{ $parent }}:{{ $vocabFacet.Name }}" selected="{{ if $vocabFacet.Checked }}true{{ else }}false{{ end }}">
+                        <button style="padding: 1px 4px 1px 4px;" onclick="{{ if $vocabFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}'{{ if $isExhibition }}, '', true{{ end }})" type="button" class="noborder btn btn-csp vocButton" value="voc:{{ $parent }}:{{ $vocabFacet.Name }}" selected="{{ if $vocabFacet.Checked }}true{{ else }}false{{ end }}">
                             {{ if $vocabFacet.Checked }}<img class="number" style="height: 20px;" src="{{ $root }}static/img/hook.png">&nbsp;{{ end }}{{ abbrev 32 (localize $vocabFacet.Name $lang) }}
                             {{- $ds := digits $vocabFacet.Count }}
                             {{- range $digit := $ds }}

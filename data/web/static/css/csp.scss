@@ -11,6 +11,21 @@
   --bs-body-font-size: 0.94rem;
 }
 
+.accordion {
+  --bs-accordion-bg: transparent !important;
+  --bs-accordion-active-bg: transparent !important;
+  --bs-accordion-border-color: transparent !important;
+  --bs-accordion-border-width: 0px !important;
+  --bs-accordion-border-radius: 0px !important;
+  --bs-accordion-btn-focus-border-color: transparent !important;
+  --bs-accordion-btn-focus-box-shadow: none !important;
+
+}
+
+.modal {
+  --bs-modal-width: 80%;
+}
+
 .carousel-control-prev-icon {
   background-image: url("../img/prev.png");
 }
@@ -21,17 +36,6 @@
 
 .noborder {
   border: none !important;
-}
-
-.accordion {
-  --bs-accordion-bg: transparent !important;
-  --bs-accordion-active-bg: transparent !important;
-  --bs-accordion-border-color: transparent !important;
-  --bs-accordion-border-width: 0px !important;
-  --bs-accordion-border-radius: 0px !important;
-  --bs-accordion-btn-focus-border-color: transparent !important;
-  --bs-accordion-btn-focus-box-shadow: none !important;
-
 }
 
 .dvh-100 {
@@ -100,3 +104,4 @@ body {
 audio + .vjs-poster img {
   object-fit: fill;
 }
+
