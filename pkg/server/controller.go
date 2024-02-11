@@ -39,9 +39,10 @@ var languageNamer = map[string]display.Namer{
 }
 
 type baseData struct {
-	Lang     string
-	RootPath string
-	Params   template.URL
+	Lang       string
+	RootPath   string
+	Exhibition bool
+	Params     template.URL
 	//Search       template.URL
 	Cursor     string
 	SearchAddr string
@@ -640,6 +641,7 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 	if len(currentSearchURL) > 0 {
 		searchParams = "?" + currentSearchURL.Encode()
 	}
+	_, isExhibition := c.GetQuery("exhibition")
 	data := struct {
 		baseData
 		//Result           *client.Search_Search      `json:"result"`
@@ -655,7 +657,8 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		MediaserverBase: ctrl.mediaserverBase,
 		PageInfo:        result.GetSearch().GetPageInfo(),
 		baseData: baseData{
-			Lang: lang,
+			Lang:       lang,
+			Exhibition: isExhibition,
 			//Search:     template.URL(currentSearchURL.Encode()),
 			//			Search:       template.URL(fmt.Sprintf("%s/search/%s%s", ctrl.searchAddr, lang, searchParams)),
 			//			SearchParams: searchParams,
@@ -875,12 +878,14 @@ func (ctrl *Controller) detail(c *gin.Context) {
 		searchParams = "?" + query.Encode()
 	}
 	_, isIFrame := c.GetQuery("iframe")
+	_, isExhibition := c.GetQuery("exhibition")
 	var data = &tplData{
 		Source: source.MediathekEntries[0],
 		IFrame: isIFrame,
 		baseData: baseData{
 			Lang:       lang,
 			RootPath:   "../../",
+			Exhibition: isExhibition,
 			SearchAddr: ctrl.searchAddr,
 			DetailAddr: ctrl.detailAddr,
 			//Search:     template.URL(fmt.Sprintf("%s/search/%s%s", ctrl.searchAddr, lang, searchParams)),
@@ -985,7 +990,20 @@ func (ctrl *Controller) zoomPage(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
 		return
 	}
-	if err := zoomTemplate.Execute(c.Writer, &baseData{Lang: lang, RootPath: "../"}); err != nil {
+
+	_, isExhibition := c.GetQuery("exhibition")
+	var data = &struct {
+		baseData
+	}{
+		baseData: baseData{
+			Lang:       lang,
+			RootPath:   "../",
+			Exhibition: isExhibition,
+			SearchAddr: ctrl.searchAddr,
+			DetailAddr: ctrl.detailAddr,
+		},
+	}
+	if err := zoomTemplate.Execute(c.Writer, data); err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
 		return
