@@ -1,6 +1,6 @@
 module github.com/je4/revcatfront/v2
 
-go 1.21.3
+go 1.22.0
 
 require (
 	emperror.dev/errors v0.8.1

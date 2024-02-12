@@ -3,7 +3,7 @@
 {{- $root := .RootPath }}
 {{- $source := .Source }}
 {{- $mediaserverBase := .MediaserverBase }}
-{{- $extraIgnore := list }}
+{{- $extraIgnore := list "jahrgang" "remark" "performers" "camera" "sprache" "function" }}
 {{- $isExhibition := .Exhibition }}
 {{- $search := printf "%s/search/%s?" .SearchAddr .Lang }}
 {{- if $isExhibition }}{{ $search = printf "%sexhibition&" $search }}{{ end }}
@@ -36,6 +36,7 @@
                     {{ template "detail_pdf.gohtml" . }}
                 </div>
                 <div class="col col-md-5">
+                    {{ if ne (ptrString $source.Base.CollectionTitle) "" }}{{ $source.Base.CollectionTitle }} (#{{ $source.Base.Signature }}){{ else }}#{{ $source.Base.Signature }}{{ end }}
                     {{- $title := multiLang $source.Base.Title }}
                     <h1>
                         {{ $title.String }}
