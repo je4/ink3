@@ -8,7 +8,6 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/Yamashou/gqlgenc v0.16.2
 	github.com/gin-contrib/cors v1.5.0
-	github.com/gin-gonic/contrib v0.0.0-20221130124618-7e01895a63f2
 	github.com/gin-gonic/gin v1.9.1
 	github.com/gosimple/slug v1.13.1
 	github.com/je4/basel-collections/v2 v2.0.0
@@ -16,7 +15,9 @@ require (
 	github.com/je4/utils/v2 v2.0.17
 	github.com/je4/zsearch/v2 v2.0.5
 	github.com/nicksnyder/go-i18n/v2 v2.3.0
+	github.com/rs/cors v1.10.1
 	github.com/rs/zerolog v1.31.0
+	golang.org/x/net v0.20.0
 	golang.org/x/text v0.14.0
 )
 
@@ -71,7 +72,6 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.7.0 // indirect
 	golang.org/x/crypto v0.18.0 // indirect
-	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/sys v0.16.0 // indirect
 	google.golang.org/protobuf v1.32.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

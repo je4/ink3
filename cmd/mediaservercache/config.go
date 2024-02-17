@@ -27,6 +27,14 @@ type LocaleConfig struct {
 	Available []string `toml:"available"`
 }
 
+type MediaServerConfig struct {
+	LocalAddr    string `toml:"localaddr"`
+	ExternalAddr string `toml:"externaladdr"`
+	TLSCert      string `toml:"tlscert"`
+	TLSKey       string `toml:"tlskey"`
+	BaseDir      string `toml:"basedir"`
+}
+
 type RevCatFrontConfig struct {
 	LocalAddr    string `toml:"localaddr"`
 	ExternalAddr string `toml:"externaladdr"`
@@ -35,10 +43,12 @@ type RevCatFrontConfig struct {
 	TLSCert      string `toml:"tlscert"`
 	TLSKey       string `toml:"tlskey"`
 
-	Templates   string `toml:"templates"`
-	StaticFiles string `toml:"staticfiles"`
+	Templates       string `toml:"templates"`
+	StaticFiles     string `toml:"staticfiles"`
+	MediaserverBase string `toml:"mediaserverbase"`
 
-	Locale LocaleConfig `toml:"locale"`
+	MediaServer MediaServerConfig `toml:"mediaserver"`
+	Locale      LocaleConfig      `toml:"locale"`
 
 	LogFile  string `toml:"logfile"`
 	LogLevel string `toml:"loglevel"`
@@ -47,8 +57,7 @@ type RevCatFrontConfig struct {
 
 	Directus Directus `toml:"directus"`
 
-	MediaserverBase string `toml:"mediaserverbase"`
-	DataDir         string `toml:"datadir"`
+	DataDir string `toml:"datadir"`
 }
 
 func LoadRevCatFrontConfig(fSys fs.FS, fp string, conf *RevCatFrontConfig) error {
