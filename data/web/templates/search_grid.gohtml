@@ -110,7 +110,7 @@
         </div>
         <div class="d-block gap-2">
             {{ range $collFacet := .CollectionFacets }}
-                <button style="padding: 1px 4px 1px 4px;" onclick="{{ if $collFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}'{{ if $isExhibition }}, '', true{{ end }})" type="button" class="noborder btn btn-csp collectionButton" value="{{ $collFacet.ID }}" selected="{{ if $collFacet.Checked }}true{{ else }}false{{ end }}">
+                <button style="margin: 1px; padding: 1px 4px 1px 4px;" onclick="{{ if $collFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}'{{ if $isExhibition }}, '', true{{ end }})" type="button" class="noborder btn btn-csp collectionButton{{ if $collFacet.Checked }} btn-csp-hover{{ end }}" value="{{ $collFacet.ID }}" selected="{{ if $collFacet.Checked }}true{{ else }}false{{ end }}">
                     {{ if $collFacet.Checked }}<img class="number" style="height: 20px;" src="{{ $root }}static/img/hook.png">&nbsp;{{ end }}{{ abbrev 50 $collFacet.Name }}
                     {{- $ds := digits $collFacet.Count }}
                     {{- range $digit := $ds }}
@@ -126,7 +126,7 @@
                     {{ localize $parent $lang }}
                     <div class="d-block gap-2">
                     {{ range $vocabFacet := $vocabFacets }}
-                        <button style="padding: 1px 4px 1px 4px;" onclick="{{ if $vocabFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}'{{ if $isExhibition }}, '', true{{ end }})" type="button" class="noborder btn btn-csp vocButton" value="voc:{{ $parent }}:{{ $vocabFacet.Name }}" selected="{{ if $vocabFacet.Checked }}true{{ else }}false{{ end }}">
+                        <button style="margin: 1px; padding: 1px 4px 1px 4px;" onclick="{{ if $vocabFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}'{{ if $isExhibition }}, '', true{{ end }})" type="button" class="noborder btn btn-csp vocButton{{ if $vocabFacet.Checked }} btn-csp-hover{{ end }}" value="voc:{{ $parent }}:{{ $vocabFacet.Name }}" selected="{{ if $vocabFacet.Checked }}true{{ else }}false{{ end }}">
                             {{ if $vocabFacet.Checked }}<img class="number" style="height: 20px;" src="{{ $root }}static/img/hook.png">&nbsp;{{ end }}{{ abbrev 32 (localize $vocabFacet.Name $lang) }}
                             {{- $ds := digits $vocabFacet.Count }}
                             {{- range $digit := $ds }}

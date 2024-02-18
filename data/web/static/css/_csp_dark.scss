@@ -1,23 +1,14 @@
-@media (prefers-color-scheme: dark) {
-  /* [data-bs-theme=dark] { */
-  :root {
+/* @media (prefers-color-scheme: dark) { */
+[data-bs-theme=dark] {
+body {
     --bs-link-color: #d0d0ff;
     --bs-link-hover-color: #fff;
+    --bs-body-bg: #212529;
+    --bs-body-bg-rgb: rgb(33, 37, 41);
+
   }
 
-  .carousel-control-prev-icon {
-    background-image: url("../img/prev.png");
-  }
-
-  .carousel-control-next-icon {
-    background-image: url("../img/next.png");
-  }
-
-  img.number {
-    filter: invert(1);
-  }
-
-  .pagination {
+.pagination {
     --bs-focus-ring-color: #fff;
     --bs-pagination-active-bg: #4d5154;
     --bs-pagination-active-color: #000;
@@ -33,8 +24,6 @@
   }
 
   .btn-csp {
-    --bs-btn-color: #fff;
-    --bs-btn-bg: rgba(0, 0, 0, 0);
     --bs-btn-border-color: #212529;
     --bs-btn-hover-color: #fff;
     --bs-btn-hover-bg: #424649;
@@ -48,6 +37,33 @@
     --bs-btn-disabled-bg: #212529;
     --bs-btn-disabled-border-color: #212529;
   }
+
+  .btn-bd-primary {
+    --bs-btn-bg: #4d5154;
+    --bs-btn-border-color: #4d5154;
+    --bs-btn-active-bg: #4d5154;
+    --bs-btn-active-border-color: #4d5154;
+    --bs-btn-hover-bg: #6e7377;
+    --bs-btn-hover-border-color: #6e7377;
+  }
+
+  .dropdown-item {
+    --bs-dropdown-link-active-bg: #888d91;
+    --bs-dropdown-link-hover-bg: #7a8085;
+  }
+
+  .carousel-control-prev-icon {
+    background-image: url("../img/prev.png");
+  }
+
+  .carousel-control-next-icon {
+    background-image: url("../img/next.png");
+  }
+
+  img.number {
+    filter: invert(1);
+  }
+
 
   .csp-bubble-area {
     /*

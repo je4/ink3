@@ -161,8 +161,24 @@
 </script>
 <script src="{{ .RootPath }}static/videojs/video.min.js"></script>
 <script>
+    function isInViewport(el) {
+        const rect = el.getBoundingClientRect();
+
+        return (
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+
+        );
+    }
+
     const carousel = new bootstrap.Carousel('#carouselDetailImage');
     function carouselTo(index) {
+        const top = document.getElementById('carouselDetailImage');
+        if( !isInViewport(top) ) {
+            top.scrollIntoView();
+        }
         carousel.to(index);
     }
 </script>

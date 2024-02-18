@@ -22,7 +22,7 @@
                         instance.setLayoutMode(instance.LayoutMode.FacingCover)
                         //Core.DisplayModeManager.setDisplayMode(Core.CoverFacing);
 
-                        if(darkMode) {
+                        if(document.documentElement.getAttribute('data-bs-theme') === 'dark') {
                             UI.setTheme('dark');
                         }
 

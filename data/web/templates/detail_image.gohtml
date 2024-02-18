@@ -1,5 +1,6 @@
 {{- $mediaserverBase := .MediaserverBase }}
 {{- $source := .Source }}
+<a id="imageTop"></a>
 {{- range $typedMedia := $source.Media }}
     {{- if eq $typedMedia.GetName "image" }}
         {{- if gt (len $typedMedia.GetItems) 0 }}
