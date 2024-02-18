@@ -181,6 +181,14 @@
         }
         carousel.to(index);
     }
+
+        function videoJumpToShot(id, shotNumber) {
+            let player = videojs(id);
+            let shotLength = player.duration()/25;
+            player.play();
+            player.currentTime(shotLength*shotNumber);
+        }
+
 </script>
 
 </body>

@@ -32,7 +32,7 @@
                 <tr>
                     {{ range $num := list 3 8 12 17 22 }}
                         <td>
-                            <img width="{{ div $size.Width 5 }}" height="{{ div $size.Height 5 }}" class="bd-placeholder-img" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}$$timeshot$${{ $num }}/resize/size{{ div $size.Width 5 }}x{{ div $size.Height 5 }}/formatPNG/autorotate" />
+                            <a onclick="videoJumpToShot('video-{{ $key }}', {{ $num }})"><img width="{{ div $size.Width 5 }}" height="{{ div $size.Height 5 }}" class="bd-placeholder-img" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}$$timeshot$${{ $num }}/resize/size{{ div $size.Width 5 }}x{{ div $size.Height 5 }}/formatPNG/autorotate" /></a>
                         </td>
                     {{ end }}
                 </tr>
