@@ -2,6 +2,8 @@ package static
 
 import "embed"
 
+// go:embed pdfjs/lib/*
+//
 //go:embed bootstrap/css/bootstrap.min.css bootstrap/css/bootstrap.min.css.map
 //go:embed bootstrap/js/bootstrap.bundle.min.js bootstrap/js/bootstrap.bundle.min.js.map
 //go:embed bootstrap-icons/font/bootstrap-icons.min.css bootstrap-icons/font/fonts/bootstrap-icons.woff2 bootstrap-icons/font/fonts/bootstrap-icons.woff
@@ -11,6 +13,6 @@ import "embed"
 //go:embed js/d3.js js/d3bubble.js js/search.js js/chat.js
 //go:embed flag-icons/css/flag-icons.min.css flag-icons/flags/4x3/de.svg flag-icons/flags/4x3/gb-eng.svg flag-icons/flags/4x3/fr.svg flag-icons/flags/4x3/it.svg
 //go:embed videojs/video-js.min.css videojs/video.min.js
-//go:embed pdfjs/lib/*
+//go:embed pdf.js/web/viewer.css pdf.js/web/viewer.html pdf.js/web/viewer.mjs pdf.js/web/images/* pdf.js/web/locale/* pdf.js/build/pdf.mjs pdf.js/web/cmaps/* pdf.js/build/pdf.worker.mjs
 //go:embed openseadragon/images/* openseadragon/openseadragon.min.js openseadragon/openseadragon.min.js.map
 var FS embed.FS

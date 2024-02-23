@@ -186,10 +186,12 @@ func (ctrl *Controller) init() error {
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
 	router.Use(cors.New(corsConfig))
-	router.Use(gin.BasicAuth(gin.Accounts{
-		"performance": "schweiz",
-		"je":          "test",
-	}))
+	if !strings.HasPrefix(ctrl.externalAddr, "https://localhost") {
+		router.Use(gin.BasicAuth(gin.Accounts{
+			"performance": "schweiz",
+			"je":          "test",
+		}))
+	}
 	router.StaticFS("/static", NewDefaultIndexFS(http.FS(ctrl.staticFS), "index.html"))
 	router.StaticFS("/data", NewDefaultIndexFS(http.FS(ctrl.dataFS), "index.html"))
 
@@ -825,7 +827,15 @@ func (ctrl *Controller) detail(c *gin.Context) {
 		query.Set("cursor", cursorString)
 	}
 	templateName := "detail.gohtml"
-	textTemplate, err := ctrl.loadHTMLTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", "detail_image.gohtml", "detail_video.gohtml", "detail_audio.gohtml", "detail_pdf.gohtml", templateName})
+	textTemplate, err := ctrl.loadHTMLTemplate(templateName, []string{
+		"head.gohtml",
+		"footer.gohtml",
+		"nav.gohtml",
+		"detail_image.gohtml",
+		"detail_video.gohtml",
+		"detail_audio.gohtml",
+		"detail_pdf_pdfjs.gohtml",
+		templateName})
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))

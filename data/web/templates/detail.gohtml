@@ -33,7 +33,9 @@
                     {{ template "detail_image.gohtml" . }}
                     {{ template "detail_video.gohtml" . }}
                     {{ template "detail_audio.gohtml" . }}
-                    {{ template "detail_pdf.gohtml" . }}
+                    {{/* template "detail_pdf_pdfjsexpress.gohtml" . */}}
+                    {{/* template "detail_pdf_viewerjs.gohtml" . */}}
+                    {{ template "detail_pdf_pdfjs.gohtml" . }}
                 </div>
                 <div class="col col-md-5">
                     {{ if ne (ptrString $source.Base.CollectionTitle) "" }}{{ $source.Base.CollectionTitle }} (#{{ $source.Base.Signature }}){{ else }}#{{ $source.Base.Signature }}{{ end }}

@@ -200,7 +200,7 @@ func main() {
 
 func initMediaserver(conf *RevCatFrontConfig, logger zLogger.ZLogger) {
 	var collagePos = map[string][]image.Rectangle{}
-	collageFilename := filepath.Join(conf.DataDir, "collage.json")
+	collageFilename := filepath.Join(conf.DataDir, "collage/collage.json")
 	fp, err := os.Open(collageFilename)
 	if err != nil {
 		logger.Panic().Msgf("cannot open %s: %v", collageFilename, err)
