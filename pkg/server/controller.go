@@ -531,7 +531,7 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 			Name:        "vocabulary",
 			Field:       "tags.keyword",
 			Size:        1200,
-			MinDocCount: 0,
+			MinDocCount: 1,
 			Include:     []string{"voc:.*"},
 			Exclude:     []string{},
 		},
@@ -746,7 +746,20 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 			}
 		}
 	}
+	var str string
+	/*
+		for _, vf := range data.VocabularyFacets {
+			for _, v := range vf {
+				str += fmt.Sprintf("\"%s\" = \"%s\"\n", v.Name, strings.TrimPrefix(v.Name, "voc_"))
+			}
 
+		}
+
+	*/
+	for v, _ := range data.VocabularyFacets {
+		str += fmt.Sprintf("\"%s\" = \"%s\"\n", v, strings.TrimPrefix(v, "voc_"))
+
+	}
 	if err := gridTemplate.Execute(c.Writer, data); err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))

@@ -1,0 +1,34 @@
+logfile = ""
+loglevel = "DEBUG"
+
+localaddr = "localhost:8444"
+externaladdr = "https://localhost:8444"
+searchaddr = "https://localhost:8444"
+detailaddr = "https://localhost:8444"
+
+templates = "data/web/templates"
+staticfiles = "data/web/static"
+datadir = "/temp/performance"
+#mediaserverbase = "https://localhost:8446"
+mediaserverbase = "https://ba14ns21403-sec1.fhnw.ch/mediasrv"
+
+[mediaserver]
+localaddr = "localhost:8446"
+externaladdr = "https://localhost:8446"
+basedir = "/temp/performance/mediaserver"
+
+[revcat]
+endpoint = "https://localhost:8443/graphql"
+insecure = true
+apikey = "%%REVCAT_APIKEY%%"
+
+[directus]
+baseurl = "https://cms.basel-collections.ch"
+token = "%%DIRECTUS_TOKEN%%"
+cachetime = "10s"
+catalogid = 2
+
+[locale]
+default = "de"
+folder = ""
+available = ["de", "fr", "it", "en"]

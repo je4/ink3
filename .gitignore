@@ -31,3 +31,4 @@ go.sum
 /data/web/static/js/d3.js
 /data/web/static/videojs/
 /data/web/static/pdfjs/
+/cmd/mediaservercache/key.go
