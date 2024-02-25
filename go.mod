@@ -4,6 +4,7 @@ go 1.22.0
 
 require (
 	emperror.dev/errors v0.8.1
+	git.wntrmute.dev/kyle/goutils v1.7.4
 	github.com/BurntSushi/toml v1.3.2
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/Yamashou/gqlgenc v0.16.2

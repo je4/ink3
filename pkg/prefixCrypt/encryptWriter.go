@@ -1,4 +1,4 @@
-package main
+package prefixCrypt
 
 import (
 	"emperror.dev/errors"

@@ -1,4 +1,4 @@
-package main
+package prefixCrypt
 
 import (
 	"emperror.dev/errors"
@@ -9,27 +9,16 @@ func NewDecryptReader(r io.ReadSeeker, decode func([]byte) ([]byte, error)) (*De
 	mr := &DecryptReader{
 		rs:     r,
 		buffer: make([]byte, 512),
+		decode: decode,
 	}
-	return mr, mr.init(decode)
+	return mr, nil
 }
 
 type DecryptReader struct {
 	rs     io.ReadSeeker
 	buffer []byte
 	offset int64
-}
-
-func (mr *DecryptReader) init(decode func([]byte) ([]byte, error)) error {
-	n, err := mr.rs.Read(mr.buffer)
-	if err != nil {
-		if errors.Is(err, io.EOF) {
-			mr.buffer = make([]byte, 512)
-			return nil
-		}
-		return errors.Wrap(err, "failed to read head")
-	}
-	mr.buffer, err = decode(mr.buffer[:n])
-	return errors.WithStack(err)
+	decode func([]byte) ([]byte, error)
 }
 
 func (mr *DecryptReader) Seek(offset int64, whence int) (int64, error) {
@@ -44,6 +33,20 @@ func (mr *DecryptReader) Seek(offset int64, whence int) (int64, error) {
 func (mr *DecryptReader) Read(p []byte) (n int, err error) {
 	rlen := len(p)
 	if mr.offset < int64(len(mr.buffer)) {
+		if mr.buffer == nil {
+			n, err := mr.rs.Read(mr.buffer)
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					mr.buffer = make([]byte, 0, 512)
+				} else {
+					return 0, errors.Wrap(err, "failed to read head")
+				}
+			}
+			mr.buffer, err = mr.decode(mr.buffer[:n])
+			if err != nil {
+				return 0, errors.Wrap(err, "cannot decode buffer")
+			}
+		}
 		n = copy(p, mr.buffer[mr.offset:])
 		mr.offset += int64(n)
 		mr.offset, err = mr.rs.Seek(mr.offset, io.SeekStart)
