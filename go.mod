@@ -4,7 +4,6 @@ go 1.22.0
 
 require (
 	emperror.dev/errors v0.8.1
-	git.wntrmute.dev/kyle/goutils v1.7.4
 	github.com/BurntSushi/toml v1.3.2
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/Yamashou/gqlgenc v0.16.2
@@ -13,7 +12,7 @@ require (
 	github.com/gosimple/slug v1.13.1
 	github.com/je4/basel-collections/v2 v2.0.0
 	github.com/je4/revcat/v2 v2.0.0-20240109172856-2918cb10c98a
-	github.com/je4/utils/v2 v2.0.17
+	github.com/je4/utils/v2 v2.0.20
 	github.com/je4/zsearch/v2 v2.0.5
 	github.com/nicksnyder/go-i18n/v2 v2.3.0
 	github.com/rs/cors v1.10.1

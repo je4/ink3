@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"crypto/aes"
-	"crypto/cipher"
 	"crypto/sha1"
 	"crypto/sha512"
 	"crypto/tls"
@@ -16,6 +14,7 @@ import (
 	"github.com/je4/revcatfront/v2/config"
 	"github.com/je4/revcatfront/v2/data/certs"
 	"github.com/je4/revcatfront/v2/pkg/server"
+	"github.com/je4/utils/v2/pkg/prefixCrypt"
 	"github.com/je4/utils/v2/pkg/zLogger"
 	"github.com/rs/cors"
 	"github.com/rs/zerolog"
@@ -98,6 +97,14 @@ func main() {
 		_logger = _logger.Level(zerolog.DebugLevel)
 	}
 	var logger zLogger.ZLogger = &_logger
+
+	crypter, err := prefixCrypt.NewCFBCryptor(k, iv)
+	if err != nil {
+		logger.Panic().Err(err).Msgf("cannot create crypter")
+	}
+
+	encrypter = crypter
+	decrypter = crypter
 
 	if *initFlag {
 		initMediaserver(conf, logger)
@@ -300,27 +307,9 @@ func initMediaserver(conf *RevCatFrontConfig, logger zLogger.ZLogger) {
 
 var mediaserverRegexp = regexp.MustCompile(`^([^/]+)/([^/]+)/([^/]+)(/.+)?$`)
 
-func Encrypt(src []byte) ([]byte, error) {
-	block, err := aes.NewCipher(k)
-	if err != nil {
-		return nil, err
-	}
-	cfb := cipher.NewCFBEncrypter(block, iv)
-	cipherText := make([]byte, len(src))
-	cfb.XORKeyStream(cipherText, src)
-	return cipherText, nil
-}
+var encrypter prefixCrypt.Encrypter
+var decrypter prefixCrypt.Decrypter
 
-func Decrypt(src []byte) ([]byte, error) {
-	block, err := aes.NewCipher(k)
-	if err != nil {
-		return nil, err
-	}
-	cfb := cipher.NewCFBDecrypter(block, iv)
-	plainText := make([]byte, len(src))
-	cfb.XORKeyStream(plainText, src)
-	return plainText, nil
-}
 func cacheItem(mediaserverBase, uStr string, dir string, logger zLogger.ZLogger) error {
 	// logger.Info().Msgf("caching %s/%s", mediaserverBase, uStr)
 	parts := mediaserverRegexp.FindStringSubmatch(uStr)
@@ -353,6 +342,33 @@ func cacheItem(mediaserverBase, uStr string, dir string, logger zLogger.ZLogger)
 	}
 	if fi, err := os.Stat(cacheFile); err == nil && fi.Size() > 0 {
 		if fi2, err2 := os.Stat(cacheFile + ".mime"); err2 == nil && fi2.Size() > 0 {
+			logger.Info().Msgf("rename %s -> %s.dat", cacheFile, cacheFile)
+			fpSrc, err := os.Open(cacheFile)
+			if err != nil {
+				return errors.Wrapf(err, "cannot open cache file %s", cacheFile)
+			}
+			fpDst, err := os.Create(cacheFile + ".dat")
+			if err != nil {
+				fpSrc.Close()
+				return errors.Wrapf(err, "cannot create cache file %s", cacheFile+".dat")
+			}
+			dst := prefixCrypt.NewEncWriter(fpDst, encrypter)
+			if _, err := io.Copy(dst, fpSrc); err != nil {
+				fpSrc.Close()
+				dst.Close()
+				fpDst.Close()
+				os.Remove(cacheFile + ".dat")
+				return errors.Wrapf(err, "cannot write cache file %s", cacheFile+".dat")
+			}
+			fpSrc.Close()
+			dst.Close()
+			fpDst.Close()
+			os.Remove(cacheFile)
+			return nil
+		}
+	}
+	if fi, err := os.Stat(cacheFile + ".dat"); err == nil && fi.Size() > 0 {
+		if fi2, err2 := os.Stat(cacheFile + ".mime"); err2 == nil && fi2.Size() > 0 {
 			logger.Info().Msgf("cache hit: %s", cacheFile)
 			return nil
 		}
@@ -360,7 +376,7 @@ func cacheItem(mediaserverBase, uStr string, dir string, logger zLogger.ZLogger)
 	if err := os.MkdirAll(filepath.Dir(cacheFile), 0755); err != nil && !errors.Is(err, fs.ErrExist) {
 		return errors.Wrapf(err, "cannot create cache folder %s", filepath.Dir(cacheFile))
 	}
-	fp, err := os.Create(cacheFile)
+	fp, err := os.Create(cacheFile + ".dat")
 	if err != nil {
 		return errors.Wrapf(err, "cannot create cache file %s", cacheFile)
 	}
@@ -381,11 +397,14 @@ func cacheItem(mediaserverBase, uStr string, dir string, logger zLogger.ZLogger)
 		os.Remove(cacheFile)
 		return errors.New(fmt.Sprintf("cannot get image %s: %v - %s", uStr, resp.StatusCode, resp.Status))
 	}
-	if _, err := io.Copy(fp, resp.Body); err != nil {
+	dst := prefixCrypt.NewEncWriter(fp, encrypter)
+	if _, err := io.Copy(dst, resp.Body); err != nil {
+		dst.Close()
 		fp.Close()
 		os.Remove(cacheFile)
 		return errors.Wrapf(err, "cannot write cache file %s", cacheFile)
 	}
+	dst.Close()
 	fp.Close()
 	mime := resp.Header.Get("Content-Type")
 	if strings.HasPrefix(mime, "text/html") {
