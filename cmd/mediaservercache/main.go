@@ -45,10 +45,6 @@ func auth(apikey string) func(ctx context.Context, req *http.Request, gqlInfo *c
 
 func main() {
 
-	/*
-
-	 */
-
 	flag.Parse()
 
 	var cfgFS fs.FS
