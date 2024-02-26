@@ -5,8 +5,10 @@
 {{- $mediaserverBase := .MediaserverBase }}
 {{- $extraIgnore := list "jahrgang" "remark" "performers" "camera" "sprache" "function" }}
 {{- $isExhibition := .Exhibition }}
-{{- $search := printf "%s/search/%s?" .SearchAddr .Lang }}
-{{- if $isExhibition }}{{ $search = printf "%sexhibition&" $search }}{{ end }}
+{{- $isIFrame := .IFrame }}
+{{- $searchBase := printf "%s/search/%s?" .SearchAddr .Lang }}
+{{- if $isExhibition }}{{ $searchBase = printf "%sexhibition&" $searchBase }}{{ end }}
+{{- $search := $searchBase }}
 {{- if ne .Params "" }}{{ $search = printf "%s%s" $search .Params }}{{ end }}
 <html lang="{{ $lang }}">
 <head>
@@ -15,7 +17,7 @@
 </head>
 
 <body class="w-100">
-{{ if not .IFrame }}
+{{ if not $isIFrame }}
 {{ template "nav.gohtml" . }}
 
 <div class="m-2">
@@ -29,7 +31,7 @@
     <div class="flex-fill">
         <div class="p-4">
             <div class="row">
-                <div class="col col-md-7" style="text-align: center;">
+                <div class="col col-lg-7" style="text-align: center;">
                     {{ template "detail_image.gohtml" . }}
                     {{ template "detail_video.gohtml" . }}
                     {{ template "detail_audio.gohtml" . }}
@@ -37,7 +39,7 @@
                     {{/* template "detail_pdf_viewerjs.gohtml" . */}}
                     {{ template "detail_pdf_pdfjs.gohtml" . }}
                 </div>
-                <div class="col col-md-5">
+                <div class="col col-lg-5">
                     {{ if ne (ptrString $source.Base.CollectionTitle) "" }}{{ $source.Base.CollectionTitle }} (#{{ $source.Base.Signature }}){{ else }}#{{ $source.Base.Signature }}{{ end }}
                     {{- $title := multiLang $source.Base.Title }}
                     <h1>
@@ -93,6 +95,7 @@
                         {{ if ne $festival ""}}<div style="font-weight: bold;">{{ $festival }}</div>{{ end }}
                         <p class="card-text mb-auto">
                             {{ if ne (ptrString $source.Base.Place) "" }}{{ localize "place" $lang }}: {{ $source.Base.Place }}<br />{{ end }}
+                            {{- $extraIgnore = append $extraIgnore "eventplace"}}
                             {{- $eventcurator := map $source.Extra "eventcurator" }}
                             {{- $extraIgnore = append $extraIgnore "eventcurator"}}
                             {{if ne $eventcurator ""}}KuratorIn: {{ $eventcurator }}<br />{{ end }}
@@ -128,9 +131,47 @@
                                 {{- end }}
                             </p>
                         </div>
+                        <img class="number" style="width: 376px; height:15px;" src="{{ $root }}static/img/line_short.png" />
                         {{- end }}
                     {{- end }}
-                    <div class="borderedge">
+                    {{ if $source.Base.Tags }}
+                        {{- $num := 0 }}
+                        {{- range $voc := $source.Base.Tags }}
+                            {{ if hasPrefix "voc:" $voc }}
+                                {{- $num = add $num 1 }}
+                            {{ end }}
+                        {{- end }}
+                        {{- if gt $num 0 }}
+                            <div class="p-2 borderedge">
+                            <div style="font-weight: bold; margin-top: 10px;">Tags</div>
+                            {{- $extraIgnore = append $extraIgnore "schlagwort"}}
+                                {{- range $voc := $source.Base.Tags }}
+                                    {{ if hasPrefix "voc:" $voc }}
+                                        {{ $parts := split ":"  (trimPrefix "voc:" $voc) }}
+                                        {{ $base := index $parts "_0" }}
+                                        {{ $base = (localize $base $lang) }}
+                                        {{ $tag := index $parts "_1" }}
+                                        {{ $tag = (localize $tag $lang) }}
+                                        <a class="btn btn-secondary m-1" href="{{ if and $isExhibition $isIFrame }}#{{ else }}{{ printf "%svocabulary=%s" $searchBase $voc }}{{ end }}" role="button">{{ localize $base $lang }}::{{ localize $tag $lang }}</a>
+                                    {{ end }}
+
+                                {{- end }}
+                        </div>
+                        <img class="number" style="width: 376px; height:15px;" src="{{ $root }}static/img/line_short.png" /><br />
+                        {{- end }}
+                    {{- end }}
+                    <div class="p-2 borderedge">
+                        <img class="qr" src="{{ qrCode (printf "performance.sammlung.cc/detail/%s/%s" $source.Base.Signature $lang) }}" style="width: 100px; height: 100px; margin-top: 10px;" /><br />
+                    </div>
+                    <img class="number" style="width: 376px; height:15px;" src="{{ $root }}static/img/line_short.png" /><br />
+                    {{- $num := 0 }}
+                    {{- range $extra := $source.Extra }}
+                        {{- if not (has $extra.Key $extraIgnore) }}
+                            {{- $num = add $num 1 }}
+                        {{- end }}
+                    {{- end }}
+                    {{- if gt $num 0 }}
+                    <div class="p-2 borderedge">
                         <div style="font-weight: bold; margin-top: 10px;">Extra</div>
                         <table style="table-layout: fixed; width: 100%; border: none;">
                     {{- range $extra := $source.Extra }}
@@ -148,6 +189,7 @@
                         </table>
                     </div>
                     <img class="number" style="width: 376px; height:15px;" src="{{ $root }}static/img/line_short.png" />
+                    {{- end }}
                 </div>
             </div>
         </div>

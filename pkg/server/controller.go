@@ -5,8 +5,10 @@ import (
 	"context"
 	"crypto/tls"
 	"emperror.dev/errors"
+	"encoding/base64"
 	"fmt"
 	"github.com/Masterminds/sprig/v3"
+	"github.com/docker/docker/pkg/ioutils"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gosimple/slug"
@@ -15,6 +17,8 @@ import (
 	"github.com/je4/utils/v2/pkg/zLogger"
 	"github.com/je4/zsearch/v2/pkg/translate"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/yeqown/go-qrcode/v2"
+	"github.com/yeqown/go-qrcode/writer/standard"
 	"golang.org/x/net/html"
 	"golang.org/x/text/language"
 	"golang.org/x/text/language/display"
@@ -51,6 +55,25 @@ type baseData struct {
 
 func (ctrl *Controller) funcMap() template.FuncMap {
 	fm := sprig.FuncMap()
+
+	fm["qrCode"] = func(s string) template.URL {
+		qrc, err := qrcode.NewWith(s,
+			qrcode.WithEncodingMode(qrcode.EncModeByte),
+			qrcode.WithErrorCorrectionLevel(qrcode.ErrorCorrectionQuart),
+		)
+		if err != nil {
+			return template.URL(fmt.Sprintf("cannot create qr code for %s: %v", s, err))
+		}
+		buf := bytes.NewBuffer(nil)
+		wr := ioutils.NopWriteCloser(buf)
+		w2 := standard.NewWithWriter(wr, standard.WithQRWidth(40), standard.WithBgTransparent(), standard.WithBuiltinImageEncoder(standard.PNG_FORMAT))
+		if err = qrc.Save(w2); err != nil {
+			fmt.Printf("cannot save qr code for %s: %v", s, err)
+		}
+		w2.Close()
+		wr.Close()
+		return template.URL(fmt.Sprintf("data:image/png;base64,%s", base64.StdEncoding.EncodeToString(buf.Bytes())))
+	}
 
 	fm["langName"] = func(langSrc, langTarget string) string {
 		if namer, ok := languageNamer[langTarget]; ok {
@@ -539,7 +562,7 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 			BoolTerm: &client.InFilterBoolTerm{
 				Field:  "tags.keyword",
 				Values: vocabularyIDs,
-				And:    false,
+				And:    true,
 			},
 		},
 	}
@@ -829,6 +852,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 	searchString := c.Query("search")
 	cursorString := c.Query("cursor")
 	collectionsString := c.Query("collections")
+	vocabularyString := c.Query("vocabulary")
 	query := url.Values{}
 	if searchString != "" {
 		query.Set("search", searchString)
@@ -838,6 +862,9 @@ func (ctrl *Controller) detail(c *gin.Context) {
 	}
 	if cursorString != "" {
 		query.Set("cursor", cursorString)
+	}
+	if vocabularyString != "" {
+		query.Set("vocabulary", vocabularyString)
 	}
 	templateName := "detail.gohtml"
 	textTemplate, err := ctrl.loadHTMLTemplate(templateName, []string{
@@ -903,6 +930,22 @@ func (ctrl *Controller) detail(c *gin.Context) {
 	if err := textTemplate.Execute(c.Writer, data); err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
+		return
+	}
+}
+
+func (ctrl *Controller) qr(c *gin.Context) {
+	url := c.Query("url")
+	qrc, err := qrcode.New(url)
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot create qrcode for '%s'", url)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot create qrcode for '%s': %v", url, err))
+		return
+	}
+	w := standard.NewWithWriter(ioutils.NopWriteCloser(c.Writer), standard.WithBgTransparent())
+	if err := qrc.Save(w); err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot save qrcode for '%s'", url)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot save qrcode for '%s': %v", url, err))
 		return
 	}
 }

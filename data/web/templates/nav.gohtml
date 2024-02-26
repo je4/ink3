@@ -52,9 +52,9 @@
     </ul>
 </div>
 
-<nav class="maincolor navbar">
+<nav class="maincolor navbar pt-0 pb-0">
     <div class="container-fluid">
-        <a class="navbar-brand me-auto"{{ if not $isExhibition }} href="{{ $root }}{{ $lang }}"{{ end }}><img class="object-fit-scale csp-brand-image" style="max-width: 480px;" src="{{ $root }}static/img/title_{{ $lang }}_1024x117.png" alt="Title: {{ localize "title" $lang }}" /></a>
+        <a class="navbar-brand me-auto"{{ if not $isExhibition }} href="{{ $root }}{{ $lang }}"{{ end }}><img class="object-fit-scale csp-brand-image" style="max-width: 480px; max-height: 45px;" src="{{ $root }}static/img/title_{{ $lang }}_1024x117.png" alt="Title: {{ localize "title" $lang }}" /></a>
         <ul class="pagination">
             <li class="page-item"><a style="padding: 3px 6px 3px 6px;" class="noborder page-link{{if eq $lang "de" }} active{{ end }}" href="de{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ $root }}static/img/de.png" /></a></li>
             <li class="page-item"><a style="padding: 3px 6px 3px 6px;" class="noborder page-link{{if eq $lang "en" }} active{{ end }}" href="en{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ $root }}static/img/en.png" /></a></li>

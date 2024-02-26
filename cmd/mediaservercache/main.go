@@ -155,6 +155,8 @@ func main() {
 			shaSum := fmt.Sprintf("%x", sha1.Sum([]byte(r.URL.Path)))
 
 			cacheFile := filepath.Join(conf.MediaServer.BaseDir, "cache", string(shaSum[0]), string(shaSum[1]), shaSum)
+			mimeFilename := cacheFile + ".mime"
+			cacheFile += ".dat"
 			fi, err := os.Stat(cacheFile)
 			if err != nil {
 				if !errors.Is(err, fs.ErrNotExist) {
@@ -166,7 +168,6 @@ func main() {
 				}
 			}
 			logger.Info().Msgf("cache hit: %s", r.URL.Path)
-			mimeFilename := cacheFile + ".mime"
 			mimeStr, err := os.ReadFile(mimeFilename)
 			if err != nil {
 				http.Error(w, fmt.Sprintf("cannot read header file %s: %v", mimeFilename, err), http.StatusInternalServerError)
@@ -179,7 +180,12 @@ func main() {
 				return
 			}
 			defer fp.Close()
-			http.ServeContent(w, r, cacheFile, fi.ModTime(), fp)
+			dec, err := prefixCrypt.NewDecryptReader(fp, decrypter)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("cannot decrypt cache file %s: %v", cacheFile, err), http.StatusInternalServerError)
+				return
+			}
+			http.ServeContent(w, r, cacheFile, fi.ModTime(), dec)
 			return
 		}
 	}
