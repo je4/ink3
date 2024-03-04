@@ -1,4 +1,4 @@
-function search(url, cursor, exhibition) {
+function search(url, cursor, exhibition, ki) {
     let search = document.getElementById("search").value;
 
     const params = new URLSearchParams({
@@ -10,6 +10,10 @@ function search(url, cursor, exhibition) {
 
     if (exhibition !== undefined && exhibition) {
         params.set("exhibition", "");
+    }
+
+    if (ki !== undefined && ki) {
+        params.set("ki", "");
     }
 
     let colls = document.getElementsByClassName("collectionButton")

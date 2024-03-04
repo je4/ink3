@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/BurntSushi/toml"
 	"github.com/Yamashou/gqlgenc/clientv2"
+	"github.com/bluele/gcache"
 	"github.com/je4/basel-collections/v2/directus"
 	"github.com/je4/revcat/v2/tools/client"
 	"github.com/je4/revcatfront/v2/config"
@@ -15,6 +16,7 @@ import (
 	"github.com/je4/revcatfront/v2/data/web/static"
 	"github.com/je4/revcatfront/v2/data/web/templates"
 	"github.com/je4/revcatfront/v2/pkg/server"
+	"github.com/je4/utils/v2/pkg/openai"
 	"github.com/je4/utils/v2/pkg/zLogger"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/rs/zerolog"
@@ -27,6 +29,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"syscall"
 	"time"
@@ -79,27 +82,13 @@ func main() {
 
 	//	output := zerolog.ConsoleWriter{Out: out, TimeFormat: time.RFC3339}
 	_logger := zerolog.New(out).With().Timestamp().Logger()
-	switch strings.ToUpper(conf.LogLevel) {
-	case "DEBUG":
-		_logger = _logger.Level(zerolog.DebugLevel)
-	case "INFO":
-		_logger = _logger.Level(zerolog.InfoLevel)
-	case "WARN":
-		_logger = _logger.Level(zerolog.WarnLevel)
-	case "ERROR":
-		_logger = _logger.Level(zerolog.ErrorLevel)
-	case "FATAL":
-		_logger = _logger.Level(zerolog.FatalLevel)
-	case "PANIC":
-		_logger = _logger.Level(zerolog.PanicLevel)
-	default:
-		_logger = _logger.Level(zerolog.DebugLevel)
-	}
+	_logger.Level(zLogger.LogLevel(conf.LogLevel))
 	var logger zLogger.ZLogger = &_logger
 
 	var localeFS fs.FS
+	logger.Debug().Msgf("locale folder: '%s'", conf.Locale.Folder)
 	if conf.Locale.Folder == "" {
-		localeFS = cfgFS
+		localeFS = config.ConfigFS
 	} else {
 		localeFS = os.DirFS(conf.Locale.Folder)
 	}
@@ -113,7 +102,8 @@ func main() {
 	for _, lang := range conf.Locale.Available {
 		localeFile := fmt.Sprintf("active.%s.toml", lang)
 		if _, err := fs.Stat(localeFS, localeFile); err != nil {
-			logger.Fatal().Msgf("cannot find locale file [%v] %s", localeFS, localeFile)
+			logger.Fatal().Msgf("cannot find locale file [%v] %s: %v", reflect.TypeOf(localeFS), localeFile, err)
+
 		}
 
 		if _, err := bundle.LoadMessageFileFS(localeFS, localeFile); err != nil {
@@ -161,6 +151,12 @@ func main() {
 		dataFS = os.DirFS(conf.DataDir)
 	}
 
+	var embeddings *openai.ClientV2
+	if string(conf.OpenAIApiKey) != "" {
+		kv := openai.NewKVGCache(gcache.New(256).LRU().Build())
+		embeddings = openai.NewClientV2(string(conf.OpenAIApiKey), kv, logger)
+	}
+
 	dir := directus.NewDirectus(conf.Directus.BaseUrl, string(conf.Directus.Token), time.Duration(conf.Directus.CacheTime))
 
 	if conf.Revcat.Insecure {
@@ -200,6 +196,7 @@ func main() {
 		conf.Directus.CatalogID,
 		conf.MediaserverBase,
 		bundle,
+		embeddings,
 		conf.Templates != "",
 		logger)
 	if err != nil {

@@ -6,7 +6,7 @@
 <head>
     {{ template "head.gohtml" . }}
 </head>
-<body class="w-100">
+<body class="w-100" style="  background-image: url({{ $root }}static/img/index_bg2.png); background-size: cover; ">
     {{ template "nav.gohtml" . }}
 
     <main class="container-fluid">
@@ -17,12 +17,26 @@
                 <div class="row">
                     <div class="col-md d-flex justify-content-end align-items-center">
                         <div class="input-group">
-                            <input id="search" class="form-control w-auto longborder" type="search" placeholder="{{ localize "searchtext" $lang }}" aria-label="{{ localize "search" $lang }}">&nbsp;
+                            <input style="background-color: rgba(156, 156, 181, 0.7);" id="search" class="form-control w-auto longborder" type="search" placeholder="{{ localize "searchtext" $lang }}" aria-label="{{ localize "search" $lang }}">&nbsp;
                         </div>
-                        <button onclick="search('{{ $searchBase }}')" class="col btn pborder" type="submit">{{ localize "search" $lang }}</button>
+                        <button onclick="search('{{ $searchBase }}')" class="btn noborder" type="submit"><img alt="KI search" class="" width=28 src="{{ $root }}static/img/lupe_black.png"></button>
+                        <button onclick="search('{{ $searchBase }}', '', false, true)" class="btn noborder" type="submit"><img class="" width=28 src="{{ $root }}static/img/ki2_black.png"></button>
                     </div>
                 </div>
                 <div class="container mt-5">
+                    {{- range $key, $coll := .Collections }}
+                        <span class="me-3">
+                        <button style="margin: 1px; padding: 1px 4px 1px 4px;" onclick="this.setAttribute('selected', 'true');search('{{ $searchBase }}', '', false, false)" type="button" class="noborder btn btn-csp collectionButton" value="{{ $coll.Id }}" selected="false">
+                            {{ $coll.Title }}
+                        {{- $ds := digits 42 }}
+                        {{- range $digit := $ds }}
+                            <img class="number" style="height:30px;" src="{{ printf "%sstatic/img/%s.png" $root (runeString $digit) }}"/>
+                        {{- end }}
+                        </button>
+                        </span>
+                    {{ end }}
+
+                    <!--
                     <table class="table">
                         <tbody>
                     {{- range $key, $coll := .Collections }}
@@ -40,6 +54,7 @@
                     {{- end }}
                         </tbody>
                     </table>
+                    -->
                 </div>
 
         </div>
@@ -52,6 +67,13 @@
     <script src="static/js/d3bubble.js"></script>
     <script src="static/js/search.js"></script>
     <script>
+        function getImgUrl(img, diameter) {
+            if (img === "c442ac3a-c123-4bef-bb5f-28e33d3060b2") {
+                return `../static/img/coll_act.png`
+            }
+            return `https://cms.basel-collections.ch/assets/${img}?fit=cover&width=${diameter}&height=${diameter}`
+        }
+
         {{- $maxRadius := 100 }}
         {{- $minRadius := 60 }}
         {{- $maxDiameter := mul $maxRadius 2 }}
@@ -71,7 +93,7 @@
             .attr("height", height)
             .attr("viewBox", [0, 0, width, height])
             .attr("style", "max-width: 100%; height: auto; height: intrinsic;")
-            .attr("fill", "currentColor")
+            //.attr("fill", "currentColor")
             .attr("font-size", "0.7em")
             .attr("font-family", "sans-serif")
             .attr("text-anchor", "middle");
@@ -113,7 +135,8 @@
             .attr("height", d => d.radius*2)
             .attr("clip-path", d => `url(#clip-${d.id})`)
             .attr('transform', d => 'translate(' + [-d.radius, -d.radius] + ')')
-            .attr("xlink:href", d => `https://cms.basel-collections.ch/assets/${ d.image }?fit=cover&width=${maxDiameter}&height=${maxDiameter}`);
+            //.attr("xlink:href", d => `https://cms.basel-collections.ch/assets/${ d.image }?fit=cover&width=${maxDiameter}&height=${maxDiameter}`);
+            .attr("xlink:href", d => getImgUrl( d.image, maxDiameter)   );
 
 
         var ticksPerRender = 2;

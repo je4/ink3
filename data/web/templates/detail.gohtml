@@ -62,6 +62,32 @@
                     {{- end}}
                     </div>
                     <img class="number" style="width: 376px; height:15px;" src="{{ $root }}static/img/line_short.png" />
+                    {{ if $source.Base.Tags }}
+                        {{- $num := 0 }}
+                        {{- range $voc := $source.Base.Tags }}
+                            {{ if hasPrefix "voc:" $voc }}
+                                {{- $num = add $num 1 }}
+                            {{ end }}
+                        {{- end }}
+                        {{- if gt $num 0 }}
+                            <div class="p-2 borderedge">
+                                <div style="font-weight: bold; margin-top: 10px;">Tags</div>
+                                {{- $extraIgnore = append $extraIgnore "schlagwort"}}
+                                {{- range $voc := $source.Base.Tags }}
+                                    {{ if hasPrefix "voc:" $voc }}
+                                        {{ $parts := split ":"  (trimPrefix "voc:" $voc) }}
+                                        {{ $base := index $parts "_0" }}
+                                        {{ $base = (localize $base $lang) }}
+                                        {{ $tag := index $parts "_1" }}
+                                        {{ $tag = (localize $tag $lang) }}
+                                        <a class="btn btn-csp vocButton m-1 btn-outline-secondary pborder" href="{{ if and $isExhibition $isIFrame }}{{ else }}{{ printf "%svocabulary=%s" $searchBase $voc }}{{ end }}" role="button">{{ localize $tag $lang }}</a>
+                                    {{ end }}
+
+                                {{- end }}
+                            </div>
+                            <img class="number" style="width: 376px; height:15px;" src="{{ $root }}static/img/line_short.png" /><br />
+                        {{- end }}
+                    {{- end }}
                     {{- $abstract := multiLang $source.Abstract }}
                     {{- $abstractStr := $abstract.GetStr $lang }}
                     {{- $abstractOriginalLang := $abstract.GetNativeLanguage  }}
@@ -132,32 +158,6 @@
                             </p>
                         </div>
                         <img class="number" style="width: 376px; height:15px;" src="{{ $root }}static/img/line_short.png" />
-                        {{- end }}
-                    {{- end }}
-                    {{ if $source.Base.Tags }}
-                        {{- $num := 0 }}
-                        {{- range $voc := $source.Base.Tags }}
-                            {{ if hasPrefix "voc:" $voc }}
-                                {{- $num = add $num 1 }}
-                            {{ end }}
-                        {{- end }}
-                        {{- if gt $num 0 }}
-                            <div class="p-2 borderedge">
-                            <div style="font-weight: bold; margin-top: 10px;">Tags</div>
-                            {{- $extraIgnore = append $extraIgnore "schlagwort"}}
-                                {{- range $voc := $source.Base.Tags }}
-                                    {{ if hasPrefix "voc:" $voc }}
-                                        {{ $parts := split ":"  (trimPrefix "voc:" $voc) }}
-                                        {{ $base := index $parts "_0" }}
-                                        {{ $base = (localize $base $lang) }}
-                                        {{ $tag := index $parts "_1" }}
-                                        {{ $tag = (localize $tag $lang) }}
-                                        <a class="btn btn-secondary m-1" href="{{ if and $isExhibition $isIFrame }}#{{ else }}{{ printf "%svocabulary=%s" $searchBase $voc }}{{ end }}" role="button">{{ localize $base $lang }}::{{ localize $tag $lang }}</a>
-                                    {{ end }}
-
-                                {{- end }}
-                        </div>
-                        <img class="number" style="width: 376px; height:15px;" src="{{ $root }}static/img/line_short.png" /><br />
                         {{- end }}
                     {{- end }}
                     <div class="p-2 borderedge">

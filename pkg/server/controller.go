@@ -14,9 +14,11 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/je4/basel-collections/v2/directus"
 	"github.com/je4/revcat/v2/tools/client"
+	"github.com/je4/utils/v2/pkg/openai"
 	"github.com/je4/utils/v2/pkg/zLogger"
 	"github.com/je4/zsearch/v2/pkg/translate"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
+	oai "github.com/sashabaranov/go-openai"
 	"github.com/yeqown/go-qrcode/v2"
 	"github.com/yeqown/go-qrcode/writer/standard"
 	"golang.org/x/net/html"
@@ -46,6 +48,7 @@ type baseData struct {
 	Lang       string
 	RootPath   string
 	Exhibition bool
+	KI         bool
 	Params     template.URL
 	//Search       template.URL
 	Cursor     string
@@ -175,7 +178,7 @@ func (ctrl *Controller) funcMap() template.FuncMap {
 	return fm
 }
 
-func NewController(localAddr, externalAddr, searchAddr, detailAddr string, cert *tls.Certificate, templateFS, staticFS, dataFS fs.FS, dir *directus.Directus, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, catalogID int, mediaserverBase string, bundle *i18n.Bundle, templateDebug bool, logger zLogger.ZLogger) (*Controller, error) {
+func NewController(localAddr, externalAddr, searchAddr, detailAddr string, cert *tls.Certificate, templateFS, staticFS, dataFS fs.FS, dir *directus.Directus, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, catalogID int, mediaserverBase string, bundle *i18n.Bundle, embeddings *openai.ClientV2, templateDebug bool, logger zLogger.ZLogger) (*Controller, error) {
 
 	ctrl := &Controller{
 		localAddr:       localAddr,
@@ -196,6 +199,7 @@ func NewController(localAddr, externalAddr, searchAddr, detailAddr string, cert 
 		client:          client,
 		mediaserverBase: mediaserverBase,
 		bundle:          bundle,
+		embeddings:      embeddings,
 		languageMatcher: language.NewMatcher(bundle.LanguageTags()),
 	}
 	if err := ctrl.init(); err != nil {
@@ -347,6 +351,7 @@ type Controller struct {
 	searchAddr      string
 	detailAddr      string
 	zoomPos         map[string][]image.Rectangle
+	embeddings      *openai.ClientV2
 }
 
 func (ctrl *Controller) Start() error {
@@ -523,6 +528,7 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 	}
 	searchString := c.Query("search")
 	cursorString := c.Query("cursor")
+	ki := c.Request.URL.Query().Has("ki")
 	collectionsString := c.Query("collections")
 	parts := strings.Split(collectionsString, ",")
 	collectionIDs := []int{}
@@ -609,7 +615,22 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		}
 	}
 
-	result, err := ctrl.client.Search(context.Background(), searchString, []*client.InFacet{collFacet, vocFacet}, []*client.InFilter{}, nil, nil, nil, &cursorString)
+	var result *client.Search
+	var embedding64 = []float64{}
+	queryString := searchString
+	if ki && searchString != "" {
+		embedding, err := ctrl.embeddings.CreateEmbedding(searchString, oai.SmallEmbedding3)
+		if err != nil {
+			ctrl.logger.Error().Err(err).Msgf("cannot create embedding for '%s'", searchString)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot create embedding for '%s': %v", searchString, err))
+			return
+		}
+		for _, v := range embedding.Embedding {
+			embedding64 = append(embedding64, float64(v))
+		}
+		queryString = ""
+	}
+	result, err = ctrl.client.Search(context.Background(), queryString, []*client.InFacet{collFacet, vocFacet}, []*client.InFilter{}, embedding64, nil, nil, &cursorString)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", searchString)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", searchString, err))
@@ -653,7 +674,7 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 	data := struct {
 		baseData
 		//Result           *client.Search_Search      `json:"result"`
-		TotalCount       int64                      `json:"totalCount"`
+		TotalCount       int                        `json:"totalCount"`
 		PageInfo         *client.PageInfoFragment   `json:"pageInfo"`
 		Edges            []*edge                    `json:"edges"`
 		MediaserverBase  string                     `json:"mediaserverBase"`
@@ -667,6 +688,7 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		baseData: baseData{
 			Lang:       lang,
 			Exhibition: isExhibition,
+			KI:         ki,
 			//Search:     template.URL(currentSearchURL.Encode()),
 			//			Search:       template.URL(fmt.Sprintf("%s/search/%s%s", ctrl.searchAddr, lang, searchParams)),
 			//			SearchParams: searchParams,
@@ -676,7 +698,7 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 			SearchAddr: ctrl.searchAddr,
 			DetailAddr: ctrl.detailAddr,
 		},
-		TotalCount: result.GetSearch().GetTotalCount(),
+		TotalCount: int(result.GetSearch().GetTotalCount()),
 		RequestQuery: &queryData{
 			Search: searchString,
 		},
@@ -853,6 +875,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 	cursorString := c.Query("cursor")
 	collectionsString := c.Query("collections")
 	vocabularyString := c.Query("vocabulary")
+	ki := c.Request.URL.Query().Has("ki")
 	query := url.Values{}
 	if searchString != "" {
 		query.Set("search", searchString)
@@ -865,6 +888,10 @@ func (ctrl *Controller) detail(c *gin.Context) {
 	}
 	if vocabularyString != "" {
 		query.Set("vocabulary", vocabularyString)
+	}
+	if ki {
+		query.Set("ki", "")
+
 	}
 	templateName := "detail.gohtml"
 	textTemplate, err := ctrl.loadHTMLTemplate(templateName, []string{

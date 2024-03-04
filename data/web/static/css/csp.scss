@@ -30,6 +30,9 @@
   background-color: var(--bs-btn-hover-bg);
 }
 
+img.flipvertical {
+  transform: scaleX(-1);
+}
 
 .modal {
   --bs-modal-width: 80%;

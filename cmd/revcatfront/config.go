@@ -35,6 +35,8 @@ type RevCatFrontConfig struct {
 	TLSCert      string `toml:"tlscert"`
 	TLSKey       string `toml:"tlskey"`
 
+	OpenAIApiKey configutil.EnvString `toml:"openaiapikey"`
+
 	Templates   string `toml:"templates"`
 	StaticFiles string `toml:"staticfiles"`
 

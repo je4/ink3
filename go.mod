@@ -7,12 +7,13 @@ require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/Yamashou/gqlgenc v0.16.2
+	github.com/docker/docker v25.0.3+incompatible
 	github.com/gin-contrib/cors v1.5.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/gosimple/slug v1.13.1
 	github.com/je4/basel-collections/v2 v2.0.0
 	github.com/je4/revcat/v2 v2.0.0-20240109172856-2918cb10c98a
-	github.com/je4/utils/v2 v2.0.20
+	github.com/je4/utils/v2 v2.0.22
 	github.com/je4/zsearch/v2 v2.0.5
 	github.com/nicksnyder/go-i18n/v2 v2.3.0
 	github.com/rs/cors v1.10.1
@@ -32,6 +33,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
 	github.com/chenzhuoyu/iasm v0.9.1 // indirect
+	github.com/containerd/log v0.1.0 // indirect
 	github.com/dgraph-io/badger/v4 v4.2.0 // indirect
 	github.com/dgraph-io/ristretto v0.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
@@ -66,7 +68,9 @@ require (
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/sashabaranov/go-openai v1.20.1 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
+	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/sosodev/duration v1.2.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
