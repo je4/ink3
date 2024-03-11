@@ -209,8 +209,8 @@ func main() {
 		conf.MediaserverBase,
 		bundle,
 		embeddings,
-		conf.ZoomOnly,
 		conf.Templates != "",
+		conf.ZoomOnly,
 		logger)
 	if err != nil {
 		logger.Fatal().Msgf("cannot create controller: %v", err)

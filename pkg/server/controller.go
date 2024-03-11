@@ -180,7 +180,20 @@ func (ctrl *Controller) funcMap(name string) template.FuncMap {
 	return fm
 }
 
-func NewController(localAddr, externalAddr, searchAddr, detailAddr string, protoHTTP bool, auth map[string]string, cert *tls.Certificate, templateFS, staticFS, dataFS fs.FS, dir *directus.Directus, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, catalogID int, mediaserverBase string, bundle *i18n.Bundle, embeddings *openai.ClientV2, templateDebug, zoomOnly bool, logger zLogger.ZLogger) (*Controller, error) {
+func NewController(localAddr, externalAddr, searchAddr, detailAddr string,
+	protoHTTP bool,
+	auth map[string]string,
+	cert *tls.Certificate,
+	templateFS, staticFS, dataFS fs.FS,
+	dir *directus.Directus,
+	client client.RevCatGraphQLClient,
+	zoomPos map[string][]image.Rectangle,
+	catalogID int,
+	mediaserverBase string,
+	bundle *i18n.Bundle,
+	embeddings *openai.ClientV2,
+	templateDebug, zoomOnly bool,
+	logger zLogger.ZLogger) (*Controller, error) {
 
 	ctrl := &Controller{
 		localAddr:       localAddr,
