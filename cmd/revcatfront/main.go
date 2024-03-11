@@ -181,9 +181,9 @@ func main() {
 	}
 	fp.Close()
 
-	auth := map[string]string{}
+	authConfig := map[string]string{}
 	for _, a := range conf.Auth {
-		auth[a.User] = a.Password
+		authConfig[a.User] = a.Password
 	}
 
 	ctrl, err := server.NewController(
@@ -192,7 +192,7 @@ func main() {
 		conf.SearchAddr,
 		conf.DetailAddr,
 		conf.ProtoHTTP,
-		auth,
+		authConfig,
 		cert,
 		templateFS,
 		staticFS,
