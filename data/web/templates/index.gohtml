@@ -2,11 +2,16 @@
 {{- $lang := .Lang}}
 {{- $root := .RootPath }}
 {{- $searchBase := join "" (list $root "search/" $lang)}}
-<html lang="{{ $lang }}">
+<html lang="{{ $lang }}" data-bs-theme="dark">
 <head>
     {{ template "head.gohtml" . }}
+    <style>
+        .btn-csp {
+            --bs-btn-bg: #212529;
+        }
+    </style>
 </head>
-<body class="w-100" style="  background-image: url({{ $root }}static/img/index_bg2.png); background-size: cover; ">
+<body class="w-100" style="background-image: url({{ $root }}static/img/index_bg2.jpg); background-size: cover;" data-bs-theme="dark">
     {{ template "nav.gohtml" . }}
 
     <main class="container-fluid">
@@ -17,7 +22,7 @@
                 <div class="row">
                     <div class="col-md d-flex justify-content-end align-items-center">
                         <div class="input-group">
-                            <input style="background-color: rgba(156, 156, 181, 0.7);" id="search" class="form-control w-auto longborder" type="search" placeholder="{{ localize "searchtext" $lang }}" aria-label="{{ localize "search" $lang }}">&nbsp;
+                            <input style="background-color: rgba(156, 156, 181, 0.7);" id="search" class="form-control w-auto longborderblack" type="search" placeholder="{{ localize "searchtext" $lang }}" aria-label="{{ localize "search" $lang }}">&nbsp;
                         </div>
                         <button onclick="search('{{ $searchBase }}')" class="btn noborder" type="submit"><img alt="KI search" class="" width=28 src="{{ $root }}static/img/lupe_black.png"></button>
                         <button onclick="search('{{ $searchBase }}', '', false, true)" class="btn noborder" type="submit"><img class="" width=28 src="{{ $root }}static/img/ki2_black.png"></button>
@@ -28,7 +33,7 @@
                         <span class="me-3">
                         <button style="margin: 1px; padding: 1px 4px 1px 4px;" onclick="this.setAttribute('selected', 'true');search('{{ $searchBase }}', '', false, false)" type="button" class="noborder btn btn-csp collectionButton" value="{{ $coll.Id }}" selected="false">
                             {{ $coll.Title }}
-                        {{- $ds := digits 42 }}
+                        {{- $ds := digits $coll.Count }}
                         {{- range $digit := $ds }}
                             <img class="number" style="height:30px;" src="{{ printf "%sstatic/img/%s.png" $root (runeString $digit) }}"/>
                         {{- end }}

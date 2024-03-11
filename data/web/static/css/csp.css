@@ -5,6 +5,10 @@
   --bs-body-bg: #212529;
   --bs-body-bg-rgb: rgb(33, 37, 41);
 }
+[data-bs-theme=dark] .bg {
+  background-size: cover;
+  background-image: url("../img/index_bg_dark.jpg");
+}
 [data-bs-theme=dark] .pagination {
   --bs-focus-ring-color: #fff;
   --bs-pagination-active-bg: #4d5154;
@@ -104,6 +108,10 @@
   --bs-body-bg: #e8edf1;
   --bs-body-bg-rgb: rgb(232, 237, 241);
 }
+[data-bs-theme=light] .bg {
+  background-size: cover;
+  background-image: url("../img/index_bg_light.jpg");
+}
 [data-bs-theme=light] .btn-csp {
   --bs-btn-color: #000;
   --bs-btn-bg: rgba(255, 255, 255, 0);
@@ -186,6 +194,7 @@
   --bs-focus-ring-width: 0px !important;
   --bs-pagination-active-bg: #dee2e6 !important;
   --bs-body-font-size: 0.94rem;
+  --bs-secondary-color: black;
 }
 
 .accordion {
@@ -283,6 +292,13 @@ body {
   border-image-slice: 46 30 46 30;
   border-image-repeat: stretch;
   border-width: medium;
+}
+
+.longborderblack {
+  border-image-slice: 46 30 46 30;
+  border-image-repeat: stretch;
+  border-width: medium;
+  border-image-source: url("../img/border_lang.png");
 }
 
 audio + .vjs-poster img {

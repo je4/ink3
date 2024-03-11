@@ -5,8 +5,12 @@ body {
     --bs-link-hover-color: #fff;
     --bs-body-bg: #212529;
     --bs-body-bg-rgb: rgb(33, 37, 41);
-
   }
+
+.bg {
+  background-size: cover;
+  background-image: url("../img/index_bg_dark.jpg");
+}
 
 .pagination {
     --bs-focus-ring-color: #fff;

@@ -6,7 +6,13 @@ body {
   --bs-body-bg-rgb: rgb(232, 237, 241);
 }
 
-.btn-csp {
+.bg {
+  background-size: cover;
+  background-image: url("../img/index_bg_light.jpg");
+}
+
+
+  .btn-csp {
     --bs-btn-color: #000;
     --bs-btn-bg: rgba(255, 255, 255, 0);
     --bs-btn-border-color: #f8f9fa;

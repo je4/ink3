@@ -49,6 +49,8 @@ type RevCatFrontConfig struct {
 
 	Directus Directus `toml:"directus"`
 
+	ZoomOnly bool `toml:"zoomonly"`
+
 	MediaserverBase string `toml:"mediaserverbase"`
 	DataDir         string `toml:"datadir"`
 }

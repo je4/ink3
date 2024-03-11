@@ -6,6 +6,7 @@
      * Copyright 2011-2023 The Bootstrap Authors
      * Licensed under the Creative Commons Attribution 3.0 Unported License.
      */
+    {{- if (ne name "index.gohtml") }}
 
     (() => {
         'use strict'
@@ -81,6 +82,7 @@
                 })
         })
     })();
+    {{- end }}
 </script>
     <!-- script>
         const darkMode = window.matchMedia("(prefers-color-scheme:dark)").matches;

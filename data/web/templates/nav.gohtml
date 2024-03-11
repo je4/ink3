@@ -2,6 +2,7 @@
 {{- $root := .RootPath }}
 {{- $lang := .Lang }}
 
+{{- if (ne name "index.gohtml") }}
 <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
     <symbol id="check2" viewBox="0 0 16 16">
         <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
@@ -51,10 +52,11 @@
         </li>
     </ul>
 </div>
+{{- end }}
 
 <nav class="maincolor navbar pt-0 pb-0">
     <div class="container-fluid">
-        <a class="navbar-brand me-auto"{{ if not $isExhibition }} href="{{ $root }}{{ $lang }}"{{ end }}><img class="object-fit-scale csp-brand-image" style="max-width: 480px; max-height: 45px;" src="{{ $root }}static/img/title_{{ $lang }}_1024x117.png" alt="Title: {{ localize "title" $lang }}" /></a>
+        <a class="navbar-brand me-auto"{{ if not $isExhibition }} href="{{ $root }}{{ $lang }}"{{ end }}><img class="object-fit-scale{{ if (ne name "index.gohtml")  }} csp-brand-image{{ end }}" style="max-width: 480px; max-height: 45px;" src="{{ $root }}static/img/title_{{ $lang }}_1024x117.png" alt="Title: {{ localize "title" $lang }}" /></a>
         <ul class="pagination">
             <li class="page-item"><a style="padding: 3px 6px 3px 6px;" class="noborder page-link{{if eq $lang "de" }} active{{ end }}" href="de{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ $root }}static/img/de.png" /></a></li>
             <li class="page-item"><a style="padding: 3px 6px 3px 6px;" class="noborder page-link{{if eq $lang "en" }} active{{ end }}" href="en{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ $root }}static/img/en.png" /></a></li>

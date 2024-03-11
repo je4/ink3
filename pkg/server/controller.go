@@ -56,7 +56,7 @@ type baseData struct {
 	DetailAddr string
 }
 
-func (ctrl *Controller) funcMap() template.FuncMap {
+func (ctrl *Controller) funcMap(name string) template.FuncMap {
 	fm := sprig.FuncMap()
 
 	fm["qrCode"] = func(s string) template.URL {
@@ -175,10 +175,12 @@ func (ctrl *Controller) funcMap() template.FuncMap {
 		}
 		return m
 	}
+	fm["name"] = func() string { return name }
+
 	return fm
 }
 
-func NewController(localAddr, externalAddr, searchAddr, detailAddr string, cert *tls.Certificate, templateFS, staticFS, dataFS fs.FS, dir *directus.Directus, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, catalogID int, mediaserverBase string, bundle *i18n.Bundle, embeddings *openai.ClientV2, templateDebug bool, logger zLogger.ZLogger) (*Controller, error) {
+func NewController(localAddr, externalAddr, searchAddr, detailAddr string, cert *tls.Certificate, templateFS, staticFS, dataFS fs.FS, dir *directus.Directus, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, catalogID int, mediaserverBase string, bundle *i18n.Bundle, embeddings *openai.ClientV2, templateDebug, zoomOnly bool, logger zLogger.ZLogger) (*Controller, error) {
 
 	ctrl := &Controller{
 		localAddr:       localAddr,
@@ -200,6 +202,7 @@ func NewController(localAddr, externalAddr, searchAddr, detailAddr string, cert 
 		mediaserverBase: mediaserverBase,
 		bundle:          bundle,
 		embeddings:      embeddings,
+		zoomOnly:        zoomOnly,
 		languageMatcher: language.NewMatcher(bundle.LanguageTags()),
 	}
 	if err := ctrl.init(); err != nil {
@@ -235,6 +238,11 @@ func (ctrl *Controller) init() error {
 	})
 
 	router.GET("/:lang", func(c *gin.Context) {
+		lang := c.Param("lang")
+		if ctrl.zoomOnly {
+			c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("/zoom/%s", lang))
+			return
+		}
 		ctrl.indexPage(c)
 	})
 
@@ -352,6 +360,7 @@ type Controller struct {
 	detailAddr      string
 	zoomPos         map[string][]image.Rectangle
 	embeddings      *openai.ClientV2
+	zoomOnly        bool
 }
 
 func (ctrl *Controller) Start() error {
@@ -403,17 +412,46 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 		return
 	}
 
+	type collFacetType struct {
+		Id         int64
+		Name       string
+		Count      int
+		Title      string
+		Url        string
+		Identifier string
+		Image      string
+	}
+
 	type tplData struct {
 		baseData
-		Collections []*directus.Collection `json:"collections"`
+		Collections map[int64]*collFacetType `json:"collections"`
 	}
 	var data = &tplData{
-		Collections: []*directus.Collection{},
+		Collections: map[int64]*collFacetType{},
 		baseData: baseData{
 			Lang:     lang,
 			RootPath: "",
 		},
 	}
+
+	collFacet := &client.InFacet{
+		Term: &client.InFacetTerm{
+			Name:        "collections",
+			Field:       "category.keyword",
+			Size:        200,
+			MinDocCount: 0,
+			Include:     []string{},
+			Exclude:     []string{},
+		},
+	}
+	var size int64 = 1
+	result, err := ctrl.client.Search(context.Background(), "", []*client.InFacet{collFacet}, nil, nil, nil, &size, nil)
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", "")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", "", err))
+		return
+	}
+
 	for _, collid := range cat.Collections {
 		coll, err := ctrl.dir.GetCollection(collid.CollectionID.Id)
 		if err != nil {
@@ -427,7 +465,39 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 		if coll.Status != "published" {
 			continue
 		}
-		data.Collections = append(data.Collections, coll)
+		data.Collections[coll.Id] = &collFacetType{
+			Id:         coll.Id,
+			Name:       coll.GetTitle(),
+			Count:      0,
+			Title:      coll.GetTitle(),
+			Url:        coll.GetUrl(),
+			Identifier: coll.Identifier,
+			Image:      coll.Image,
+		}
+	}
+
+	for _, facet := range result.GetSearch().GetFacets() {
+		switch facet.GetName() {
+		case "collections":
+			for _, val := range facet.GetValues() {
+				strVal := val.GetFacetValueString()
+				if strVal == nil {
+					continue
+				}
+				facetStr := strVal.GetStrVal()
+				colls := data.Collections
+				for _, coll := range colls {
+					parts := strings.SplitN(coll.Identifier, ":", 2)
+					if len(parts) != 2 {
+						continue
+					}
+					cVal := strings.Trim(parts[1], "\" ")
+					if cVal == facetStr {
+						coll.Count = int(strVal.GetCount())
+					}
+				}
+			}
+		}
 	}
 
 	if err := indexTemplate.Execute(c.Writer, data); err != nil {
@@ -446,7 +516,7 @@ func (ctrl *Controller) loadHTMLTemplate(name string, files []string) (*template
 	tpl, ok := ctrl.templateCache[name]
 	if !ok {
 		var err error
-		tpl, err = template.New(name).Funcs(ctrl.funcMap()).ParseFS(ctrl.templateFS, files...)
+		tpl, err = template.New(name).Funcs(ctrl.funcMap(name)).ParseFS(ctrl.templateFS, files...)
 		if err != nil {
 			return nil, errors.Wrapf(err, "cannot parse template '%s'", name)
 		}
@@ -466,7 +536,7 @@ func (ctrl *Controller) loadTextTemplate(name string, files []string) (*tmpl.Tem
 	tpl, ok := ctrl.templateCache[name]
 	if !ok {
 		var err error
-		tpl, err = tmpl.New(name).Funcs(ctrl.funcMap()).ParseFS(ctrl.templateFS, files...)
+		tpl, err = tmpl.New(name).Funcs(ctrl.funcMap(name)).ParseFS(ctrl.templateFS, files...)
 		if err != nil {
 			return nil, errors.Wrapf(err, "cannot parse template '%s'", name)
 		}

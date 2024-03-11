@@ -197,6 +197,7 @@ func main() {
 		conf.MediaserverBase,
 		bundle,
 		embeddings,
+		conf.ZoomOnly,
 		conf.Templates != "",
 		logger)
 	if err != nil {

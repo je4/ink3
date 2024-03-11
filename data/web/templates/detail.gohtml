@@ -16,7 +16,7 @@
     <link href="{{ .RootPath }}static/videojs/video-js.min.css" rel="stylesheet" />
 </head>
 
-<body class="w-100">
+<body class="w-100 bg">
 {{ if not $isIFrame }}
 {{ template "nav.gohtml" . }}
 
@@ -80,7 +80,7 @@
                                         {{ $base = (localize $base $lang) }}
                                         {{ $tag := index $parts "_1" }}
                                         {{ $tag = (localize $tag $lang) }}
-                                        <a class="btn btn-csp vocButton m-1 btn-outline-secondary pborder" href="{{ if and $isExhibition $isIFrame }}{{ else }}{{ printf "%svocabulary=%s" $searchBase $voc }}{{ end }}" role="button">{{ localize $tag $lang }}</a>
+                                        <a class="btn btn-csp vocButton m-1 btn-outline-secondary pborder" href="{{ if or $isExhibition $isIFrame }}#{{ else }}{{ printf "%svocabulary=%s" $searchBase $voc }}{{ end }}" role="button">{{ localize $tag $lang }}</a>
                                     {{ end }}
 
                                 {{- end }}
