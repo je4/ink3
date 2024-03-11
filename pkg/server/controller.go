@@ -233,13 +233,25 @@ func (ctrl *Controller) init() error {
 		if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
 			lang = "en"
 		}
-		c.Redirect(http.StatusTemporaryRedirect, "/"+lang)
+		target, err := url.JoinPath(ctrl.externalAddr, "/", lang)
+		if err != nil {
+			ctrl.logger.Error().Err(err).Msgf("cannot join path '%s' and '%s'", ctrl.externalAddr, lang)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot join path '%s' and '%s': %v", ctrl.externalAddr, lang, err))
+			return
+		}
+		c.Redirect(http.StatusTemporaryRedirect, target)
 	})
 
 	router.GET("/:lang", func(c *gin.Context) {
 		lang := c.Param("lang")
 		if ctrl.zoomOnly {
-			c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("/zoom/%s", lang))
+			target, err := url.JoinPath(ctrl.externalAddr, "/zoom", lang)
+			if err != nil {
+				ctrl.logger.Error().Err(err).Msgf("cannot join path '%s' and '%s'", ctrl.externalAddr, lang)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot join path '%s' and '%s': %v", ctrl.externalAddr, lang, err))
+				return
+			}
+			c.Redirect(http.StatusTemporaryRedirect, target)
 			return
 		}
 		ctrl.indexPage(c)
