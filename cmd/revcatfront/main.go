@@ -186,6 +186,7 @@ func main() {
 		conf.ExternalAddr,
 		conf.SearchAddr,
 		conf.DetailAddr,
+		conf.ProtoHTTP,
 		cert,
 		templateFS,
 		staticFS,

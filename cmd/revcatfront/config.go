@@ -34,6 +34,7 @@ type RevCatFrontConfig struct {
 	DetailAddr   string `toml:"detailaddr"`
 	TLSCert      string `toml:"tlscert"`
 	TLSKey       string `toml:"tlskey"`
+	ProtoHTTP    bool   `toml:"protohttp"`
 
 	OpenAIApiKey configutil.EnvString `toml:"openaiapikey"`
 
