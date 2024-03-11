@@ -181,9 +181,12 @@ func main() {
 	}
 	fp.Close()
 
-	authConfig := map[string]string{}
-	for _, a := range conf.Auth {
-		authConfig[a.User] = a.Password
+	var authConfig map[string]string
+	if len(conf.Auth) > 0 {
+		authConfig = map[string]string{}
+		for _, a := range conf.Auth {
+			authConfig[a.User] = a.Password
+		}
 	}
 
 	ctrl, err := server.NewController(
