@@ -207,6 +207,7 @@ func NewController(localAddr, externalAddr, searchAddr, detailAddr string, proto
 		zoomOnly:        zoomOnly,
 		languageMatcher: language.NewMatcher(bundle.LanguageTags()),
 	}
+	ctrl.logger.Info().Msgf("Zoom only: %v", ctrl.zoomOnly)
 	if err := ctrl.init(); err != nil {
 		return nil, errors.Wrap(err, "cannot initialize controller")
 	}
@@ -268,7 +269,12 @@ func (ctrl *Controller) init() error {
 		if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
 			lang = "en"
 		}
-		newURL := "/zoom/" + lang
+		newURL, err := url.JoinPath(ctrl.externalAddr, "/", lang)
+		if err != nil {
+			ctrl.logger.Error().Err(err).Msgf("cannot join path '%s' and '%s'", ctrl.externalAddr, lang)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot join path '%s' and '%s': %v", ctrl.externalAddr, lang, err))
+			return
+		}
 		if c.Request.URL.RawQuery != "" {
 			newURL += "?" + c.Request.URL.RawQuery
 		}
