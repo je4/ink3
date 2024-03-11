@@ -84,9 +84,6 @@ func main() {
 	_logger.Level(zLogger.LogLevel(conf.LogLevel))
 	var logger zLogger.ZLogger = &_logger
 
-	jsonBytes, _ := json.MarshalIndent(conf, "", "  ")
-	logger.Debug().Msgf("config: %s", jsonBytes)
-
 	var localeFS fs.FS
 	logger.Debug().Msgf("locale folder: '%s'", conf.Locale.Folder)
 	if conf.Locale.Folder == "" {
