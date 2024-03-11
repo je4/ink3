@@ -180,7 +180,7 @@ func (ctrl *Controller) funcMap(name string) template.FuncMap {
 	return fm
 }
 
-func NewController(localAddr, externalAddr, searchAddr, detailAddr string, protoHTTP bool, cert *tls.Certificate, templateFS, staticFS, dataFS fs.FS, dir *directus.Directus, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, catalogID int, mediaserverBase string, bundle *i18n.Bundle, embeddings *openai.ClientV2, templateDebug, zoomOnly bool, logger zLogger.ZLogger) (*Controller, error) {
+func NewController(localAddr, externalAddr, searchAddr, detailAddr string, protoHTTP bool, auth map[string]string, cert *tls.Certificate, templateFS, staticFS, dataFS fs.FS, dir *directus.Directus, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, catalogID int, mediaserverBase string, bundle *i18n.Bundle, embeddings *openai.ClientV2, templateDebug, zoomOnly bool, logger zLogger.ZLogger) (*Controller, error) {
 
 	ctrl := &Controller{
 		localAddr:       localAddr,
@@ -188,6 +188,7 @@ func NewController(localAddr, externalAddr, searchAddr, detailAddr string, proto
 		searchAddr:      searchAddr,
 		detailAddr:      detailAddr,
 		protoHTTP:       protoHTTP,
+		auth:            auth,
 		srv:             nil,
 		cert:            cert,
 		templateFS:      templateFS,
@@ -217,11 +218,8 @@ func (ctrl *Controller) init() error {
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
 	router.Use(cors.New(corsConfig))
-	if !strings.HasPrefix(ctrl.externalAddr, "https://localhost") {
-		router.Use(gin.BasicAuth(gin.Accounts{
-			"performance": "schweiz",
-			"je":          "test",
-		}))
+	if len(ctrl.auth) > 0 {
+		router.Use(gin.BasicAuth(ctrl.auth))
 	}
 	router.StaticFS("/static", NewDefaultIndexFS(http.FS(ctrl.staticFS), "index.html"))
 	router.StaticFS("/data", NewDefaultIndexFS(http.FS(ctrl.dataFS), "index.html"))
@@ -363,6 +361,7 @@ type Controller struct {
 	embeddings      *openai.ClientV2
 	zoomOnly        bool
 	protoHTTP       bool
+	auth            map[string]string
 }
 
 func (ctrl *Controller) Start() error {

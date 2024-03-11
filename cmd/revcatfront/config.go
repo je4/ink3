@@ -27,14 +27,20 @@ type LocaleConfig struct {
 	Available []string `toml:"available"`
 }
 
+type AuthConfig struct {
+	User     string `toml:"user"`
+	Password string `toml:"password"`
+}
+
 type RevCatFrontConfig struct {
-	LocalAddr    string `toml:"localaddr"`
-	ExternalAddr string `toml:"externaladdr"`
-	SearchAddr   string `toml:"searchaddr"`
-	DetailAddr   string `toml:"detailaddr"`
-	TLSCert      string `toml:"tlscert"`
-	TLSKey       string `toml:"tlskey"`
-	ProtoHTTP    bool   `toml:"protohttp"`
+	LocalAddr    string        `toml:"localaddr"`
+	ExternalAddr string        `toml:"externaladdr"`
+	SearchAddr   string        `toml:"searchaddr"`
+	DetailAddr   string        `toml:"detailaddr"`
+	TLSCert      string        `toml:"tlscert"`
+	TLSKey       string        `toml:"tlskey"`
+	ProtoHTTP    bool          `toml:"protohttp"`
+	Auth         []*AuthConfig `toml:"auth"`
 
 	OpenAIApiKey configutil.EnvString `toml:"openaiapikey"`
 
