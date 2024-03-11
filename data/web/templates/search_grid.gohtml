@@ -180,7 +180,7 @@
                             {{ if $vocabFacet.Checked }}<img class="number" style="height: 20px;" src="{{ $root }}static/img/hook.png">&nbsp;{{ end }}{{ abbrev 32 (localize $vocabFacet.Name $lang) }}
                             {{- $ds := digits $vocabFacet.Count }}
                             {{- range $digit := $ds }}
-                            <img class="number" style="height:25px;" src="{{ printf "../../static/img/%s.png" (runeString $digit) }}"/>
+                            <img class="number" style="height:25px;" src="{{ printf "%sstatic/img/%s.png" $root (runeString $digit) }}"/>
                             {{- end }}
                         </button>
                         {{ end }}
