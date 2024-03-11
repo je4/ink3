@@ -22,7 +22,6 @@ go.work
 go.work.sum
 go.sum
 
-*.pem
 
 .idea/
 /data/web/static/fonts/
