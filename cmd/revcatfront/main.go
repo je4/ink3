@@ -68,7 +68,6 @@ func main() {
 	if err := LoadRevCatFrontConfig(cfgFS, cfgFile, conf); err != nil {
 		log.Fatalf("cannot load toml from [%v] %s: %v", cfgFS, cfgFile, err)
 	}
-
 	// create logger instance
 	var out io.Writer = os.Stdout
 	if conf.LogFile != "" {
@@ -80,10 +79,13 @@ func main() {
 		out = fp
 	}
 
-	//	output := zerolog.ConsoleWriter{Out: out, TimeFormat: time.RFC3339}
-	_logger := zerolog.New(out).With().Timestamp().Logger()
+	output := zerolog.ConsoleWriter{Out: out, TimeFormat: time.RFC3339}
+	_logger := zerolog.New(output).With().Timestamp().Logger()
 	_logger.Level(zLogger.LogLevel(conf.LogLevel))
 	var logger zLogger.ZLogger = &_logger
+
+	jsonBytes, _ := json.MarshalIndent(conf, "", "  ")
+	logger.Debug().Msgf("config: %s", jsonBytes)
 
 	var localeFS fs.FS
 	logger.Debug().Msgf("locale folder: '%s'", conf.Locale.Folder)

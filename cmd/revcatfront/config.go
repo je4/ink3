@@ -33,33 +33,25 @@ type AuthConfig struct {
 }
 
 type RevCatFrontConfig struct {
-	LocalAddr    string        `toml:"localaddr"`
-	ExternalAddr string        `toml:"externaladdr"`
-	SearchAddr   string        `toml:"searchaddr"`
-	DetailAddr   string        `toml:"detailaddr"`
-	TLSCert      string        `toml:"tlscert"`
-	TLSKey       string        `toml:"tlskey"`
-	ProtoHTTP    bool          `toml:"protohttp"`
-	Auth         []*AuthConfig `toml:"auth"`
-
-	OpenAIApiKey configutil.EnvString `toml:"openaiapikey"`
-
-	Templates   string `toml:"templates"`
-	StaticFiles string `toml:"staticfiles"`
-
-	Locale LocaleConfig `toml:"locale"`
-
-	LogFile  string `toml:"logfile"`
-	LogLevel string `toml:"loglevel"`
-
-	Revcat RevcatConfig `toml:"revcat"`
-
-	Directus Directus `toml:"directus"`
-
-	ZoomOnly bool `toml:"zoomonly"`
-
-	MediaserverBase string `toml:"mediaserverbase"`
-	DataDir         string `toml:"datadir"`
+	LocalAddr       string               `toml:"localaddr"`
+	ExternalAddr    string               `toml:"externaladdr"`
+	SearchAddr      string               `toml:"searchaddr"`
+	DetailAddr      string               `toml:"detailaddr"`
+	TLSCert         string               `toml:"tlscert"`
+	TLSKey          string               `toml:"tlskey"`
+	ProtoHTTP       bool                 `toml:"protohttp"`
+	Auth            []*AuthConfig        `toml:"auth"`
+	OpenAIApiKey    configutil.EnvString `toml:"openaiapikey"`
+	Templates       string               `toml:"templates"`
+	StaticFiles     string               `toml:"staticfiles"`
+	Locale          LocaleConfig         `toml:"locale"`
+	LogFile         string               `toml:"logfile"`
+	LogLevel        string               `toml:"loglevel"`
+	Revcat          RevcatConfig         `toml:"revcat"`
+	Directus        Directus             `toml:"directus"`
+	ZoomOnly        bool                 `toml:"zoomonly"`
+	MediaserverBase string               `toml:"mediaserverbase"`
+	DataDir         string               `toml:"datadir"`
 }
 
 func LoadRevCatFrontConfig(fSys fs.FS, fp string, conf *RevCatFrontConfig) error {

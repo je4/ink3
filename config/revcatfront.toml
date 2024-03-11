@@ -6,6 +6,8 @@ externaladdr = "https://localhost:8444"
 searchaddr = "https://localhost:8444"
 detailaddr = "https://localhost:8444"
 
+zoomonly = true
+
 openaiapikey = "%%OPENAI_API_KEY%%"
 
 templates = "data/web/templates"
