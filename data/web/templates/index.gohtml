@@ -74,7 +74,7 @@
     <script>
         function getImgUrl(img, diameter) {
             if (img === "c442ac3a-c123-4bef-bb5f-28e33d3060b2") {
-                return `../static/img/coll_act.png`
+                return `{{ printf "%sstatic/img/coll_act.png" $root }}`
             }
             return `https://cms.basel-collections.ch/assets/${img}?fit=cover&width=${diameter}&height=${diameter}`
         }
