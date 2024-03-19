@@ -3,6 +3,7 @@ package main
 import (
 	"emperror.dev/errors"
 	"github.com/BurntSushi/toml"
+	"github.com/je4/revcatfront/v2/pkg/server"
 	configutil "github.com/je4/utils/v2/pkg/config"
 	"io/fs"
 	"os"
@@ -33,25 +34,26 @@ type AuthConfig struct {
 }
 
 type RevCatFrontConfig struct {
-	LocalAddr       string               `toml:"localaddr"`
-	ExternalAddr    string               `toml:"externaladdr"`
-	SearchAddr      string               `toml:"searchaddr"`
-	DetailAddr      string               `toml:"detailaddr"`
-	TLSCert         string               `toml:"tlscert"`
-	TLSKey          string               `toml:"tlskey"`
-	ProtoHTTP       bool                 `toml:"protohttp"`
-	Auth            []*AuthConfig        `toml:"auth"`
-	OpenAIApiKey    configutil.EnvString `toml:"openaiapikey"`
-	Templates       string               `toml:"templates"`
-	StaticFiles     string               `toml:"staticfiles"`
-	Locale          LocaleConfig         `toml:"locale"`
-	LogFile         string               `toml:"logfile"`
-	LogLevel        string               `toml:"loglevel"`
-	Revcat          RevcatConfig         `toml:"revcat"`
-	Directus        Directus             `toml:"directus"`
-	ZoomOnly        bool                 `toml:"zoomonly"`
-	MediaserverBase string               `toml:"mediaserverbase"`
-	DataDir         string               `toml:"datadir"`
+	LocalAddr       string                  `toml:"localaddr"`
+	ExternalAddr    string                  `toml:"externaladdr"`
+	SearchAddr      string                  `toml:"searchaddr"`
+	DetailAddr      string                  `toml:"detailaddr"`
+	TLSCert         string                  `toml:"tlscert"`
+	TLSKey          string                  `toml:"tlskey"`
+	ProtoHTTP       bool                    `toml:"protohttp"`
+	Auth            []*AuthConfig           `toml:"auth"`
+	OpenAIApiKey    configutil.EnvString    `toml:"openaiapikey"`
+	Templates       string                  `toml:"templates"`
+	StaticFiles     string                  `toml:"staticfiles"`
+	Locale          LocaleConfig            `toml:"locale"`
+	LogFile         string                  `toml:"logfile"`
+	LogLevel        string                  `toml:"loglevel"`
+	Revcat          RevcatConfig            `toml:"revcat"`
+	Directus        Directus                `toml:"directus"`
+	ZoomOnly        bool                    `toml:"zoomonly"`
+	MediaserverBase string                  `toml:"mediaserverbase"`
+	DataDir         string                  `toml:"datadir"`
+	Collections     []*server.CollFacetType `toml:"collections"`
 }
 
 func LoadRevCatFrontConfig(fSys fs.FS, fp string, conf *RevCatFrontConfig) error {

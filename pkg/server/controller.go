@@ -56,6 +56,16 @@ type baseData struct {
 	DetailAddr string
 }
 
+type CollFacetType struct {
+	Id int64 `toml:"id" json:"id"`
+	//Name       string `toml:"name" json:"name"`
+	Count      int    `toml:"count" json:"count"`
+	Title      string `toml:"title" json:"title"`
+	Url        string `toml:"url" json:"url"`
+	Identifier string `toml:"identifier" json:"identifier"`
+	Image      string `toml:"image" json:"image"`
+}
+
 func (ctrl *Controller) funcMap(name string) template.FuncMap {
 	fm := sprig.FuncMap()
 
@@ -185,12 +195,11 @@ func NewController(localAddr, externalAddr, searchAddr, detailAddr string,
 	auth map[string]string,
 	cert *tls.Certificate,
 	templateFS, staticFS, dataFS fs.FS,
-	dir *directus.Directus,
 	client client.RevCatGraphQLClient,
 	zoomPos map[string][]image.Rectangle,
-	catalogID int,
 	mediaserverBase string,
 	bundle *i18n.Bundle,
+	collections []*CollFacetType,
 	embeddings *openai.ClientV2,
 	templateDebug, zoomOnly bool,
 	logger zLogger.ZLogger) (*Controller, error) {
@@ -211,14 +220,13 @@ func NewController(localAddr, externalAddr, searchAddr, detailAddr string,
 		templateDebug:   templateDebug,
 		templateCache:   make(map[string]any),
 		logger:          logger,
-		dir:             dir,
-		catalogID:       int64(catalogID),
 		client:          client,
 		mediaserverBase: mediaserverBase,
 		bundle:          bundle,
 		embeddings:      embeddings,
 		zoomOnly:        zoomOnly,
 		languageMatcher: language.NewMatcher(bundle.LanguageTags()),
+		collections:     collections,
 	}
 	ctrl.logger.Info().Msgf("Zoom only: %v", ctrl.zoomOnly)
 	if err := ctrl.init(); err != nil {
@@ -381,7 +389,6 @@ type Controller struct {
 	templateDebug   bool
 	templateCache   map[string]any
 	templateMutex   sync.Mutex
-	catalogID       int64
 	client          client.RevCatGraphQLClient
 	mediaserverBase string
 	bundle          *i18n.Bundle
@@ -393,6 +400,7 @@ type Controller struct {
 	zoomOnly        bool
 	protoHTTP       bool
 	auth            map[string]string
+	collections     []*CollFacetType
 }
 
 func (ctrl *Controller) Start() error {
@@ -437,29 +445,12 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 		return
 	}
 
-	cat, err := ctrl.dir.GetCatalogue(ctrl.catalogID)
-	if err != nil {
-		ctrl.logger.Error().Err(err).Msgf("cannot get catalogue #%v", ctrl.catalogID)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot get catalogue #%v: %v", ctrl.catalogID, err))
-		return
-	}
-
-	type collFacetType struct {
-		Id         int64
-		Name       string
-		Count      int
-		Title      string
-		Url        string
-		Identifier string
-		Image      string
-	}
-
 	type tplData struct {
 		baseData
-		Collections map[int64]*collFacetType `json:"collections"`
+		Collections map[int64]*CollFacetType `json:"collections"`
 	}
 	var data = &tplData{
-		Collections: map[int64]*collFacetType{},
+		Collections: map[int64]*CollFacetType{},
 		baseData: baseData{
 			Lang:     lang,
 			RootPath: "",
@@ -484,29 +475,19 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 		return
 	}
 
-	for _, collid := range cat.Collections {
-		coll, err := ctrl.dir.GetCollection(collid.CollectionID.Id)
-		if err != nil {
-			continue
-			/*
-				ctrl.logger.Error().Err(err).Msgf("cannot get collection #%v", collid.CollectionID.Id)
-				c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot get collection #%v: %v", collid.CollectionID.Id, err))
-				return
-			*/
-		}
-		if coll.Status != "published" {
-			continue
-		}
-		data.Collections[coll.Id] = &collFacetType{
-			Id:         coll.Id,
-			Name:       coll.GetTitle(),
-			Count:      0,
-			Title:      coll.GetTitle(),
-			Url:        coll.GetUrl(),
-			Identifier: coll.Identifier,
-			Image:      coll.Image,
-		}
+	//var str string
+	for _, coll := range ctrl.collections {
+		data.Collections[coll.Id] = coll
+		/*
+			str += fmt.Sprintf("[[collection]]\n")
+			str += fmt.Sprintf("id = %d\n", coll.Id)
+			str += fmt.Sprintf("identifier = \"%s\"\n", strings.Replace(coll.Identifier, "\"", "\\\"", -1))
+			str += fmt.Sprintf("title = \"%s\"\n", strings.Replace(coll.GetTitle(), "\"", "\\\"", -1))
+			str += fmt.Sprintf("url = \"%s\"\n", coll.GetUrl())
+			str += fmt.Sprintf("image = \"%s\"\n\n", coll.Image)
+		*/
 	}
+	//ctrl.logger.Debug().Msg(str)
 
 	for _, facet := range result.GetSearch().GetFacets() {
 		switch facet.GetName() {
@@ -641,12 +622,6 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		}
 		collectionIDs = append(collectionIDs, collID)
 	}
-	cat, err := ctrl.dir.GetCatalogue(ctrl.catalogID)
-	if err != nil {
-		ctrl.logger.Error().Err(err).Msgf("cannot get catalogue #%v", ctrl.catalogID)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot get catalogue #%v: %v", ctrl.catalogID, err))
-		return
-	}
 	vocabularyString := c.Query("vocabulary")
 	parts = strings.Split(vocabularyString, ",")
 	vocabularyIDs := []string{}
@@ -691,14 +666,7 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 			},
 		},
 	}
-	for _, collid := range cat.Collections {
-		coll, err := ctrl.dir.GetCollection(collid.CollectionID.Id)
-		if err != nil {
-			continue
-		}
-		if coll.Status != "published" {
-			continue
-		}
+	for _, coll := range ctrl.collections {
 		parts := strings.SplitN(coll.Identifier, ":", 2)
 		if len(parts) != 2 {
 			continue
@@ -871,13 +839,7 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 				cf := &collFacetType{
 					Count: int(strVal.GetCount()),
 				}
-				colls, err := ctrl.dir.GetCollections()
-				if err != nil {
-					ctrl.logger.Error().Err(err).Msgf("cannot get collections")
-					c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot get collections: %v", err))
-					return
-				}
-				for _, coll := range colls {
+				for _, coll := range ctrl.collections {
 					parts := strings.SplitN(coll.Identifier, ":", 2)
 					if len(parts) != 2 {
 						continue
@@ -885,7 +847,7 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 					cVal := strings.Trim(parts[1], "\" ")
 					if cVal == facetStr {
 						cf.ID = int(coll.Id)
-						cf.Name = coll.GetTitle()
+						cf.Name = coll.Title
 						cf.Checked = slices.Contains(collectionIDs, int(coll.Id))
 						data.CollectionFacets = append(data.CollectionFacets, cf)
 					}

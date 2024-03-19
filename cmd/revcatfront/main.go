@@ -9,7 +9,6 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/Yamashou/gqlgenc/clientv2"
 	"github.com/bluele/gcache"
-	"github.com/je4/basel-collections/v2/directus"
 	"github.com/je4/revcat/v2/tools/client"
 	"github.com/je4/revcatfront/v2/config"
 	"github.com/je4/revcatfront/v2/data/certs"
@@ -156,8 +155,6 @@ func main() {
 		embeddings = openai.NewClientV2(string(conf.OpenAIApiKey), kv, logger)
 	}
 
-	dir := directus.NewDirectus(conf.Directus.BaseUrl, string(conf.Directus.Token), time.Duration(conf.Directus.CacheTime))
-
 	if conf.Revcat.Insecure {
 		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
@@ -199,12 +196,11 @@ func main() {
 		templateFS,
 		staticFS,
 		dataFS,
-		dir,
 		revcatClient,
 		collagePos,
-		conf.Directus.CatalogID,
 		conf.MediaserverBase,
 		bundle,
+		conf.Collections,
 		embeddings,
 		conf.Templates != "",
 		conf.ZoomOnly,

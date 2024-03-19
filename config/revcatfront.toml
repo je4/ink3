@@ -6,7 +6,7 @@ externaladdr = "https://localhost:8444"
 searchaddr = "https://localhost:8444"
 detailaddr = "https://localhost:8444"
 
-zoomonly = true
+zoomonly = false
 
 openaiapikey = "%%OPENAI_API_KEY%%"
 
@@ -36,3 +36,67 @@ catalogid = 2
 default = "de"
 folder = ""
 available = ["de", "fr", "it", "en"]
+
+
+[[collections]]
+id = 1
+identifier = "cat:\"zotero2!!PCB_Basel\""
+title = "Performance Chronik Basel"
+url = "https://mediathek.hgk.fhnw.ch/pcb.php"
+image = "performance_chronik_klein.png"
+
+[[collections]]
+id = 5
+identifier = "cat:\"zotero2!!ACT_2020\""
+title = "ACT Basel"
+url = "https://mediathek.hgk.fhnw.ch/amp/search/zotero2-2545256.3Q68JMFI"
+image = "act_klein.png"
+
+[[collections]]
+id = 10
+identifier = "cat:\"zotero2!!Performance Art!!6x2 Performance-Duos\""
+title = "6x2 Performance-Duos"
+url = "https://mediathek.hgk.fhnw.ch/amp/search/zotero2-2545256.9M38VPHA"
+image = "6x2duos_klein.png"
+
+[[collections]]
+id = 11
+identifier = "cat:\"zotero2!!Archive des Ephemeren\""
+title = "Archive des Ephemeren"
+url = "https://mediathek.hgk.fhnw.ch/amp/search/zotero2-2545256.77QC7762"
+image = "archiv_des_ephemeren_klein.png"
+
+[[collections]]
+id = 27
+identifier = "cat:\"zotero2!!Performance Art!!Together Elsewhere\""
+title = "Together Elsewhere"
+url = "https://mediathek.hgk.fhnw.ch/events/togetherelsewhere"
+image = "together_elsewhere_klein.png"
+
+[[collections]]
+id = 28
+identifier = "cat:\"bangbang\""
+title = "Revolving Histories"
+url = "https://mediathek.hgk.fhnw.ch/bangbang"
+image = "revolving_histories_klein.png"
+
+[[collections]]
+id = 55
+identifier = "cat:\"zotero2!!Performance Art!!Doce en Diciembre\""
+title = "Doce en Diciembre"
+url = "https://mediathek.hgk.fhnw.ch/amp/search/zotero2-2545256.QM2W6CT8"
+image = "doce_en_diciembre_klein.png"
+
+[[collections]]
+id = 57
+identifier = "cat:\"zotero2!!Interviews Archiv Performativ\""
+title = "Interviews: Archiv Performativ "
+url = "https://mediathek.hgk.fhnw.ch/amp/search/zotero2-2545256.N4Q27UXJ"
+image = "interviews_archives_performatives_klein.png"
+
+[[collections]]
+id = 59
+identifier = "cat:\"zotero2!!Perf en Bref\""
+title = "Perf En Bref"
+url = "https://mediathek.hgk.fhnw.ch/amp/detail/zotero2-5361051.RE53ENWA"
+image = "perf_en_bref_klein.png"
