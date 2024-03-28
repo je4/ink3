@@ -466,6 +466,29 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 			Include:     []string{},
 			Exclude:     []string{},
 		},
+		Query: client.InFilter{
+			BoolTerm: &client.InFilterBoolTerm{
+				Field:  "tags.keyword",
+				Values: []string{},
+				And:    false,
+			},
+		},
+	}
+	for _, coll := range ctrl.collections {
+		parts := strings.SplitN(coll.Identifier, ":", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		val := strings.Trim(parts[1], "\" ")
+		collFacet.Term.Include = append(collFacet.Term.Include, val)
+		switch parts[0] {
+		case "cat":
+			collFacet.Query.BoolTerm.Values = append(collFacet.Query.BoolTerm.Values, val)
+		default:
+			ctrl.logger.Error().Err(err).Msgf("unknown collection identifier '%s'", coll.Identifier)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("unknown collection identifier '%s'", coll.Identifier))
+			return
+		}
 	}
 	var size int64 = 1
 	result, err := ctrl.client.Search(context.Background(), "", []*client.InFacet{collFacet}, nil, nil, nil, &size, nil)
