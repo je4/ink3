@@ -21,6 +21,9 @@
 
 }
 
+.btn {
+  --bs-btn-disabled-opacity: 0.1;
+}
 
 .btn-csp {
   --bs-btn-color: var(--bs-body-color);

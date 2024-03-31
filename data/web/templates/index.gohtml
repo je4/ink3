@@ -63,6 +63,77 @@
                 </div>
 
         </div>
+
+        <div class="px-4 py-1 text-center">
+            <!-- h1 class="display-5 fw-bold text-body-emphasis">Centered hero</h1 -->
+            <div class="col-lg-8 mx-auto">
+                <p class="lead mb-4 text-black fw-medium rounded-2" style="background-color: rgba(156, 156, 181, 0.7);">
+                    {{- if eq $lang "en" }}
+                    The portal <span style="font-variant: small-caps;">Collections of Swiss Performance Art</span> offers a panorama of perfor-mance art in
+                    Switzerland. It presents constellations of artists and individual events in order to make the
+                    connections visible. Illustrate the variety and diversity of Swiss performance history from its
+                    beginnings to the present day. The media library at HGK Basel (University of Applied Sciences
+                    Northwestern Switzerland) provides the platform and thus makes it easier to find.
+                    <br />
+                    Videos, photos, texts, interviews, scores and concepts can continue to be entered as a basis for
+                    historical interpretations, the processing of translocal performance histories and making source
+                    material and documents accessible. Collective works are another focus of the collection, as group
+                    works are often lost. Ways of shared authorship are rarely included in personal portfolios. With
+                    the help of the call linked below, further materials can be tracked down, contributed and collected.
+                    Organizers with extensive collections should contact the media library directly, which organizes the
+                    inclusion of new collections.
+                    {{- else if eq $lang "fr" }}
+                        Le portail <span style="font-variant: small-caps;">Collections de l'Art Performance Suisse</span>
+                        offre un panorama de l'art de la performance en Suisse. Il présente des constellations d'artistes
+                        et des événements individuels afin de rendre les liens visibles. Elle illustre la variété et la
+                        diversité de l'histoire de la performance en Suisse, de ses débuts à aujourd'hui. La médiathèque
+                        de la HGK Basel (Haute école spécialisée du Nord-Ouest de la Suisse) fournit la plateforme et
+                        facilite ainsi la recherche.
+                    <br />
+                    Vidéos, photos, textes, interviews, partitions et concepts peuvent continuer à être saisis pour
+                        servir de base à des interprétations historiques, au traitement d'histoires translocales de la
+                        performance et à l'accessibilité des sources et des documents. Les œuvres collectives sont un
+                        autre point fort de la collection, car les œuvres de groupe sont souvent perdues. Les formes de
+                        partage de la paternité sont rarement incluses dans les portfolios personnels. Avec l'aide de
+                        l'appel à candidatures ci-dessous, d'autres matériaux peuvent être recherchés, apportés et
+                        collectés. Les organisateurs disposant de vastes collections doivent contacter directement la
+                            médiathèque, qui organise l'inclusion de nouvelles collections.
+
+                    {{- else if eq $lang "it" }}
+                    Il portale <span style="font-variant: small-caps;">Collezioni Performance Art Svizzera</span>
+                        offre un panorama dell'arte della performance in
+                        Svizzera. Presenta costellazioni di artisti e singoli eventi per rendere visibili le connessioni.
+                        Illustra la varietà e la diversità della storia della performance svizzera, dagli inizi ai giorni
+                        nostri. La mediateca della HGK di Basilea (Università di Scienze Applicate della Svizzera
+                        nordoccidentale) fornisce la piattaforma e ne facilita la ricerca.
+                    <br />
+                    Video, foto, testi, interviste, partiture e concetti possono continuare a essere inseriti come
+                        base per interpretazioni storiche, per l'elaborazione di storie di performance translocali e per
+                        rendere accessibili materiali e documenti di partenza. Le opere collettive sono un altro punto
+                        focale della collezione, poiché i lavori di gruppo spesso vanno persi. Le forme di autorialità
+                        condivisa sono raramente incluse nei portfolio personali. Con l'aiuto dell'invito riportato di
+                        seguito, è possibile rin-tracciare, contribuire e raccogliere ulteriori materiali. Gli
+                        organizzatori con ampie collezioni dovr-ebbero contattare direttamente la mediateca, che
+                        organizza l'inclusione di nuove collezioni.
+                    {{- else }}
+                    Das Portal <span style="font-variant: small-caps;">Sammlungen Performance Kunst Schweiz</span> bietet ein Panorama zum Performance Kunstgeschehen
+                    in der Schweiz. Es schafft Konstellationen für Kunstschaffende und Einzelereignisse, um die
+                    Zusammenhänge, die Vielfalt und Diversität der Schweizer Performance Ge-schichte:n von ihren
+                    Anfängen bis heute werden sichtbar zu machen. Die Mediathek HGK Basel der Fachhochschule
+                    Nordwestschweiz stellt die Plattform zur Verfügung und erleichtert damit die Auffindbarkeit.
+                    <br />
+                    Als Grundlage für historische Auslegeordnungen, das Aufarbeiten der translokalen Performance
+                    Geschichte:n und das Zugänglichmachen von Quellenmaterial sowie Dokumenten können weiterhin Videos,
+                    Fotos, Texte, Interviews, Scores und Konzepte eingegeben werden. Einen weiteren Sammelschwerpunkt
+                    bilden kollektive Arbeiten, weil Gruppenarbeiten oft erst einmal verschollen sind. Wege der
+                    geteilten Autorschaft werden selten in persönliche Portfolios aufgenommen. Mithilfe des unten
+                    verlinkten Aufrufs können weitere Materialien aufgespürt, eingebracht und zusam-mengetragen werden.
+                    Veranstalter:innen mit umfangreichen Sammlungen wenden sich bitte direkt an die Mediathek, die die
+                    Aufnahme neuer Sammlung organisiert.
+                    {{- end }}
+                </p>
+            </div>
+        </div>
     </main>
 
     {{ template "footer.gohtml" . }}

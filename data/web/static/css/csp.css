@@ -207,6 +207,10 @@
   --bs-accordion-btn-focus-box-shadow: none !important;
 }
 
+.btn {
+  --bs-btn-disabled-opacity: 0.1;
+}
+
 .btn-csp {
   --bs-btn-color: var(--bs-body-color);
   --bs-btn-bg: var(--bs-body-bg);
