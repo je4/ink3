@@ -1,7 +1,7 @@
 <!doctype html>
 {{- $lang := .Lang}}
 {{- $root := .RootPath }}
-{{- $searchBase := join "" (list $root "search/" $lang)}}
+{{- $searchBase := printf "%s/search/%s?" .SearchAddr .Lang }}
 <html lang="{{ $lang }}" data-bs-theme="dark">
 <head>
     {{ template "head.gohtml" . }}

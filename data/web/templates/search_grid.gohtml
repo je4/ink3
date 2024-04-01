@@ -3,7 +3,7 @@
 {{- $lang := .Lang}}
 {{- $root := .RootPath }}
 {{- $mediaserverBase := .MediaserverBase }}
-{{- $searchBase := join "" (list $root "search/" $lang)}}
+{{- $searchBase := printf "%s/search/%s?" .SearchAddr .Lang }}
 {{- $detailAddr := .DetailAddr }}
 {{- $params := .Params }}
 {{- $isExhibition := .Exhibition }}

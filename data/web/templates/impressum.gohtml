@@ -1,6 +1,7 @@
 <!doctype html>
 {{- $lang := .Lang}}
 {{- $root := .RootPath }}
+{{- $searchBase := printf "%s/search/%s?" .SearchAddr .Lang }}
 <html lang="{{ $lang }}">
 <head>
     {{ template "head.gohtml" . }}

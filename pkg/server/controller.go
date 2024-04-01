@@ -485,8 +485,9 @@ func (ctrl *Controller) impressumPage(c *gin.Context) {
 	var data = &tplData{
 		Collections: map[int64]*CollFacetType{},
 		baseData: baseData{
-			Lang:     lang,
-			RootPath: "../../",
+			Lang:       lang,
+			RootPath:   "../../",
+			SearchAddr: ctrl.searchAddr,
 		},
 	}
 	collFacet := &client.InFacet{
@@ -589,8 +590,9 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 	var data = &tplData{
 		Collections: map[int64]*CollFacetType{},
 		baseData: baseData{
-			Lang:     lang,
-			RootPath: "",
+			Lang:       lang,
+			RootPath:   "",
+			SearchAddr: ctrl.searchAddr,
 		},
 	}
 
@@ -1069,8 +1071,9 @@ func (ctrl *Controller) detailText(c *gin.Context) {
 	var data = &tplData{
 		Source: source.MediathekEntries[0],
 		baseData: baseData{
-			Lang:     lang,
-			RootPath: "../",
+			Lang:       lang,
+			RootPath:   "../",
+			SearchAddr: ctrl.searchAddr,
 		},
 		MediaserverBase: ctrl.mediaserverBase,
 	}
