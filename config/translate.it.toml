@@ -2,6 +2,10 @@
 hash = "sha1-5459a1d522a7a94dee8f53729083906d5ef9beb1"
 other = "erstellt von"
 
+[impressum]
+hash = "sha1-5c3175413bb7ea1b85e79d9cdf0ad47cd6c5f85c"
+other = "Impressum"
+
 [voc_Abfall]
 hash = "sha1-6744c564c35dac77f46148202d979ac71173b189"
 other = "Abfall"

@@ -41,7 +41,7 @@ image = "performance_chronik_klein.png"
 
 [[collections]]
 id = 5
-identifier = "cat:\"zotero2!!ACT_2020\""
+identifier = "cat:\"zotero2!!ACT Performance Festival\""
 title = "ACT Basel"
 url = "https://mediathek.hgk.fhnw.ch/amp/search/zotero2-2545256.3Q68JMFI"
 image = "act_klein.png"
@@ -94,3 +94,10 @@ identifier = "cat:\"zotero2!!Perf en Bref\""
 title = "Perf En Bref"
 url = "https://mediathek.hgk.fhnw.ch/amp/detail/zotero2-5361051.RE53ENWA"
 image = "perf_en_bref_klein.png"
+
+[[collections]]
+id = 60
+identifier = "cat:\"zotero2!!Kaskadenkondensator_ Basel!!Kasko-Videodokumentationen\""
+title = "Kasko"
+url = "https://mediathek.hgk.fhnw.ch/#/de/bestaende/30"
+image = "kasko_klein.png"

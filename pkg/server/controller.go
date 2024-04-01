@@ -279,6 +279,39 @@ func (ctrl *Controller) init() error {
 		ctrl.indexPage(c)
 	})
 
+	router.GET("/impressum", func(c *gin.Context) {
+		cookieLang, _ := c.Request.Cookie("lang")
+		accept := c.Request.Header.Get("Accept-Language")
+		langTag, _ := language.MatchStrings(ctrl.languageMatcher, cookieLang.String(), accept)
+		langBase, _ := langTag.Base()
+		lang := langBase.String()
+		if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
+			lang = "en"
+		}
+		target, err := url.JoinPath(ctrl.externalAddr, "/impressum", lang)
+		if err != nil {
+			ctrl.logger.Error().Err(err).Msgf("cannot join path '%s' and '%s'", ctrl.externalAddr, lang)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot join path '%s' and '%s': %v", ctrl.externalAddr, lang, err))
+			return
+		}
+		c.Redirect(http.StatusTemporaryRedirect, target)
+	})
+
+	router.GET("/impressum/:lang", func(c *gin.Context) {
+		lang := c.Param("lang")
+		if ctrl.zoomOnly {
+			target, err := url.JoinPath(ctrl.externalAddr, "/zoom", lang)
+			if err != nil {
+				ctrl.logger.Error().Err(err).Msgf("cannot join path '%s' and '%s'", ctrl.externalAddr, lang)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot join path '%s' and '%s': %v", ctrl.externalAddr, lang, err))
+				return
+			}
+			c.Redirect(http.StatusTemporaryRedirect, target)
+			return
+		}
+		ctrl.impressumPage(c)
+	})
+
 	router.GET("/zoom/signature/:PosX/:PosY", ctrl.zoomSignature)
 	router.GET("/zoom/:lang", ctrl.zoomPage)
 	router.GET("/zoom", func(c *gin.Context) {
@@ -426,6 +459,110 @@ func (ctrl *Controller) Start() error {
 
 func (ctrl *Controller) Stop() error {
 	return ctrl.srv.Shutdown(context.Background())
+}
+
+func (ctrl *Controller) impressumPage(c *gin.Context) {
+	var lang = c.Param("lang")
+	if lang == "" {
+		lang = "de"
+	}
+	if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
+		lang = "de"
+	}
+
+	templateName := "impressum.gohtml"
+	impressumTemplate, err := ctrl.loadHTMLTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
+		return
+	}
+
+	type tplData struct {
+		baseData
+		Collections map[int64]*CollFacetType `json:"collections"`
+	}
+	var data = &tplData{
+		Collections: map[int64]*CollFacetType{},
+		baseData: baseData{
+			Lang:     lang,
+			RootPath: "../../",
+		},
+	}
+	collFacet := &client.InFacet{
+		Term: &client.InFacetTerm{
+			Name:        "collections",
+			Field:       "category.keyword",
+			Size:        200,
+			MinDocCount: 0,
+			Include:     []string{},
+			Exclude:     []string{},
+		},
+		Query: client.InFilter{
+			BoolTerm: &client.InFilterBoolTerm{
+				Field:  "tags.keyword",
+				Values: []string{},
+				And:    false,
+			},
+		},
+	}
+	for _, coll := range ctrl.collections {
+		parts := strings.SplitN(coll.Identifier, ":", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		val := strings.Trim(parts[1], "\" ")
+		collFacet.Term.Include = append(collFacet.Term.Include, val)
+		switch parts[0] {
+		case "cat":
+			collFacet.Query.BoolTerm.Values = append(collFacet.Query.BoolTerm.Values, val)
+		default:
+			ctrl.logger.Error().Err(err).Msgf("unknown collection identifier '%s'", coll.Identifier)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("unknown collection identifier '%s'", coll.Identifier))
+			return
+		}
+	}
+	var size int64 = 1
+	result, err := ctrl.client.Search(context.Background(), "", []*client.InFacet{collFacet}, nil, nil, nil, &size, nil)
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", "")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", "", err))
+		return
+	}
+
+	for _, coll := range ctrl.collections {
+		data.Collections[coll.Id] = coll
+	}
+
+	for _, facet := range result.GetSearch().GetFacets() {
+		switch facet.GetName() {
+		case "collections":
+			for _, val := range facet.GetValues() {
+				strVal := val.GetFacetValueString()
+				if strVal == nil {
+					continue
+				}
+				facetStr := strVal.GetStrVal()
+				colls := data.Collections
+				for _, coll := range colls {
+					parts := strings.SplitN(coll.Identifier, ":", 2)
+					if len(parts) != 2 {
+						continue
+					}
+					cVal := strings.Trim(parts[1], "\" ")
+					if cVal == facetStr {
+						coll.Count = int(strVal.GetCount())
+					}
+				}
+			}
+		}
+	}
+
+	if err := impressumTemplate.Execute(c.Writer, data); err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
+		return
+	}
 }
 
 func (ctrl *Controller) indexPage(c *gin.Context) {

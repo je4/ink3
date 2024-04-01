@@ -42,6 +42,10 @@ other = "Document"
 hash = "sha1-95abe01c1cfd94f2a7d59df0439707c40a66187e"
 other = "english"
 
+[erstellt]
+hash = "sha1-5459a1d522a7a94dee8f53729083906d5ef9beb1"
+other = "built by"
+
 [founditems]
 hash = "sha1-7778c735f677becc7fadd9d5b5bb255164804392"
 other = "found items"
@@ -50,6 +54,10 @@ other = "found items"
 hash = "sha1-768d2c61bade0a5ff0b5e5b721bdcc955d7b210f"
 other = "french"
 
+[impressum]
+hash = "sha1-5c3175413bb7ea1b85e79d9cdf0ad47cd6c5f85c"
+other = "Imprint"
+
 [iten]
 hash = "sha1-8a9b000dcba62bc43c44698da1f6af909d72bd91"
 other = "italian"
@@ -57,10 +65,6 @@ other = "italian"
 [language]
 hash = "sha1-3d9f5cb4ee692ee0740e7da86ab6cfcc921c5bcb"
 other = "Language"
-
-[erstellt]
-hash = "sha1-5459a1d522a7a94dee8f53729083906d5ef9beb1"
-other = "built by"
 
 [next]
 hash = "sha1-aeff967b37f098dcdafec93375d42f13b5e9b0a3"
