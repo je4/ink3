@@ -336,7 +336,7 @@ func (ctrl *Controller) init() error {
 		c.Redirect(http.StatusTemporaryRedirect, newURL)
 	})
 
-	router.GET("/search", func(c *gin.Context) {
+	router.GET("/grid", func(c *gin.Context) {
 		cookieLang, _ := c.Request.Cookie("lang")
 		accept := c.Request.Header.Get("Accept-Language")
 		langTag, _ := language.MatchStrings(ctrl.languageMatcher, cookieLang.String(), accept)
@@ -345,19 +345,39 @@ func (ctrl *Controller) init() error {
 		if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
 			lang = "en"
 		}
-		newURL := "/search/" + lang
+		newURL := "/grid/" + lang
 		if c.Request.URL.RawQuery != "" {
 			newURL += "?" + c.Request.URL.RawQuery
 		}
 		c.Redirect(http.StatusTemporaryRedirect, newURL)
 	})
-
-	router.POST("/search/:lang", func(c *gin.Context) {
-		ctrl.searchGridPage(c)
+	router.POST("/grid/:lang", func(c *gin.Context) {
+		ctrl.searchPage(c, "grid")
+	})
+	router.GET("/grid/:lang", func(c *gin.Context) {
+		ctrl.searchPage(c, "grid")
 	})
 
-	router.GET("/search/:lang", func(c *gin.Context) {
-		ctrl.searchGridPage(c)
+	router.GET("/list", func(c *gin.Context) {
+		cookieLang, _ := c.Request.Cookie("lang")
+		accept := c.Request.Header.Get("Accept-Language")
+		langTag, _ := language.MatchStrings(ctrl.languageMatcher, cookieLang.String(), accept)
+		langBase, _ := langTag.Base()
+		lang := langBase.String()
+		if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
+			lang = "en"
+		}
+		newURL := "/list/" + lang
+		if c.Request.URL.RawQuery != "" {
+			newURL += "?" + c.Request.URL.RawQuery
+		}
+		c.Redirect(http.StatusTemporaryRedirect, newURL)
+	})
+	router.POST("/list/:lang", func(c *gin.Context) {
+		ctrl.searchPage(c, "list")
+	})
+	router.GET("/list/:lang", func(c *gin.Context) {
+		ctrl.searchPage(c, "list")
 	})
 
 	router.GET("/detailtext/:signature/:lang", func(c *gin.Context) {
@@ -760,7 +780,7 @@ func (ctrl *Controller) zoomSignature(c *gin.Context) {
 	c.JSON(http.StatusOK, signature)
 }
 
-func (ctrl *Controller) searchGridPage(c *gin.Context) {
+func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 	var lang = c.Param("lang")
 	if !ctrl.langAvailable(lang) {
 		lang = "de"
@@ -883,11 +903,12 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		Checked bool   `json:"checked"`
 	}
 	type edge struct {
-		Edge    *client.Search_Search_Edges `json:"edge"`
-		Title   *translate.MultiLangString  `json:"title"`
-		Persons string                      `json:"persons"`
-		Type    string                      `json:"type"`
-		Date    string                      `json:"date"`
+		Edge       *client.Search_Search_Edges `json:"edge"`
+		Title      *translate.MultiLangString  `json:"title"`
+		Persons    string                      `json:"persons"`
+		Type       string                      `json:"type"`
+		Date       string                      `json:"date"`
+		PersonRole map[string][]string
 	}
 	currentSearchURL := url.Values{}
 	if searchString != "" {
@@ -904,6 +925,7 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 		searchParams = "?" + currentSearchURL.Encode()
 	}
 	_, isExhibition := c.GetQuery("exhibition")
+
 	data := struct {
 		baseData
 		//Result           *client.Search_Search      `json:"result"`
@@ -930,7 +952,7 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 			RootPath:   "../",
 			SearchAddr: ctrl.searchAddr,
 			DetailAddr: ctrl.detailAddr,
-			Page:       "grid",
+			Page:       page,
 		},
 		TotalCount: int(result.GetSearch().GetTotalCount()),
 		RequestQuery: &queryData{
@@ -941,10 +963,11 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 	}
 	for _, e := range result.GetSearch().GetEdges() {
 		ne := &edge{
-			Edge:  e,
-			Title: &translate.MultiLangString{},
-			Type:  emptyIfNil(e.Base.GetType()),
-			Date:  emptyIfNil(e.Base.GetDate()),
+			Edge:       e,
+			Title:      &translate.MultiLangString{},
+			Type:       emptyIfNil(e.Base.GetType()),
+			Date:       emptyIfNil(e.Base.GetDate()),
+			PersonRole: map[string][]string{},
 		}
 		for _, t := range e.Base.GetTitle() {
 			ne.Title.Set(t.Value, language.MustParse(t.Lang), t.Translated)
@@ -958,6 +981,14 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 				ne.Persons += "; "
 			}
 			ne.Persons += p.GetName()
+			var role = "author"
+			if p.GetRole() != nil {
+				role = *p.GetRole()
+			}
+			if _, ok := ne.PersonRole[role]; !ok {
+				ne.PersonRole[role] = []string{}
+			}
+			ne.PersonRole[role] = append(ne.PersonRole[role], p.GetName())
 		}
 		if len(ne.Persons) > 30 && len(e.Base.GetPerson()) > 1 {
 			ne.Persons = firstPerson + " et al."
@@ -1100,6 +1131,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 	if !ctrl.langAvailable(lang) {
 		lang = "de"
 	}
+	sourceString := c.Query("source")
 	searchString := c.Query("search")
 	cursorString := c.Query("cursor")
 	collectionsString := c.Query("collections")
@@ -1161,6 +1193,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 		IFrame          bool
 		Source          *client.MediathekEntries_MediathekEntries `json:"source"`
 		MediaserverBase string                                    `json:"mediaserverBase"`
+		SearchSource    string                                    `json:"searchSource"`
 	}
 	var searchParams string
 	if len(query) > 0 {
@@ -1169,8 +1202,9 @@ func (ctrl *Controller) detail(c *gin.Context) {
 	_, isIFrame := c.GetQuery("iframe")
 	_, isExhibition := c.GetQuery("exhibition")
 	var data = &tplData{
-		Source: source.MediathekEntries[0],
-		IFrame: isIFrame,
+		Source:       source.MediathekEntries[0],
+		IFrame:       isIFrame,
+		SearchSource: sourceString,
 		baseData: baseData{
 			Lang:       lang,
 			RootPath:   "../../",

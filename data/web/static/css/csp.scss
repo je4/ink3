@@ -25,6 +25,11 @@ a {
   color: inherit;
 }
 
+a.nolink {
+  color: inherit;
+  text-decoration: none;
+}
+
 .btn {
   --bs-btn-disabled-opacity: 0.1;
 }

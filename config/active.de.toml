@@ -1,6 +1,8 @@
 artist = "KünstlerIn"
 autor = "AutorIn"
 autoren = "AutorInnen"
+performer = "PerformerIn"
+eventcurator = "EventkuratorIn"
 autotranslatefrom = "automatisch übersetzt aus dem"
 back = "Zurück"
 backtosearch = "Zurück zur Suche"

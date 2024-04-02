@@ -6,7 +6,7 @@
 {{- $extraIgnore := list "jahrgang" "remark" "performers" "camera" "sprache" "function" }}
 {{- $isExhibition := .Exhibition }}
 {{- $isIFrame := .IFrame }}
-{{- $searchBase := printf "%s/search/%s?" .SearchAddr .Lang }}
+{{- $searchBase := printf "%s/%s/%s?" .SearchAddr .SearchSource .Lang }}
 {{- if $isExhibition }}{{ $searchBase = printf "%sexhibition&" $searchBase }}{{ end }}
 {{- $search := $searchBase }}
 {{- if ne .Params "" }}{{ $search = printf "%s%s" $search .Params }}{{ end }}

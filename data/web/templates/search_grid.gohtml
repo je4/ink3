@@ -3,12 +3,13 @@
 {{- $lang := .Lang}}
 {{- $root := .RootPath }}
 {{- $mediaserverBase := .MediaserverBase }}
-{{- $searchBase := printf "%s/search/%s?" .SearchAddr .Lang }}
+{{- $searchBase := printf "%s/%s/%s?" .SearchAddr .Page .Lang }}
 {{- $detailAddr := .DetailAddr }}
 {{- $params := .Params }}
 {{- $isExhibition := .Exhibition }}
 {{- $useKI := .KI }}
-{{- $search := printf "%s/search/%s%s" .SearchAddr .Lang .Params }}
+{{- $search := printf "%s/%s/%s%s" .SearchAddr .Page .Lang .Params }}
+{{- $page := .Page }}
 <html lang="{{ $lang }}">
 
 {{template "head.gohtml" . }}
@@ -54,10 +55,47 @@
                         </nav>
                         <div class="container-fluid">
                             <div class="row g-12">
+                                {{- if eq $page "list"}}
+                                <div class="list-group">
+                                    {{- range $edge := .Edges }}
+                                        {{- $query := printf "source=%s" $page }}
+                                        {{- if ne $data.Cursor "" }}{{- $query = printf "%s&cursor=%s" $query $data.Cursor }}{{- end }}
+                                        {{- if ne $params "" }}{{- $query = printf "%s&%s" $query $params }}{{- end }}
+                                        {{- if $isExhibition }}{{- $query = printf "%s&exhibition" $query }}{{- end }}
+                                        {{- if $useKI }}{{- $query = printf "%s&ki" $query }}{{- end }}
+                                        {{- $query = trimPrefix "&" $query }}
+                                        <div class="card mb-3">
+                                            <a class="nolink" href="{{ $detailAddr }}/detail/{{ $edge.Edge.Base.Signature }}/{{ $lang }}{{ if ne $query "" }}?{{ $query | toURL }}{{ end }}">
+                                            <div class="row g-0">
+                                                <div class="col-md-2">
+                                                    <img src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $edge.Edge.Base.Poster.URI }}/resize/size160x160/formatPNG/autorotate" class="img-fluid rounded-start" alt="">
+                                                </div>
+                                                <div class="col-md-10">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">{{$edge.Title.String}}{{ if ne $edge.Date "" }} ({{ $edge.Date }}){{ end }}</h5>
+                                                        <p class="card-text">
+                                                            <div class="p-0 m-0">
+                                                            {{- range $role, $persons := $edge.PersonRole }}
+                                                                <div class="p-0 m-0" style="text-indent: 2em hanging;">
+                                                                    <span class="fw-semibold">{{ localize $role $lang }}</span>: {{ range $k, $name := $persons }}{{ if ne $k 0 }}; {{ end }}{{ $name }}{{ end }}
+                                                                </div>
+                                                            {{- end }}
+                                                            </div>
+                                                        </p>
+                                                        <!--p class="card-text"><small class="text-body-secondary">Last updated 3 mins ago</small></p-->
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            </a>
+                                        </div>
+                                    {{- end }}
+                                </div>
+                                {{- end }}
+                                {{- if eq $page "grid"}}
                                 {{- range $edge := .Edges }}
                                     <!-- div class="col p-0" style='max-width: 320px; background-image: url("../static/img/frame0.png"); background-size: 100% 100%;' -->
                                     <div class="col p-0" style='max-width: 320px;'>
-                                        {{- $query := "" }}
+                                        {{- $query := printf "source=%s" $page }}
                                         {{- if ne $data.Cursor "" }}{{- $query = printf "%s&cursor=%s" $query $data.Cursor }}{{- end }}
                                         {{- if ne $params "" }}{{- $query = printf "%s&%s" $query $params }}{{- end }}
                                         {{- if $isExhibition }}{{- $query = printf "%s&exhibition" $query }}{{- end }}
@@ -91,6 +129,7 @@
                                             </div>
                                         </a>
                                     </div>
+                                {{- end }}
                                 {{- end }}
                             </div>
                         </div>
