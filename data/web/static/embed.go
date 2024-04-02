@@ -16,7 +16,7 @@ import "embed"
 //go:embed img/border*.png img/title_background*.png img/edge*.png img/image_mask.png img/120px-DeepL_logo.svg.png
 //go:embed img/prev*.png img/next*.png img/?.png img/??.png img/hook.png img/line_medium.png img/line_short.png
 //go:embed img/ki.png img/ki2.png img/lupe.png img/prev2.png img/index_bg2.jpg img/index_bg_dark.jpg img/index_bg_light.jpg
-//go:embed img/lupe_black.png img/ki2_black.png img/coll_act.png img/wesen_behaelter/*_klein.png
+//go:embed img/lupe_black.png img/ki2_black.png img/coll_act.png img/wesen_behaelter/*_klein.png img/sdmllogo.png
 //go:embed js/d3.js js/d3bubble.js js/search.js js/chat.js
 //go:embed flag-icons/css/flag-icons.min.css flag-icons/flags/4x3/de.svg flag-icons/flags/4x3/gb-eng.svg
 //go:embed flag-icons/flags/4x3/fr.svg flag-icons/flags/4x3/it.svg

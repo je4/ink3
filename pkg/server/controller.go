@@ -54,6 +54,7 @@ type baseData struct {
 	Cursor     string
 	SearchAddr string
 	DetailAddr string
+	Page       string
 }
 
 type CollFacetType struct {
@@ -929,6 +930,7 @@ func (ctrl *Controller) searchGridPage(c *gin.Context) {
 			RootPath:   "../",
 			SearchAddr: ctrl.searchAddr,
 			DetailAddr: ctrl.detailAddr,
+			Page:       "grid",
 		},
 		TotalCount: int(result.GetSearch().GetTotalCount()),
 		RequestQuery: &queryData{
@@ -1304,6 +1306,7 @@ func (ctrl *Controller) zoomPage(c *gin.Context) {
 			Exhibition: isExhibition,
 			SearchAddr: ctrl.searchAddr,
 			DetailAddr: ctrl.detailAddr,
+			Page:       "zoom",
 		},
 	}
 	if err := zoomTemplate.Execute(c.Writer, data); err != nil {

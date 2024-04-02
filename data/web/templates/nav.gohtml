@@ -1,6 +1,7 @@
 {{- $isExhibition := .Exhibition }}
 {{- $root := .RootPath }}
 {{- $lang := .Lang }}
+{{- $page := .Page }}
 
 {{- if (ne name "index.gohtml") }}
 <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
@@ -57,11 +58,18 @@
 <nav class="maincolor navbar pt-0 pb-0">
     <div class="container-fluid">
         <a class="navbar-brand me-auto"{{ if not $isExhibition }} href="{{ $root }}{{ $lang }}"{{ end }}><img class="object-fit-scale{{ if (ne name "index.gohtml")  }} csp-brand-image{{ end }}" style="max-width: 480px; max-height: 45px;" src="{{ $root }}static/img/title_{{ $lang }}_1024x117.png" alt="Title: {{ localize "title" $lang }}" /></a>
+        {{- if and (not $isExhibition) (ne $page "") }}
         <ul class="pagination">
-            <li class="page-item"><a style="padding: 3px 6px 3px 6px;" class="noborder page-link{{if eq $lang "de" }} active{{ end }}" href="de{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ $root }}static/img/de.png" /></a></li>
-            <li class="page-item"><a style="padding: 3px 6px 3px 6px;" class="noborder page-link{{if eq $lang "en" }} active{{ end }}" href="en{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ $root }}static/img/en.png" /></a></li>
-            <li class="page-item"><a style="padding: 3px 6px 3px 6px;" class="noborder page-link{{if eq $lang "it" }} active{{ end }}" href="it{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ $root }}static/img/it.png" /></a></li>
-            <li class=" page-item"><a style="padding: 3px 6px 3px 6px;" class="noborder page-link{{if eq $lang "fr" }} active{{ end }}" href="fr{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ $root }}static/img/fr.png" /></a></li>
+            <li class="page-item"><a style="padding: 3px 6px 3px 6px; height: 34px;" class="noborder page-link{{if eq $page "grid" }} active{{ end }}" href="{{ $root }}search/{{ $lang }}{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><i class="bi bi bi-grid-3x3-gap-fill"></i></a></li>
+            <!-- li class="page-item"><a style="padding: 3px 6px 3px 6px; height: 34px;" class="noborder page-link{{if eq $page "list" }} active{{ end }}" href="{{ $root }}list/{{ $lang }}{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><i class="bi bi bi-list-ul"></i></a></li -->
+            <li class="page-item"><a style="padding: 3px 6px 3px 6px; height: 34px;" class="noborder page-link{{if eq $page "zoom" }} active{{ end }}" href="{{ $root }}zoom/{{ $lang }}{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><i class="bi bi bi-grid-3x3"></i></a></li>
+            <!-- li class="page-item"><a style="padding: 3px 6px 3px 6px; height: 34px;" class="noborder page-link{{if eq $page "salon" }} active{{ end }}" href="{{ $root }}salon/{{ $lang }}{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ $root }}static/img/sdmllogo.png" /></a></li -->
+        </ul>&nbsp;{{ end }}<ul class="pagination">
+        <!-- li class="page-item"><div style="padding: 3px 6px 3px 6px; height: 34px; background-color: inherit;" class="noborder page-link">&nbsp;</div></li -->
+            <li class="page-item"><a style="padding: 3px 6px 3px 6px; height: 34px;" class="noborder page-link{{if eq $lang "de" }} active{{ end }}" href="de{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ $root }}static/img/de.png" /></a></li>
+            <li class="page-item"><a style="padding: 3px 6px 3px 6px; height: 34px;" class="noborder page-link{{if eq $lang "en" }} active{{ end }}" href="en{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ $root }}static/img/en.png" /></a></li>
+            <li class="page-item"><a style="padding: 3px 6px 3px 6px; height: 34px;" class="noborder page-link{{if eq $lang "it" }} active{{ end }}" href="it{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ $root }}static/img/it.png" /></a></li>
+            <li class="page-item"><a style="padding: 3px 6px 3px 6px; height: 34px;" class="noborder page-link{{if eq $lang "fr" }} active{{ end }}" href="fr{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><img class="number" style="height: 28px;" src="{{ $root }}static/img/fr.png" /></a></li>
         </ul>
     </div>
 </nav>
