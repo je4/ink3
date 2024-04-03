@@ -1,4 +1,4 @@
-function search(url, cursor, exhibition, ki) {
+function search(url, cursor, exhibition, ki, sortField, sortOrder) {
     let search = document.getElementById("search").value;
 
     const params = new URLSearchParams({
@@ -47,6 +47,11 @@ function search(url, cursor, exhibition, ki) {
     if ( vocs.length > 0 ){
         params.set("vocabulary", vocParam);
     }
-
+    if (sortField !== undefined && sortField !== "") {
+        params.set("sortField", sortField);
+        if (sortOrder !== undefined && sortOrder !== "") {
+            params.set("sortOrder", sortOrder);
+        }
+    }
     window.location.href = url + "?" + params.toString();
 }

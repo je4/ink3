@@ -3,13 +3,14 @@
 {{- $lang := .Lang}}
 {{- $root := .RootPath }}
 {{- $mediaserverBase := .MediaserverBase }}
-{{- $searchBase := printf "%s/%s/%s?" .SearchAddr .Page .Lang }}
-{{- $detailAddr := .DetailAddr }}
+{{- $searchBase := printf "%s/%s/%s" .SearchAddr .Page .Lang }}
 {{- $params := .Params }}
+{{- $search := printf "%s%s" $searchBase .Params }}
+{{- $detailAddr := .DetailAddr }}
 {{- $isExhibition := .Exhibition }}
 {{- $useKI := .KI }}
-{{- $search := printf "%s/%s/%s%s" .SearchAddr .Page .Lang .Params }}
 {{- $page := .Page }}
+{{- $roles := list "author" "performer" "artist" "director" "camera" }}
 <html lang="{{ $lang }}">
 
 {{template "head.gohtml" . }}
@@ -55,6 +56,82 @@
                         </nav>
                         <div class="container-fluid">
                             <div class="row g-12">
+                                {{- if eq $page "table" }}
+                                    <table class="table table-striped-columns table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col" style="min-width: 100px;">&nbsp</th>
+                                                <th scope="col" style="white-space: nowrap;">
+                                                    <!--
+                                                    <a class="btn btn-outline-secondary btn-sm" href="?{{ if ne $params "" }}{{ $params }}&{{ end }}sortField=signature.keyword&sortOrder=asc&{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.CurrentCursor }}">
+                                                        <i class="bi bi-sort-up"></i>
+                                                    </a>
+                                                    <a class="btn btn-outline-secondary btn-sm">
+                                                        <i class="bi bi-sort-down"></i>
+                                                    </a>
+                                                    -->
+                                                    {{ localize "signature" $lang }}
+                                                </th>
+                                                <th scope="col" style="white-space: nowrap;">
+                                                    <!--
+                                                    <button><i class="bi bi-sort-up"></i></button><button><i class="bi bi-sort-down"></i></button>
+                                                    -->
+                                                    {{ localize "titel" $lang }}
+                                                </th>
+                                                <th scope="col" style="white-space: nowrap;">
+                                                    <!--
+                                                    <button><i class="bi bi-sort-up"></i></button><button><i class="bi bi-sort-down"></i></button>
+                                                    -->
+                                                    {{ localize "year" $lang }}
+                                                </th>
+                                                <th scope="col">
+                                                    {{ localize "artist" $lang }}
+                                                </th>
+                                                <th scope="col">
+                                                    {{ localize "event" $lang }}
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {{- range $edge := .Edges }}
+                                                {{- $query := printf "source=%s" $page }}
+                                                {{- if ne $data.Cursor "" }}{{- $query = printf "%s&cursor=%s" $query $data.Cursor }}{{- end }}
+                                                {{- if ne $params "" }}{{- $query = printf "%s&%s" $query $params }}{{- end }}
+                                                {{- if $isExhibition }}{{- $query = printf "%s&exhibition" $query }}{{- end }}
+                                                {{- if $useKI }}{{- $query = printf "%s&ki" $query }}{{- end }}
+                                                {{- $query = trimPrefix "&" $query }}
+                                                <tr onclick="window.location='{{ $detailAddr }}/detail/{{ $edge.Edge.Base.Signature }}/{{ $lang }}{{ if ne $query "" }}?{{ $query | toURL }}{{ end }}';">
+                                                    <td>{{- if $edge.Edge.Base.Poster }}
+                                                            <img src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $edge.Edge.Base.Poster.URI }}/resize/size100x100/formatPNG/autorotate" class="img-fluid rounded" alt="">
+                                                        {{- end }}
+                                                    </td>
+                                                    <td>{{ $edge.Edge.Base.Signature }}</td>
+                                                    <td>{{ $edge.Title.String }}</td>
+                                                    <td>{{ $edge.Date }}</td>
+                                                    <td>
+                                                        {{- range $role, $persons := $edge.PersonRole }}
+                                                            {{- if has $role (list "artist" "director") }}
+                                                                <div class="p-0 m-0" style="text-indent: 2em hanging;">
+                                                                    {{ range $k, $name := $persons }}{{ if ne $k 0 }}; {{ end }}{{ $name }}{{ end }}
+                                                                </div>
+                                                            {{- end }}
+                                                        {{- end }}
+                                                    </td>
+                                                    <td>
+                                                        {{- range $e := $edge.Edge.Extra }}
+                                                            {{- if has $e.Key (list "festival") }}
+                                                                <div class="p-0 m-0" style="text-indent: 2em hanging;">
+                                                                {{ $e.Value }}
+                                                                </div>
+                                                            {{- end }}
+                                                        {{- end }}
+                                                    </td>
+                                                </tr>
+                                            {{- end }}
+                                        </tbody>
+                                        </thead>
+                                    </table>
+                                {{- end }}
                                 {{- if eq $page "list"}}
                                 <div class="list-group">
                                     {{- range $edge := .Edges }}
@@ -68,17 +145,23 @@
                                             <a class="nolink" href="{{ $detailAddr }}/detail/{{ $edge.Edge.Base.Signature }}/{{ $lang }}{{ if ne $query "" }}?{{ $query | toURL }}{{ end }}">
                                             <div class="row g-0">
                                                 <div class="col-md-2">
+                                                    {{- if $edge.Edge.Base.Poster }}
                                                     <img src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $edge.Edge.Base.Poster.URI }}/resize/size160x160/formatPNG/autorotate" class="img-fluid rounded-start" alt="">
+                                                    {{- end }}
                                                 </div>
                                                 <div class="col-md-10">
                                                     <div class="card-body">
-                                                        <h5 class="card-title">{{$edge.Title.String}}{{ if ne $edge.Date "" }} ({{ $edge.Date }}){{ end }}</h5>
+                                                        <h5 class="card-title"><small class="">{{ $edge.Edge.Base.Signature }}</small><br/>{{$edge.Title.String}}{{ if ne $edge.Date "" }} ({{ $edge.Date }}){{ end }}</h5>
                                                         <p class="card-text">
                                                             <div class="p-0 m-0">
                                                             {{- range $role, $persons := $edge.PersonRole }}
+                                                                {{- if has $role $roles }}
                                                                 <div class="p-0 m-0" style="text-indent: 2em hanging;">
                                                                     <span class="fw-semibold">{{ localize $role $lang }}</span>: {{ range $k, $name := $persons }}{{ if ne $k 0 }}; {{ end }}{{ $name }}{{ end }}
                                                                 </div>
+                                                                {{- else }}
+                                                                    <!-- span class="fw-semibold text-bg-success">{{ $role }}</span>: {{ range $k, $name := $persons }}{{ if ne $k 0 }}; {{ end }}{{ $name }}{{ end }} -->
+                                                                {{- end }}
                                                             {{- end }}
                                                             </div>
                                                         </p>

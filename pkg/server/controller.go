@@ -358,6 +358,28 @@ func (ctrl *Controller) init() error {
 		ctrl.searchPage(c, "grid")
 	})
 
+	router.GET("/table", func(c *gin.Context) {
+		cookieLang, _ := c.Request.Cookie("lang")
+		accept := c.Request.Header.Get("Accept-Language")
+		langTag, _ := language.MatchStrings(ctrl.languageMatcher, cookieLang.String(), accept)
+		langBase, _ := langTag.Base()
+		lang := langBase.String()
+		if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
+			lang = "en"
+		}
+		newURL := "/table/" + lang
+		if c.Request.URL.RawQuery != "" {
+			newURL += "?" + c.Request.URL.RawQuery
+		}
+		c.Redirect(http.StatusTemporaryRedirect, newURL)
+	})
+	router.POST("/table/:lang", func(c *gin.Context) {
+		ctrl.searchPage(c, "table")
+	})
+	router.GET("/table/:lang", func(c *gin.Context) {
+		ctrl.searchPage(c, "table")
+	})
+
 	router.GET("/list", func(c *gin.Context) {
 		cookieLang, _ := c.Request.Cookie("lang")
 		accept := c.Request.Header.Get("Accept-Language")
@@ -520,7 +542,7 @@ func (ctrl *Controller) impressumPage(c *gin.Context) {
 			Include:     []string{},
 			Exclude:     []string{},
 		},
-		Query: client.InFilter{
+		Query: &client.InFilter{
 			BoolTerm: &client.InFilterBoolTerm{
 				Field:  "tags.keyword",
 				Values: []string{},
@@ -545,7 +567,9 @@ func (ctrl *Controller) impressumPage(c *gin.Context) {
 		}
 	}
 	var size int64 = 1
-	result, err := ctrl.client.Search(context.Background(), "", []*client.InFacet{collFacet}, nil, nil, nil, &size, nil)
+	var sortField = c.Query("sortField")
+	var sortOrder = c.Query("sortOrder")
+	result, err := ctrl.client.Search(context.Background(), "", []*client.InFacet{collFacet}, nil, nil, nil, &size, nil, &sortField, &sortOrder)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", "")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", "", err))
@@ -626,7 +650,7 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 			Include:     []string{},
 			Exclude:     []string{},
 		},
-		Query: client.InFilter{
+		Query: &client.InFilter{
 			BoolTerm: &client.InFilterBoolTerm{
 				Field:  "tags.keyword",
 				Values: []string{},
@@ -651,7 +675,9 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 		}
 	}
 	var size int64 = 1
-	result, err := ctrl.client.Search(context.Background(), "", []*client.InFacet{collFacet}, nil, nil, nil, &size, nil)
+	var sortField = c.Query("sortField")
+	var sortOrder = c.Query("sortOrder")
+	result, err := ctrl.client.Search(context.Background(), "", []*client.InFacet{collFacet}, nil, nil, nil, &size, nil, &sortField, &sortOrder)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", "")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", "", err))
@@ -824,7 +850,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 			Include:     []string{"voc:.*"},
 			Exclude:     []string{},
 		},
-		Query: client.InFilter{
+		Query: &client.InFilter{
 			BoolTerm: &client.InFilterBoolTerm{
 				Field:  "tags.keyword",
 				Values: vocabularyIDs,
@@ -841,7 +867,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 			Include:     []string{},
 			Exclude:     []string{},
 		},
-		Query: client.InFilter{
+		Query: &client.InFilter{
 			BoolTerm: &client.InFilterBoolTerm{
 				Field:  "category.keyword",
 				Values: []string{},
@@ -883,7 +909,9 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		}
 		queryString = ""
 	}
-	result, err = ctrl.client.Search(context.Background(), queryString, []*client.InFacet{collFacet, vocFacet}, []*client.InFilter{}, embedding64, nil, nil, &cursorString)
+	var sortField = c.Query("sortField")
+	var sortOrder = c.Query("sortOrder")
+	result, err = ctrl.client.Search(context.Background(), queryString, []*client.InFacet{collFacet, vocFacet}, []*client.InFilter{}, embedding64, nil, nil, &cursorString, &sortField, &sortOrder)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", searchString)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", searchString, err))
@@ -1281,6 +1309,8 @@ func (ctrl *Controller) detailTextList(c *gin.Context) {
 	cVal := strings.Trim(parts[1], "\" ")
 	var langs = []language.Tag{language.German, language.English, language.French, language.Italian}
 	var languageNamerEN = languageNamer["en"]
+	var sortField = c.Query("sortField")
+	var sortOrder = c.Query("sortOrder")
 	c.Header("Content-Type", "text/plain; charset=utf-8")
 	for {
 		result, err := ctrl.client.Search(
@@ -1299,7 +1329,10 @@ func (ctrl *Controller) detailTextList(c *gin.Context) {
 			nil,
 			nil,
 			nil,
-			&cursorString)
+			&cursorString,
+			&sortField,
+			&sortOrder,
+		)
 		if err != nil {
 			ctrl.logger.Error().Err(err).Msgf("cannot search for collection '%s'", collectionStr)
 			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for collection '%s': %v", collectionStr, err))
