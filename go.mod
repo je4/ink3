@@ -13,7 +13,7 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/gosimple/slug v1.14.0
 	github.com/je4/basel-collections/v2 v2.0.2
-	github.com/je4/revcat/v2 v2.0.3
+	github.com/je4/revcat/v2 v2.0.4
 	github.com/je4/utils/v2 v2.0.30
 	github.com/je4/zsearch/v2 v2.0.7
 	github.com/nicksnyder/go-i18n/v2 v2.4.0

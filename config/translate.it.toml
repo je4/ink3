@@ -2,9 +2,33 @@
 hash = "sha1-5459a1d522a7a94dee8f53729083906d5ef9beb1"
 other = "erstellt von"
 
+[event]
+hash = "sha1-ad8919ace091b14011c6439cfd5e1707b58f5abd"
+other = "Event"
+
+[eventcurator]
+hash = "sha1-5a9690e161ad90c61ec2dbfa3f0728ed73b15ec2"
+other = "EventkuratorIn"
+
 [impressum]
 hash = "sha1-5c3175413bb7ea1b85e79d9cdf0ad47cd6c5f85c"
 other = "Impressum"
+
+[medium]
+hash = "sha1-d404968ea90b07f16774ce75c7978d6ff60962f2"
+other = "Medium"
+
+[performer]
+hash = "sha1-059d6bf92b67ab253cc5db925d80010fa5fff220"
+other = "PerformerIn"
+
+[signature]
+hash = "sha1-a24969f7e3e47baacb2786395a020dd9bbe46368"
+other = "Signatur"
+
+[titel]
+hash = "sha1-950701e758d18a72134a6b8948c7cf42867c0eb9"
+other = "Titel"
 
 [voc_Abfall]
 hash = "sha1-6744c564c35dac77f46148202d979ac71173b189"
@@ -881,3 +905,7 @@ other = "Ökologie"
 ["voc_Übersetzung"]
 hash = "sha1-f472518451a921976b1482e40869d0fb6b7da2a7"
 other = "Übersetzung"
+
+[year]
+hash = "sha1-956a6e5ab6c7475264edfbfd35848eb3a5577811"
+other = "Jahr"

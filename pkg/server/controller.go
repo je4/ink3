@@ -569,7 +569,14 @@ func (ctrl *Controller) impressumPage(c *gin.Context) {
 	var size int64 = 1
 	var sortField = c.Query("sortField")
 	var sortOrder = c.Query("sortOrder")
-	result, err := ctrl.client.Search(context.Background(), "", []*client.InFacet{collFacet}, nil, nil, nil, &size, nil, &sortField, &sortOrder)
+	var sort = []*client.SortField{}
+	if sortField != "" {
+		sort = append(sort, &client.SortField{
+			Field: sortField,
+			Order: sortOrder,
+		})
+	}
+	result, err := ctrl.client.Search(context.Background(), "", []*client.InFacet{collFacet}, nil, nil, nil, &size, nil, sort)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", "")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", "", err))
@@ -677,7 +684,14 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 	var size int64 = 1
 	var sortField = c.Query("sortField")
 	var sortOrder = c.Query("sortOrder")
-	result, err := ctrl.client.Search(context.Background(), "", []*client.InFacet{collFacet}, nil, nil, nil, &size, nil, &sortField, &sortOrder)
+	var sort = []*client.SortField{}
+	if sortField != "" {
+		sort = append(sort, &client.SortField{
+			Field: sortField,
+			Order: sortOrder,
+		})
+	}
+	result, err := ctrl.client.Search(context.Background(), "", []*client.InFacet{collFacet}, nil, nil, nil, &size, nil, sort)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", "")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", "", err))
@@ -911,7 +925,14 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 	}
 	var sortField = c.Query("sortField")
 	var sortOrder = c.Query("sortOrder")
-	result, err = ctrl.client.Search(context.Background(), queryString, []*client.InFacet{collFacet, vocFacet}, []*client.InFilter{}, embedding64, nil, nil, &cursorString, &sortField, &sortOrder)
+	var sort = []*client.SortField{}
+	if sortField != "" {
+		sort = append(sort, &client.SortField{
+			Field: sortField,
+			Order: sortOrder,
+		})
+	}
+	result, err = ctrl.client.Search(context.Background(), queryString, []*client.InFacet{collFacet, vocFacet}, []*client.InFilter{}, embedding64, nil, nil, &cursorString, sort)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", searchString)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", searchString, err))
@@ -1311,6 +1332,13 @@ func (ctrl *Controller) detailTextList(c *gin.Context) {
 	var languageNamerEN = languageNamer["en"]
 	var sortField = c.Query("sortField")
 	var sortOrder = c.Query("sortOrder")
+	var sort = []*client.SortField{}
+	if sortField != "" {
+		sort = append(sort, &client.SortField{
+			Field: sortField,
+			Order: sortOrder,
+		})
+	}
 	c.Header("Content-Type", "text/plain; charset=utf-8")
 	for {
 		result, err := ctrl.client.Search(
@@ -1330,8 +1358,7 @@ func (ctrl *Controller) detailTextList(c *gin.Context) {
 			nil,
 			nil,
 			&cursorString,
-			&sortField,
-			&sortOrder,
+			sort,
 		)
 		if err != nil {
 			ctrl.logger.Error().Err(err).Msgf("cannot search for collection '%s'", collectionStr)
