@@ -646,6 +646,7 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 			Lang:       lang,
 			RootPath:   "",
 			SearchAddr: ctrl.searchAddr,
+			DetailAddr: ctrl.detailAddr,
 		},
 	}
 

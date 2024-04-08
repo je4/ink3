@@ -1,6 +1,6 @@
 {{- $isExhibition := .Exhibition }}
 {{- $root := .RootPath }}
-{{- $searchSource := .SearchSource }}
+{{- $searchAddr := .SearchAddr }}
 {{- $lang := .Lang }}
 {{- $page := .Page }}
 
@@ -58,7 +58,7 @@
 
 <nav class="maincolor navbar pt-0 pb-0">
     <div class="container-fluid">
-        <a class="navbar-brand me-auto"{{ if not $isExhibition }} href="{{ $searchSource }}{{ $lang }}"{{ end }}><img class="object-fit-scale{{ if (ne name "index.gohtml")  }} csp-brand-image{{ end }}" style="max-width: 480px; max-height: 45px;" src="{{ $root }}static/img/title_{{ $lang }}_1024x117.png" alt="Title: {{ localize "title" $lang }}" /></a>
+        <a class="navbar-brand me-auto"{{ if not $isExhibition }} href="{{ $searchAddr }}/{{ $lang }}"{{ end }}><img class="object-fit-scale{{ if (ne name "index.gohtml")  }} csp-brand-image{{ end }}" style="max-width: 480px; max-height: 45px;" src="{{ $root }}static/img/title_{{ $lang }}_1024x117.png" alt="Title: {{ localize "title" $lang }}" /></a>
         {{- if and (not $isExhibition) (ne $page "") }}
         <ul class="pagination">
             <li class="page-item"><a style="padding: 3px 6px 3px 6px; height: 34px;" class="noborder page-link{{if eq $page "grid" }} active{{ end }}" href="{{ $root }}grid/{{ $lang }}{{ if ne .Params "" }}?{{ .Params }}{{ end }}"><i class="bi bi bi-grid-3x3-gap-fill"></i></a></li>
