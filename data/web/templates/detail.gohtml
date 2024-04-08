@@ -161,7 +161,7 @@
                         {{- end }}
                     {{- end }}
                     <div class="p-2 borderedge">
-                        <img class="qr" src="{{ qrCode (printf "performance.sammlung.cc/detail/%s/%s" $source.Base.Signature $lang) }}" style="width: 100px; height: 100px; margin-top: 10px;" /><br />
+                        <a href="{{ printf "https://performance.sammlung.cc/detail/%s" $source.Base.Signature }}"><img class="qr" src="{{ qrCode (printf "performance.sammlung.cc/detail/%s" $source.Base.Signature) }}" style="width: 100px; height: 100px; margin-top: 10px;" /></a><br />
                     </div>
                     <img class="number" style="width: 376px; height:15px;" src="{{ $root }}static/img/line_short.png" /><br />
                     {{- $num := 0 }}

@@ -17,33 +17,26 @@
             <h1 class="pt-3">Imprint</h1>
 
             <h3 class="pt-3" style="font-variant: small-caps;">Collections of Swiss Performance Art</h3>
-            is a collaborative project. The responsibility for the content of the website lies with the respective owners of the copyrights. For questions regarding the content of the portal and the selection, please contact directly the Association Performance Chronik Basel and/or the Media Library of the Academy of Art and Design Basel FHNW. Technical support is provided by the Media Library.
+            is a collaborative project. The responsibility for the content of the website lies with the respective owners of the copyrights. For questions regarding the content of the portal and the selection, please contact persons of the collections and/or the Media Library of the Academy of Art and Design Basel FHNW. Technical support is provided by the Media Library.
 
             <table>
                 <tbody>
             {{- range $key, $coll := .Collections }}
                 <tr>
                     <td><img style="width:60px;" class="any" src="{{ $root }}static/img/wesen_behaelter/{{ $coll.Image }}" /></td>
-                    <td class="px-2">{{ $coll.Title }} </td>
-                    <td>
-                        <a href="{{ $coll.Url }}" target="_blank">{{ $coll.Url }}</a>
-                    </td>
+                    <td class="px-2 align-text-top"><a href="{{ $coll.Url }}" target="_blank">{{ $coll.Title }}</a></td>
+                    <td class="px-2 align-text-top">{{ $coll.Contact }} </td>
                 </tr>
             {{- end}}
                 </tbody>
             </table>
 
             <h3 class="pt-3">Concept & Realization</h3>
-            Association Performance Chronik Basel
-            | Curatorium Revolving Histories: Translocal Performance Collections Switzerland
-            | Media Library of the Academy of Art and Design FHNW
+            Media Library of the Academy of Art and Design FHNW
             | info-age GmbH
 
             <h3 class="pt-3">Editorial Team</h3>
-            Muda Mathis,
             Andrea Saemann,
-            Chris Regn,
-            Lena Eriksson,
             Sabine Gebhard-Fink,
             Tabea Lurk
 
@@ -66,37 +59,29 @@
 
             <h6 class="pt-4">(c) 2024 Sammlungen Performance Kunst Schweiz</h6>
         {{- else if eq $lang "fr" }}
-            <h1 class="pt-3">Impressum</h1>
+            <h1 class="pt-3">Mentions</h1>
 
             <h3 class="pt-3" style="font-variant: small-caps;">Collections de l'Art Performance Suisse</h3>
-            est un projet de collaboration. La responsabilité du contenu du site web incombe aux titulaires respectifs des droits d'auteur. Pour des questions de contenu concernant le portail et la sélection, veuillez contacter directement l'Association Performance Chronik Basel et/ou la Médiathèque de la Haute école d'art et de design de Bâle FHNW. Le support technique est assuré par la Médiathèque.
+            est un projet de collaboration. La responsabilité du contenu du site web incombe aux titulaires respectifs des droits d'auteur. Pour des questions de contenu concernant le portail et la sélection, veuillez contacter directement la personne de contact de la collection et/ou la Médiathèque de la Haute école d'art et de design de Bâle FHNW. Le support technique est assuré par la Médiathèque.
 
             <table>
                 <tbody>
                 {{- range $key, $coll := .Collections }}
                     <tr>
                         <td><img style="width:60px;" class="any" src="{{ $root }}static/img/wesen_behaelter/{{ $coll.Image }}" /></td>
-                        <td class="px-2">{{ $coll.Title }} </td>
-                        <td>
-                            <a href="{{ $coll.Url }}" target="_blank">{{ $coll.Url }}</a>
-                        </td>
+                        <td class="px-2 align-text-top"><a href="{{ $coll.Url }}" target="_blank">{{ $coll.Title }}</a></td>
+                        <td class="px-2 align-text-top">{{ $coll.Contact }} </td>
                     </tr>
                 {{- end}}
                 </tbody>
             </table>
 
             <h3 class="pt-3">Concept & Réalisation</h3>
-            Association Performance Chronik Basel
-            | Curatorium Revolving Histories: Collections de Performance Translocales Suisse
-            | Médiathèque de la Haute école d'art et de design FHNW
+            Médiathèque de la Haute école d'art et de design FHNW
             | info-age GmbH
 
             <h3 class="pt-3">Rédaction</h3>
-
-            Muda Mathis,
             Andrea Saemann,
-            Chris Regn,
-            Lena Eriksson,
             Sabine Gebhard-Fink,
             Tabea Lurk
 
@@ -122,34 +107,26 @@
             <h1 class="pt-3">Impressum</h1>
 
             <h3 class="pt-3" style="font-variant: small-caps;">Collezioni Performance Art Svizzera</h3>
-            è un progetto di collaborazione. La responsabilità dei contenuti del sito web è dei rispettivi proprietari dei diritti d'autore. Per domande di contenuto riguardanti il portale e la selezione, si prega di contattare direttamente l'Associazione Performance Chronik Basel e/o la Mediateca della Scuola di Design e Arte di Basilea FHNW. Il supporto tecnico è fornito dalla Mediateca.
+           è un progetto di collaborazione. La responsabilità dei contenuti del sito web è dei rispettivi proprietari dei diritti d'autore. Per domande di contenuto riguardanti il portale e la selezione, si prega di contattare direttamente il referente della raccolta e/o la Mediateca della Scuola di Design e Arte di Basilea FHNW. Il supporto tecnico è fornito dalla Mediateca.
 
             <table>
                 <tbody>
                 {{- range $key, $coll := .Collections }}
                     <tr>
                         <td><img style="width:60px;" class="any" src="{{ $root }}static/img/wesen_behaelter/{{ $coll.Image }}" /></td>
-                        <td class="px-2">{{ $coll.Title }} </td>
-                        <td>
-                            <a href="{{ $coll.Url }}" target="_blank">{{ $coll.Url }}</a>
-                        </td>
+                        <td class="px-2 align-text-top"><a href="{{ $coll.Url }}" target="_blank">{{ $coll.Title }}</a></td>
+                        <td class="px-2 align-text-top">{{ $coll.Contact }} </td>
                     </tr>
                 {{- end}}
                 </tbody>
             </table>
 
             <h3 class="pt-3">Concept & Realizzazione</h3>
-            Associazione Performance Chronik Basel
-            | Curatorium Revolving Histories: Collezioni di Performance Translocali Svizzera
-            | Mediateca della Scuola di Design e Arte FHNW
+            Mediateca della Scuola di Design e Arte FHNW
             | info-age GmbH
 
             <h3 class="pt-3">Redazione</h3>
-
-            Muda Mathis,
-            Andrea Saemann,
-            Chris Regn,
-            Lena Eriksson,
+			Andrea Saemann,
             Sabine Gebhard-Fink,
             Tabea Lurk
 
@@ -175,38 +152,26 @@
         <h1 class="pt-3">Impressum</h1>
 
         <h3 class="pt-3" style="font-variant: small-caps;">Sammlungen Performance Kunst Schweiz</h3>
-        ist ein Kooperationsprojekt. Die Verantwortung für die Inhalte der Website liegt bei
-        den jeweiligen Inhabern der Urheberrechte. Bei inhaltlichen Fragen zum Portal und der
-        Auswahl wenden Sie sich bitte direkt an den Verein Performance Chronik Basel und/oder
-        die Mediathek der Hochschule für Gestaltung und Kunst Basel FHNW. Die technische
-        Betreuung erfolgt durch die Mediathek.
+        ist ein Kooperationsprojekt. Die Verantwortung für die Inhalte der Website liegt bei den jeweiligen Inhaber:innen der Urheberrechte. Bei inhaltlichen Fragen zum Portal und der Auswahl wenden Sie sich bitte direkt an die Sammlungsverantwortlichen und/oder die Mediathek der Hochschule für Gestaltung und Kunst Basel FHNW. Die technische Betreuung erfolgt durch die Mediathek.
 
         <table>
             <tbody>
             {{- range $key, $coll := .Collections }}
                 <tr>
                     <td><img style="width:60px;" class="any" src="{{ $root }}static/img/wesen_behaelter/{{ $coll.Image }}" /></td>
-                    <td class="px-2">{{ $coll.Title }} </td>
-                    <td>
-                        <a href="{{ $coll.Url }}" target="_blank">{{ $coll.Url }}</a>
-                    </td>
+                    <td class="px-2 align-text-top"><a href="{{ $coll.Url }}" target="_blank">{{ $coll.Title }}</a></td>
+                    <td class="px-2 align-text-top">{{ $coll.Contact }} </td>
                 </tr>
             {{- end}}
             </tbody>
         </table>
 
         <h3 class="pt-3">Konzept & Realisierung</h3>
-        Verein Performance Chronik Basel
-        | Kuratorium Revolving Histories: Translokale Performance Sammlungen Schweiz
-        | Mediathek der Hochschule für Gestaltung und Kunst FHNW
+        Mediathek der Hochschule für Gestaltung und Kunst FHNW
         | info-age GmbH
 
         <h3 class="pt-3">Redaktion</h3>
-
-        Muda Mathis,
-        Andrea Saemann,
-        Chris Regn,
-        Lena Eriksson,
+		Andrea Saemann,
         Sabine Gebhard-Fink,
         Tabea Lurk
 

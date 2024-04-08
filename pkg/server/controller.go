@@ -65,6 +65,7 @@ type CollFacetType struct {
 	Url        string `toml:"url" json:"url"`
 	Identifier string `toml:"identifier" json:"identifier"`
 	Image      string `toml:"image" json:"image"`
+	Contact    string `toml:"contact" json:"contact"`
 }
 
 func (ctrl *Controller) funcMap(name string) template.FuncMap {
@@ -422,7 +423,7 @@ func (ctrl *Controller) init() error {
 		if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
 			lang = "en"
 		}
-		newURL := fmt.Sprintf("/detail/%s/%s", c.Param("signature"), lang)
+		newURL := fmt.Sprintf("%s/detail/%s/%s", ctrl.detailAddr, c.Param("signature"), lang)
 		if c.Request.URL.RawQuery != "" {
 			newURL += "?" + c.Request.URL.RawQuery
 		}

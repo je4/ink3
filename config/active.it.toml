@@ -42,6 +42,10 @@ other = "Documento"
 hash = "sha1-95abe01c1cfd94f2a7d59df0439707c40a66187e"
 other = "inglese"
 
+[erstellt]
+hash = "sha1-5459a1d522a7a94dee8f53729083906d5ef9beb1"
+other = "erstellt von"
+
 [founditems]
 hash = "sha1-7778c735f677becc7fadd9d5b5bb255164804392"
 other = "Gefundene Objekte"
@@ -49,6 +53,10 @@ other = "Gefundene Objekte"
 [fren]
 hash = "sha1-768d2c61bade0a5ff0b5e5b721bdcc955d7b210f"
 other = "francese"
+
+[impressum]
+hash = "sha1-5c3175413bb7ea1b85e79d9cdf0ad47cd6c5f85c"
+other = "Impressum"
 
 [iten]
 hash = "sha1-8a9b000dcba62bc43c44698da1f6af909d72bd91"
@@ -81,3 +89,879 @@ other = "TestEN"
 [title]
 hash = "sha1-59c8a1d6ca82ac727d4b26ab9c654a11aa001411"
 other = "Sammlungen Performance Kunst Schweiz"
+
+[voc_Abfall]
+hash = "sha1-6744c564c35dac77f46148202d979ac71173b189"
+other = "Rifiuti"
+
+[voc_Aktion]
+hash = "sha1-276e2316b9517d0e33f7b33b7be4fdf705e732b6"
+other = "Azione"
+
+[voc_Alltag]
+hash = "sha1-520d0bc48bf00eb4db21ed069d2f6b06998772b8"
+other = "Vita quotidiana"
+
+["voc_Alltagsgegenstände"]
+hash = "sha1-f43225d003825ff53d2a20d05fdf7ed95068ad29"
+other = "Oggetti quotidiani"
+
+[voc_Appropriation]
+hash = "sha1-d7c0095bee6de7dae9bdde72fbcf1e052724a2a1"
+other = "Appropriazione"
+
+[voc_Architektur]
+hash = "sha1-c83b0c4bd7a1a484c879779ff540b80fa4f2f868"
+other = "Architettura"
+
+[voc_Artivismus]
+hash = "sha1-18a6e052b0f5c89d53e1e195d7731b626b1a38da"
+other = "Artivismo"
+
+[voc_Atelier]
+hash = "sha1-e105f808eaa34bca9f4504e7a20c25c1efa86869"
+other = "Studio"
+
+[voc_Audio]
+hash = "sha1-acdac205f5e24cb75113c4b281a2c13f08b75159"
+other = "Audio"
+
+[voc_Ausstellungsobjekt]
+hash = "sha1-0d23020110d59ce8b745711735f0136e97338fc6"
+other = "Oggetto dell'esposizione"
+
+[voc_Ausstellungsraum]
+hash = "sha1-4944308a5439f40525437e5322958f37981fc255"
+other = "Spazio espositivo"
+
+["voc_Automatisches Schreiben"]
+hash = "sha1-a05937767a609507954d4d8821d0aec589d45175"
+other = "Scrittura automatica"
+
+[voc_Begegnung]
+hash = "sha1-5c7b2a70bddc7f7638e6439213cdce4d44807b41"
+other = "Incontro"
+
+["voc_Bezüge"]
+hash = "sha1-af052145863c863b20bf53755216cdee027098a6"
+other = "Riferimenti"
+
+[voc_Bilderflut]
+hash = "sha1-df85f23b145c0abdeffeb67d1e56db9be0dfd614"
+other = "Flusso di Immagini"
+
+[voc_Bildrechte]
+hash = "sha1-de923eb1f782eff2229d52a6ef0c63272f9d4161"
+other = "Diritti d'Immagine"
+
+[voc_Biografie]
+hash = "sha1-8c379269ce4fb284a0af131d059982e45e11e99c"
+other = "Biografia"
+
+["voc_Body Art"]
+hash = "sha1-621acd5761afb8400e542ba830ef32428a39f0b4"
+other = "Body Art"
+
+["voc_Bühne"]
+hash = "sha1-09638a05b486463bc92340a87522c9a1632c1a6a"
+other = "Palco"
+
+["voc_Bühnentechnik"]
+hash = "sha1-8eac2c132e3ff5c5cf5350e1c724cc82b580369d"
+other = "Scenotecnica"
+
+[voc_Choreografie]
+hash = "sha1-02c1b48ddc9b0c99265835298edf0a07a12eae12"
+other = "Coreografia"
+
+[voc_Club]
+hash = "sha1-4014019824fdf070c6a39bf014c44be092f8f162"
+other = "Club"
+
+[voc_Comic]
+hash = "sha1-5549c5222b1b1eb52e37ae3542dcc0f7cb9fd376"
+other = "Fumetto"
+
+[voc_Destruktion]
+hash = "sha1-cf463c3eac8504652f0b7c6e733b513db6292d98"
+other = "Distruzione"
+
+[voc_Dienstleistungsperformance]
+hash = "sha1-dc9b7f2e3a71533fc39efd0a926b962fcb35f516"
+other = "Prestazione del servizio"
+
+["voc_Dokumentation einer Performance"]
+hash = "sha1-fd4585e3c2c4d8e9e5dab00679b2cb956a61522c"
+other = "Documentazione di una performance"
+
+[voc_Duo]
+hash = "sha1-3c5d9cd03387fb41a856eb94a3f12c1e7c45d2c1"
+other = "Duo"
+
+["voc_Elektronische Musik"]
+hash = "sha1-0f089770d77940ddf2e0fedb8a86c521065c4a1e"
+other = "Musica elettronica"
+
+[voc_Emotionen]
+hash = "sha1-40dc082873d2392085d5f78424225bbedc886560"
+other = "Emozioni"
+
+[voc_Ensemble]
+hash = "sha1-d81e31b1f1164c20a49da236bb0b3fd5f5e64088"
+other = "Ensemble"
+
+[voc_Ephemera]
+hash = "sha1-8bb54e8c77df5aa20bc48d6bcda9b9a0c11ab672"
+other = "Efemero"
+
+[voc_Erinnerung]
+hash = "sha1-d95298f28286970a2ede56ac4def11065af49503"
+other = "Ricordo"
+
+[voc_Esswaren]
+hash = "sha1-636b73325912b6042407e1bcb9c19c9ae30e6163"
+other = "Alimenti"
+
+[voc_Explosion]
+hash = "sha1-b10fd96f1a66e55d0260a09dbd9f881d24c62d36"
+other = "Esplosione"
+
+[voc_Fake]
+hash = "sha1-876b2e0b899bd59e51d1f5e610d74d445f8f8b86"
+other = "Finto"
+
+[voc_Farbe]
+hash = "sha1-89b7957dae43b5c264cf9a6889b67259dadcda25"
+other = "Colore"
+
+[voc_Feminismus]
+hash = "sha1-eccbff0ab50dfca0dbaded4c208495880e3b405d"
+other = "Femminismo"
+
+[voc_Feuer]
+hash = "sha1-084f04b73aaccc376bc15c095755d2692215d52f"
+other = "Fuoco"
+
+[voc_Figur]
+hash = "sha1-78f2bdcc9f1fe557fc7318026c69adca4dd6a822"
+other = "Figura"
+
+[voc_Fiktion]
+hash = "sha1-f068747844ae60bd57c018e7fdd75ed9a1224b73"
+other = "Finzione"
+
+[voc_Film]
+hash = "sha1-b9aec11128107c0833f9ed7f24cab59c36a572d8"
+other = "Film"
+
+[voc_Fluxus]
+hash = "sha1-27bec35716e7aa6289794a8b742674a3b23bee78"
+other = "Fluxus"
+
+["voc_Flüssigkeiten"]
+hash = "sha1-bf2beac2c5eb0b7d3d92e4582f62c7c1fc7a1336"
+other = "Liquidi"
+
+["voc_Food Art"]
+hash = "sha1-554e40f44902c74d2511176014ccc8021cfc440d"
+other = "Arte alimentare"
+
+["voc_Found Footage"]
+hash = "sha1-58ee82c10699923aaec5608261e04ea56053e5ed"
+other = "Materiale trovato"
+
+["voc_Fundstücke"]
+hash = "sha1-b75a74f409f117892e595b50b7e20248f31f58de"
+other = "Oggetti trovati"
+
+[voc_Gamekultur]
+hash = "sha1-a82988148ac300cddd478383a024d31e21a8b21c"
+other = "Cultura del gioco"
+
+["voc_Gefässe"]
+hash = "sha1-b4e0bdb60533df1d1f6cab6ee25b120512f84e64"
+other = "Contenitori"
+
+[voc_Gender]
+hash = "sha1-8a754c61c2ced0c5ff79a1827e02c9d643d6d926"
+other = "Genere"
+
+[voc_Genres]
+hash = "sha1-96817ade02e758261256fdfcf062e850b699b8a6"
+other = "Generi"
+
+["voc_Geräusche"]
+hash = "sha1-13a69fd578dc9c8fe468262a20019969e586fbdd"
+other = "Suoni"
+
+[voc_Gesamtkunstwerk]
+hash = "sha1-6aeeb3f9b6277e7787506cca604e3b4d3658a41c"
+other = "Opera d'arte totale"
+
+[voc_Gruppe]
+hash = "sha1-f4e8075cef9dd01c29f3d3523cd1b788e525a78b"
+other = "Gruppo"
+
+[voc_Handlungen]
+hash = "sha1-d08e5e9d8e76407d88bc5a994a84a9784c725adb"
+other = "Azioni"
+
+[voc_Handlungsvollzug]
+hash = "sha1-b0048ae7d3262281cb593ccde8ca02fe5485b60d"
+other = "Esecuzione dell'azione"
+
+[voc_Happening]
+hash = "sha1-55256e2821f00275d503405b2bb0819efc92deaf"
+other = "Happening"
+
+[voc_Heimat]
+hash = "sha1-1f493dfce36727ac6e57e549824a231e11082359"
+other = "Patria"
+
+[voc_Historie]
+hash = "sha1-bd96146e4899d5b78676ee8e8bd7847821322e9b"
+other = "Storia"
+
+["voc_Identitätspolitiken"]
+hash = "sha1-ee79ec4f01cc97fae1dd02f07cdf3894b6973cbd"
+other = "Politiche identitarie"
+
+[voc_Illusion]
+hash = "sha1-e79f72b65e4f9958b1a17a8b03a20e34ea4ece35"
+other = "Illusione"
+
+[voc_Improvisation]
+hash = "sha1-7643ad3455c8f16d482f95867a69444c90cd8140"
+other = "Improvvisazione"
+
+["voc_Individuelle Mythologien"]
+hash = "sha1-7c8a01ef6cec9bb3e7f604c4e8e85e4ed9dd8322"
+other = "Mitologie individuali"
+
+[voc_Inszenierung]
+hash = "sha1-5edf1ab8b602c611485549e78426765dece77478"
+other = "Messa in scena"
+
+[voc_Intervention]
+hash = "sha1-e9b90c40495e48d97191c4d5aa8c54637b0eabc2"
+other = "Intervento"
+
+[voc_Interview]
+hash = "sha1-19ad8ec7231e0cc9d9ea7e0684742672018e1f05"
+other = "Intervista"
+
+[voc_Kamera]
+hash = "sha1-83008f45ae90faa6f7a27cb74f811319401f3f46"
+other = "Cinematografia"
+
+[voc_Kapitalismus]
+hash = "sha1-f5dc60ffac8eb7fd4a01715523a9fb854cbf489b"
+other = "Capitalismo"
+
+[voc_Karaoke]
+hash = "sha1-2ab372ea94c82e20f8a327587a815be3dce54136"
+other = "Karaoke"
+
+[voc_Kinder]
+hash = "sha1-d963f327240ced77dac748a0feb0f55d886932de"
+other = "Bambini"
+
+[voc_Klangkunst]
+hash = "sha1-b009f7b1a5f229d5bfa31cc9dbfd786253f47bb8"
+other = "Arte sonora"
+
+[voc_Klischee]
+hash = "sha1-cbe682587413c69c69a00bc692994e480a4a07ef"
+other = "Cliché"
+
+[voc_Kollektiv]
+hash = "sha1-85368ad7a7a856582a874535105ca6305dede9b4"
+other = "Collettivo"
+
+[voc_Kommunikation]
+hash = "sha1-c1b0e516b7250ee529ef384284aa62663760f18f"
+other = "Comunicazione"
+
+[voc_Kontrolle]
+hash = "sha1-168d20e2d80eec7f1d60e451e90b6d3fa9920adf"
+other = "Controllo"
+
+["voc_Kostüm"]
+hash = "sha1-b243a2255413733b674fb0cb3ca2309b6d77e022"
+other = "Costume"
+
+[voc_Kreislauf]
+hash = "sha1-187c30caacf87ad60d6f870bf28991ce5437f97a"
+other = "Ciclo"
+
+["voc_Kunst und Leben"]
+hash = "sha1-fdad5c1de2813872909f094135a71debeead2f1e"
+other = "Arte e vita"
+
+[voc_Kunstfigur]
+hash = "sha1-70c18a735ec2f3389e36d506fdc60bccbd57b66b"
+other = "Personaggio artistico"
+
+[voc_Kunstmarkt]
+hash = "sha1-40f781a968e76dc80cd3445678b9370785e2f9da"
+other = "Mercato dell'arte"
+
+["voc_Körper als Material"]
+hash = "sha1-2cfc0f61caa4133d90021703e1850073017a3524"
+other = "Il corpo come materiale"
+
+["voc_Körper und Objekt"]
+hash = "sha1-dc624ced71d227140d963fc66c9e3f7c20155868"
+other = "Corpo e oggetto"
+
+["voc_Körper und Raum"]
+hash = "sha1-f6a5e4d73ae47bd19ca28a769b7fc5a995a906cc"
+other = "Corpo e spazio"
+
+["voc_Körperbilder"]
+hash = "sha1-4428761ea971fe45629d53cec3b08c95609b4cc5"
+other = "Immagini del corpo"
+
+["voc_Körpererfahrung"]
+hash = "sha1-0e213d80705cf8e17373c625f83b2c7c92dc2652"
+other = "L'Esperienza del corpo"
+
+["voc_Körperverlängerungen"]
+hash = "sha1-f73edfe29d59463aeb5500a88753c8b690443cc6"
+other = "Estensioni del corpo"
+
+["voc_Künstlerdokumentation"]
+hash = "sha1-ef395f130f24bb3b0b6946556581254814602c96"
+other = "Documentazione d'artista"
+
+["voc_Land Art"]
+hash = "sha1-07e40d4af4340fc9fb5ffd89e93622ee14ee8282"
+other = "Arte ambientale"
+
+[voc_Landschaft]
+hash = "sha1-92bb4812d8267c519439ba1529d9748cf729a909"
+other = "Paesaggio"
+
+[voc_Langzeitperformance]
+hash = "sha1-bc6271bf312b4b47a38fe41b1ad08edeae3121df"
+other = "Performance a lungo termine"
+
+["voc_Lecture Performance"]
+hash = "sha1-966f3e0911224d1a19458d0589b6f47adc8770b9"
+other = "Performance di lettura"
+
+[voc_Licht]
+hash = "sha1-97999345b7b12731e071258ec3702639ff999c69"
+other = "Luce"
+
+[voc_Literatur]
+hash = "sha1-b829064cde730de12dc9319ed2921d6e5c599ee9"
+other = "Letteratura"
+
+["voc_Living Sculpture"]
+hash = "sha1-242dad86786ecd3ee99800a358e620a8beb10994"
+other = "Scultura vivente"
+
+[voc_Macht-Ohnmacht]
+hash = "sha1-b2587a3aee6ea4f561ede8d30d4a0f232fbbfa07"
+other = "Potere-Impotenza"
+
+["voc_Making of"]
+hash = "sha1-5b9deae876dcd292a4098e365ea6d384170d3044"
+other = "Realizzazione di"
+
+[voc_Malerei]
+hash = "sha1-e6d8fa47e74040f721fb65576fe0f4bf2d591e05"
+other = "Pittura"
+
+[voc_Malperformance]
+hash = "sha1-1263fc3f6ca55494eae4ed7819993a5b5dfe742d"
+other = "Performance pittorica"
+
+[voc_Maschine]
+hash = "sha1-4f4d950212d4475943e7becf603a20abddc94cee"
+other = "Macchina"
+
+[voc_Maske]
+hash = "sha1-30ebc894d5449238d01dc9cd866dce9c9ef0b7c2"
+other = "Maschera"
+
+[voc_Masse]
+hash = "sha1-a5d4c9da464f6046bbf5e40107ca1b6a4fd5d0a7"
+other = "Massa"
+
+[voc_Massenmedien]
+hash = "sha1-61c0795c0b2fef6c00196a7bab603fc47f312167"
+other = "Mezzi di comunicazione di massa"
+
+[voc_Materialien]
+hash = "sha1-3edddd935de1f958390312ec99d8a389223fdea5"
+other = "Materiali"
+
+[voc_Materialtyp]
+hash = "sha1-ed34d18fdfa1201fa768fd58da47ff2d930ee0fb"
+other = "Tipo di materiale"
+
+[voc_Materialuntersuchung]
+hash = "sha1-9a861ef45c290c97ebd5ce43a05420cd9a81a26d"
+other = "Indagine sul materiale"
+
+["voc_Mediale Übertragung"]
+hash = "sha1-06668baee870808930a81686363d5542591ede7d"
+other = "Trasmissione dei media"
+
+[voc_Migration]
+hash = "sha1-6e458173eef4a800366eeb68965cf8f147c4756b"
+other = "Migrazione"
+
+[voc_Mittel]
+hash = "sha1-48577b86ffa7258a4ac2b1af1f6269af02cf8a89"
+other = "Media"
+
+[voc_Mode]
+hash = "sha1-a7b93d2128e820f861fc8dfccd9f5521e89ad21f"
+other = "Moda"
+
+[voc_Multimediaperformance]
+hash = "sha1-9f6007da2aaa60a0c351d91e239d14145157cf52"
+other = "Performance multimediale"
+
+[voc_Museum]
+hash = "sha1-69d9f3e5ae950e07d6944fdfc153ae3b446d1ac5"
+other = "Museo"
+
+[voc_Musik]
+hash = "sha1-287efbb2aceabda23fe26a125ee2793e6795e7d6"
+other = "Musica"
+
+[voc_Musikinstrumente]
+hash = "sha1-7e4f2ccdc5ca7a3a435b268ae7b903e7f0233729"
+other = "Strumenti musicali"
+
+[voc_Musikperformance]
+hash = "sha1-b889de2795d1ce9bfc348a70f8a43842c508d008"
+other = "Performance musicale"
+
+[voc_Mythen]
+hash = "sha1-01bbd585981e94540c0854d4daa0b29a1cc1b6aa"
+other = "Miti"
+
+["voc_Märchen"]
+hash = "sha1-bcf7bb31b7c2eba865657852343d9cd483ba7553"
+other = "Fiaba"
+
+[voc_Nacktheit]
+hash = "sha1-40ad92345c5197de1eb56fc4d932db78d8d70a49"
+other = "Nudità"
+
+[voc_Nacktperformance]
+hash = "sha1-6525c1438b7e85ea01af0450474f0f3332d33a3f"
+other = "Performance di nudo"
+
+[voc_Narration]
+hash = "sha1-8ca626830c1773a36c8fb537c38009c028bff0dd"
+other = "Narrazione"
+
+[voc_Natur-Kultur]
+hash = "sha1-8b8a42bdf30c1436e767625c51885d79367e57f8"
+other = "Natura-Cultura"
+
+[voc_Paar]
+hash = "sha1-0c08e243749d9631a500785e43e087de9942f7da"
+other = "Coppia"
+
+[voc_Papier]
+hash = "sha1-7bdd388dffa1888ce7577855c3efe9e73d5a419f"
+other = "Carta"
+
+[voc_Parallelaktionen]
+hash = "sha1-47461e7aec69e544b6ccc2a4fb88b51fb7d5d1fd"
+other = "Azioni parallele"
+
+[voc_Partizipation]
+hash = "sha1-c465339f46fa352af1971e87e1127ae158eb2a2c"
+other = "Partecipazione"
+
+["voc_Performance/Aktion für die Kamera"]
+hash = "sha1-c094f706f5b3cd199208b80df69058fe37b55a1a"
+other = "Performance/Azione per la telecamera"
+
+[voc_Performancebeschreibung]
+hash = "sha1-3e76097c09779363f157ae04e93f2c8fbeac39d4"
+other = "Descrizione della performance"
+
+[voc_Pflanzen]
+hash = "sha1-a9aeb0d832e844b5f0bd7180c9fc8fba71a281cf"
+other = "Piante"
+
+[voc_Players]
+hash = "sha1-392feef07c53c9a7b2763d1fd30fb3f0d68099cc"
+other = "Giocatori"
+
+[voc_Politik]
+hash = "sha1-df56d5e8fb2d82bc325fe94ec79e2b3c8d5938b8"
+other = "Politica"
+
+[voc_Popkultur]
+hash = "sha1-5651a4a3b0e4efeec60fb7b61ec87acda42cdf2c"
+other = "Cultura Pop"
+
+["voc_Postmoderner Tanz"]
+hash = "sha1-6d41b717a79be4d88644a2dc0f63b8392e99d75c"
+other = "Danza postmoderna"
+
+[voc_Projektion]
+hash = "sha1-f5f80779309411d440ef0614d5b04375b7003a44"
+other = "Proiezione"
+
+["voc_Präpariertes Performanceobjekt"]
+hash = "sha1-d7a681f3f9a01566a43e3ad5e13143bf409ea43b"
+other = "Oggetto performativo preparato"
+
+[voc_Publikum]
+hash = "sha1-3fd8c2dac8d8ec6ef54c58b9a4d93cf54195e2ec"
+other = "Pubblico"
+
+["voc_Qualitäten"]
+hash = "sha1-5ce21d4ff7116eaf1b4076234f42a86e76666639"
+other = "Qualità"
+
+[voc_Queer]
+hash = "sha1-8a820265e4b545775c61a1f273b8e533d1ad0230"
+other = "Queer"
+
+[voc_Reisen]
+hash = "sha1-a1bd15234032e6eeb628d5d6674e83ae84020e4d"
+other = "Viaggio"
+
+[voc_Religion]
+hash = "sha1-b04d58c69dc5b8bc7ddd5259768dfe506efa3d4e"
+other = "Religione"
+
+[voc_Ritual]
+hash = "sha1-a276d8b0e56176b2015b2a8718f23285c42d9c9b"
+other = "Rituale"
+
+["voc_Räume"]
+hash = "sha1-e69dda5983e9505add2b8f6c4e4422253103c5e2"
+other = "Spazi"
+
+[voc_Schmerz]
+hash = "sha1-066e8c34aef84b938e1cc7c5759dc34e4d466f7d"
+other = "Dolore"
+
+[voc_Score]
+hash = "sha1-489f4877244a299131d309f0ca10733c1a41251c"
+other = "Punteggio"
+
+[voc_Setting]
+hash = "sha1-fb449f71834cd30ec14d00c9d50ba85c232186d3"
+other = "Ambientazione"
+
+[voc_Show]
+hash = "sha1-d97d1ee339e4eeaba8cac91dca37c8b4ec8f5501"
+other = "Mostra"
+
+["voc_Site Specific"]
+hash = "sha1-5387d9022c1a64b4092b5c3ec546fccb2be4220a"
+other = "Sito specifico"
+
+[voc_Skulptur]
+hash = "sha1-b236c74141ff7827eb8355ab3a289cce3f6343e4"
+other = "Scultura"
+
+[voc_Song]
+hash = "sha1-bd1189c35695434b60a754aead9b12298b9170aa"
+other = "Canzone"
+
+["voc_Soziale Skulptur"]
+hash = "sha1-7475e1310f5b3f8a94618a615907c68f46c08a99"
+other = "Scultura sociale"
+
+[voc_Spaziergang]
+hash = "sha1-d6f8559837a02257c6a6ed4dda948d873b077430"
+other = "Passeggiata"
+
+[voc_Sprache]
+hash = "sha1-3d9f5cb4ee692ee0740e7da86ab6cfcc921c5bcb"
+other = "Lingua"
+
+[voc_Spur]
+hash = "sha1-619b6be9e488b649ca7bf6240f667a9b42086bcf"
+other = "Traccia"
+
+[voc_Stimme]
+hash = "sha1-6d9653f536ad779c3081ffd8cd56adf142f4b82b"
+other = "Voce"
+
+["voc_Szenische Performance"]
+hash = "sha1-f5d00331b68eadce49c079ba8d3d713d378106ea"
+other = "Performance scenica"
+
+["voc_Tableau Vivant"]
+hash = "sha1-f78a320ab2202bfe0e4b5828e09c94bb9b163599"
+other = "Tableau Vivant"
+
+[voc_Tanzperformance]
+hash = "sha1-b12d0270274625f4f37860ed1317db9d14ba07bc"
+other = "Performance di danza"
+
+[voc_Text]
+hash = "sha1-c3328c39b0e29f78e9ff45db674248b1d245887d"
+other = "Testo"
+
+[voc_Textilien]
+hash = "sha1-47e7a46fca9520642beeca2920eda48003ca7619"
+other = "Tessile"
+
+[voc_Theaterperformance]
+hash = "sha1-d231d7fb4a7ebec761aebb368d5dd121b3687609"
+other = "Performance teatrale"
+
+[voc_Themen]
+hash = "sha1-d27f0ac51ce7b3f8c14c471c084c04b6d97aa044"
+other = "Temi"
+
+[voc_Tiere]
+hash = "sha1-4317f927af7ea5a83a7c09e3578be8e6bb0ff1a8"
+other = "Animali"
+
+[voc_Tisch]
+hash = "sha1-a7844106529293653258805f4bc3fa263669396e"
+other = "Tavolo"
+
+[voc_Trio]
+hash = "sha1-f6b456d043430ca913d9174bb8cfc55ab351d5d3"
+other = "Trio"
+
+[voc_Umnutzung]
+hash = "sha1-f61303077b41f6bebd6aae697922f9fe6a203174"
+other = "Riutilizzo"
+
+[voc_Unterhaltung]
+hash = "sha1-14ea4bc1d0c97b2f3b022e7da7d61b7cac6fd350"
+other = "Intrattenimento"
+
+[voc_Veranstaltungsdokumentation]
+hash = "sha1-a4ba059317917530e785445c42013d85c16e3e3b"
+other = "Documentazione dell'evento"
+
+["voc_Vergänglichkeit"]
+hash = "sha1-b74c1fcb0d4013100f50e36ab2e049c3379223f5"
+other = "Transizione"
+
+[voc_Verletzlichkeit]
+hash = "sha1-f29cf74635b1c617d87193e3b9fa8e1defaf447b"
+other = "Vulnerabilità"
+
+[voc_Vermittlungsprojekt]
+hash = "sha1-9bd757775872295260bb65da8f51087805beca2a"
+other = "Progetto di mediazione"
+
+[voc_Videokunst]
+hash = "sha1-43743409d4b1d3500fa202f0b3aa4d941b1d2f66"
+other = "Video Arte"
+
+[voc_Volkskultur]
+hash = "sha1-5936cdee7ec30706c038ec963e9b3ab315fd9a08"
+other = "Cultura popolare"
+
+[voc_Wahrnehmung]
+hash = "sha1-2c29aee8751948eb9a816aa36877f3e892dbc623"
+other = "Percezione"
+
+[voc_Wert]
+hash = "sha1-9d3fb5bb570756f0862c381883078ac371b41763"
+other = "Valore"
+
+[voc_aktivieren]
+hash = "sha1-b67feb093c9b9f4c065b3c9790b86667a48e0807"
+other = "Attivare"
+
+[voc_arbeiten]
+hash = "sha1-a4d48f1fb2cb7d37a16e12e6b596a29479d220ef"
+other = "Lavorare"
+
+["voc_berühren"]
+hash = "sha1-995845b84e55dd056d00c9c2f85088fe93de4643"
+other = "Toccare"
+
+[voc_blind]
+hash = "sha1-7afb6295c77cd18860fbb88e4909c5e30829e054"
+other = "Cieco"
+
+[voc_essen]
+hash = "sha1-1c3c8bc4c1fb174da1f42791db53b5e1512332f8"
+other = "Mangiare"
+
+["voc_essen und trinken"]
+hash = "sha1-b30f4dd1927346c657223331638bd00e010c04a4"
+other = "Mangiare e bere"
+
+[voc_experimentell]
+hash = "sha1-e3e1a8ab6da81ef678351f505dbce98d6d72ab4d"
+other = "Sperimentale"
+
+[voc_expressiv]
+hash = "sha1-134680c1f1b17ed2e4d1d6987498c303cfd7e390"
+other = "Espressivo"
+
+[voc_gehen]
+hash = "sha1-fb8a7fa5198a77dd3ada6590d840144feccbe2f4"
+other = "Camminare"
+
+[voc_grotesk]
+hash = "sha1-1d963c16ac2f19e025c4fd2eba13be23b9e08ed7"
+other = "Grottesco"
+
+[voc_hantieren]
+hash = "sha1-5253d1850ea8ccc71f8d8e602c42027323963e92"
+other = "Maneggiare"
+
+[voc_humorvoll]
+hash = "sha1-42b86e275682c329fa1fbd9a2216c462f7f294aa"
+other = "Umoristico"
+
+["voc_hängen"]
+hash = "sha1-792578364291262d650e2da8006b1cfcb7ef84f3"
+other = "Appendere"
+
+[voc_konzeptuell]
+hash = "sha1-d13dcfdb78598667279a2672b6d31d16b6772801"
+other = "Concettuale"
+
+[voc_kopieren]
+hash = "sha1-7571106b55aedfa7a6fc78eac8a9f11570815a32"
+other = "copiare"
+
+[voc_kreisen]
+hash = "sha1-11ccd5a5f7132da6e9fa9547d4d6307464c95e62"
+other = "Ruotare"
+
+[voc_langsam]
+hash = "sha1-bb7537501a4338899a76acc9d6c85b1e990c0d06"
+other = "Lentamente"
+
+[voc_liegen]
+hash = "sha1-f4f12d61b0a17de3f755e0331f41679972612a58"
+other = "Giacere"
+
+[voc_meditativ]
+hash = "sha1-cbd07c01365e891cdf1338a9f9a5cf5443128345"
+other = "Meditativo"
+
+[voc_minimalistisch]
+hash = "sha1-de995bb8f6a8fc7d59ef2f29827b4f1691dbd65b"
+other = "Minimalista"
+
+[voc_monumental]
+hash = "sha1-25ef559643f19e00edf883b7a4465908bc94f56f"
+other = "Monumentale"
+
+[voc_obsessiv]
+hash = "sha1-669642fa4783e4ae24c07cfaf28aad73bd3a1967"
+other = "Ossessivo"
+
+[voc_posieren]
+hash = "sha1-3da15d30c236f41936b3a5cd0c788ffe06dc3c36"
+other = "Posare"
+
+[voc_prozessual]
+hash = "sha1-101a75a56d0eb59ac5eb56afb36e0985d8897c86"
+other = "Processuale"
+
+[voc_repetierend]
+hash = "sha1-c2da4ea66876285718d6b984afec83e82c793d2e"
+other = "Ripetitivo"
+
+[voc_riskant]
+hash = "sha1-c948c6a0db022057ab0236b4c8e2ad131008af2c"
+other = "Rischioso"
+
+[voc_rot]
+hash = "sha1-e1588771eb645fcbedc0329d08808209bb1a753c"
+other = "Rosso"
+
+[voc_schlafen]
+hash = "sha1-dde402c7bcf81324a2fe1372edc7928b3b32e931"
+other = "Dormire"
+
+[voc_schreiben]
+hash = "sha1-c777453da9655a3c59c903af3869a3abfa53157d"
+other = "Scrivere"
+
+[voc_schwarz-weiss]
+hash = "sha1-382d06b9a674cd1e244acec8bf1d826d33ec4c41"
+other = "Bianco e nero"
+
+[voc_singen]
+hash = "sha1-312965d09ce07b027ed061713557411dd1136638"
+other = "Cantare"
+
+[voc_sitzen]
+hash = "sha1-124e140ebb91f2e4b1f14b622af4887f754c11a4"
+other = "Sedersi"
+
+["voc_sphärisch"]
+hash = "sha1-403fca683329b933667fff4c3664e225e64e7eaf"
+other = "Sferico"
+
+[voc_spielerisch]
+hash = "sha1-996abab4f8fda16ecf83d3789fe28dcd3cb46e06"
+other = "Giocoso"
+
+[voc_stehen]
+hash = "sha1-3f3072042ca39e25afb744af102c44e464999674"
+other = "Stare in piedi"
+
+[voc_stumm]
+hash = "sha1-4502ca8d423446043164c22a0388f58f5d99807b"
+other = "Muto"
+
+[voc_symbolisch]
+hash = "sha1-417d0cecb40dec4cd9e2ce19e2fcb5eb3a9c1629"
+other = "Simbolicamente"
+
+[voc_tanzen]
+hash = "sha1-a14a10362e57b53352980120770af361a34c9d26"
+other = "Danzare"
+
+[voc_transformieren]
+hash = "sha1-56ae765f27d4d1f3c101edec6ec970ff1fc1723a"
+other = "Trasformare"
+
+[voc_verbinden]
+hash = "sha1-8a81820ab7268e2a06ce91924609f270439da645"
+other = "Collegare"
+
+[voc_weiss]
+hash = "sha1-4e95c4512fed58b59d28ee70e17ec8adcf7a8c35"
+other = "Bianco"
+
+["voc_wortwörtlich"]
+hash = "sha1-81efd055e2e85e5322b1f91be50b294f12926f5d"
+other = "Letteralmente"
+
+["voc_wütend"]
+hash = "sha1-34ec4ac74a30f0f0d1e99563fc833190f31043ac"
+other = "Arrabbiato"
+
+[voc_zeichenhaft]
+hash = "sha1-502ba2cef070e798ab6e7d3f8ead1a9bd3c0de1e"
+other = "Simbolico"
+
+["voc_zärtlich"]
+hash = "sha1-509ec20bcd0882c4e3bd6bca80ba4c6788f381b2"
+other = "Tenero"
+
+["voc_Öffentlicher Raum"]
+hash = "sha1-f87ff13b9e832bb00a4199184dde3741050fec2b"
+other = "Spazio pubblico"
+
+["voc_Ökologie"]
+hash = "sha1-3f4a2e3b7b2724505172bdc1fcc2fc04a746b4cb"
+other = "Ecologia"
+
+["voc_Übersetzung"]
+hash = "sha1-f472518451a921976b1482e40869d0fb6b7da2a7"
+other = "Traduzione"
