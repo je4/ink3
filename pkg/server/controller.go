@@ -202,6 +202,7 @@ func NewController(localAddr, externalAddr, searchAddr, detailAddr string,
 	mediaserverBase string,
 	bundle *i18n.Bundle,
 	collections []*CollFacetType,
+	fieldMapping map[string]string,
 	embeddings *openai.ClientV2,
 	templateDebug, zoomOnly bool,
 	logger zLogger.ZLogger) (*Controller, error) {
@@ -223,6 +224,7 @@ func NewController(localAddr, externalAddr, searchAddr, detailAddr string,
 		templateCache:   make(map[string]any),
 		logger:          logger,
 		client:          client,
+		fieldMapping:    fieldMapping,
 		mediaserverBase: mediaserverBase,
 		bundle:          bundle,
 		embeddings:      embeddings,
@@ -478,6 +480,7 @@ type Controller struct {
 	protoHTTP       bool
 	auth            map[string]string
 	collections     []*CollFacetType
+	fieldMapping    map[string]string
 }
 
 func (ctrl *Controller) Start() error {
@@ -835,6 +838,13 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		return
 	}
 	searchString := c.Query("search")
+	filterStrings, queryString, err := parseQuery(searchString)
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot parse query '%s'", searchString)
+		// c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot parse query '%s': %v", searchString, err))
+		queryString = searchString
+	}
+
 	cursorString := c.Query("cursor")
 	ki := c.Request.URL.Query().Has("ki")
 	collectionsString := c.Query("collections")
@@ -912,7 +922,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 
 	var result *client.Search
 	var embedding64 = []float64{}
-	queryString := searchString
+	//queryString := searchString
 	if ki && searchString != "" {
 		embedding, err := ctrl.embeddings.CreateEmbedding(searchString, oai.SmallEmbedding3)
 		if err != nil {
@@ -934,7 +944,25 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 			Order: sortOrder,
 		})
 	}
-	result, err = ctrl.client.Search(context.Background(), queryString, []*client.InFacet{collFacet, vocFacet}, []*client.InFilter{}, embedding64, nil, nil, &cursorString, sort)
+	filter := []*client.InFilter{}
+	if len(filterStrings) > 0 {
+		for field, value := range filterStrings {
+			internalField, ok := ctrl.fieldMapping[field]
+			if !ok {
+				ctrl.logger.Error().Msgf("unknown field '%s'", field)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("unknown field '%s'", field))
+				return
+			}
+			filter = append(filter, &client.InFilter{
+				BoolTerm: &client.InFilterBoolTerm{
+					Field:  internalField,
+					Values: []string{strings.Trim(value, "\" ")},
+					And:    true,
+				},
+			})
+		}
+	}
+	result, err = ctrl.client.Search(context.Background(), queryString, []*client.InFacet{collFacet, vocFacet}, filter, embedding64, nil, nil, &cursorString, sort)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", searchString)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", searchString, err))

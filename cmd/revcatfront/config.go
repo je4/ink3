@@ -54,6 +54,7 @@ type RevCatFrontConfig struct {
 	MediaserverBase string                  `toml:"mediaserverbase"`
 	DataDir         string                  `toml:"datadir"`
 	Collections     []*server.CollFacetType `toml:"collections"`
+	FieldMapping    map[string]string       `toml:"fieldmapping"`
 }
 
 func LoadRevCatFrontConfig(fSys fs.FS, fp string, conf *RevCatFrontConfig) error {

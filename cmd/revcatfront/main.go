@@ -201,6 +201,7 @@ func main() {
 		conf.MediaserverBase,
 		bundle,
 		conf.Collections,
+		conf.FieldMapping,
 		embeddings,
 		conf.Templates != "",
 		conf.ZoomOnly,

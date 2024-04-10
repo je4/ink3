@@ -7,6 +7,7 @@ require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/Yamashou/gqlgenc v0.19.3
+	github.com/alecthomas/participle/v2 v2.1.1
 	github.com/bluele/gcache v0.0.2
 	github.com/docker/docker v25.0.4+incompatible
 	github.com/gin-contrib/cors v1.7.0
