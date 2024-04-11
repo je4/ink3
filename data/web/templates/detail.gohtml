@@ -8,6 +8,7 @@
 {{- $isIFrame := .IFrame }}
 {{- $searchSource := .SearchSource }}
 {{- if (eq $searchSource "") }}{{- $searchSource = "grid" }}{{- end }}
+{{- $searchAddr := .SearchAddr }}
 {{- $searchBase := printf "%s/%s/%s?" .SearchAddr $searchSource .Lang }}
 {{- if $isExhibition }}{{ $searchBase = printf "%sexhibition&" $searchBase }}{{ end }}
 {{- $search := $searchBase }}
@@ -53,13 +54,13 @@
                     <span style="font-weight: bold;">
                     {{- range $key, $p := $source.Base.Person}}
                         {{- if hasPrefix "artist" $p.Role}}
-                            {{- if gt $key 0}}; {{end}}{{$p.Name}}
+                            {{- if gt $key 0}}; {{end}}<a class="link-underline link-underline-opacity-10" href="{{ printf "%s/%s/%s?search=author:\"%s\"" $searchAddr $searchSource $lang $p.Name }}">{{$p.Name}}</a>
                         {{- end}}
                     {{- end}}
                     </span>
                     {{- range $p := $source.Base.Person}}
                         {{- if not (hasPrefix "artist" $p.Role)}}
-                            {{$p.Name}} ({{camelcase (trimPrefix "performer:" $p.Role)}})<br />
+                            <a class="link-underline link-underline-opacity-10" href="{{ printf "%s/%s/%s?search=author:\"%s\"" $searchAddr $searchSource $lang $p.Name }}">{{$p.Name}}</a> ({{camelcase (trimPrefix "performer:" $p.Role)}})<br />
                         {{- end}}
                     {{- end}}
                     </div>
