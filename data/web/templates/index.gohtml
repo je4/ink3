@@ -22,7 +22,7 @@
         <div class="row">
             <div class="col-md d-flex justify-content-end align-items-center">
                 <div class="input-group">
-                    <input style="background-color: rgba(156, 156, 181, 0.7);" id="search" class="form-control w-auto longborderblack" type="search" placeholder="{{ localize "searchtext" $lang }}" aria-label="{{ localize "search" $lang }}">&nbsp;
+                    <input onkeyup="if (event.keyCode === 13) search('{{ $searchBase }}');" style="background-color: rgba(156, 156, 181, 0.7);" id="search" class="form-control w-auto longborderblack" type="search" placeholder="{{ localize "searchtext" $lang }}" aria-label="{{ localize "search" $lang }}">&nbsp;
                 </div>
                 <button onclick="search('{{ $searchBase }}')" class="btn noborder" type="submit"><img alt="KI search" class="" width=28 src="{{ $root }}static/img/lupe_black.png"></button>
                 <button onclick="search('{{ $searchBase }}', '', false, true)" class="btn noborder" type="submit"><img class="" width=28 src="{{ $root }}static/img/ki2_black.png"></button>
