@@ -1,3 +1,7 @@
+[correction]
+hash = "sha1-adbfc75f178da3c69df9269e571da8ed04db0de3"
+other = "Korrektur Datensatz"
+
 [event]
 hash = "sha1-ad8919ace091b14011c6439cfd5e1707b58f5abd"
 other = "Event"
@@ -10,6 +14,10 @@ other = "EventkuratorIn"
 hash = "sha1-d404968ea90b07f16774ce75c7978d6ff60962f2"
 other = "Medium"
 
+[newentry]
+hash = "sha1-8955ab6bc1d4eb2656686e518ed53c7edfea55d9"
+other = "Neuer Eintrag"
+
 [performer]
 hash = "sha1-059d6bf92b67ab253cc5db925d80010fa5fff220"
 other = "PerformerIn"
@@ -21,6 +29,82 @@ other = "Signatur"
 [titel]
 hash = "sha1-950701e758d18a72134a6b8948c7cf42867c0eb9"
 other = "Titel"
+
+[voc_Akrobatik]
+hash = "sha1-7df406c521a08117384be6a92f473108a09ab4fb"
+other = "Akrobatik"
+
+[voc_Behausung]
+hash = "sha1-b7b7f371e080c9abd824b879ed02855c95d282a9"
+other = "Behausung"
+
+[voc_Butoh]
+hash = "sha1-c24257d734164629e70f9ccff7118d4e0bb2ad0d"
+other = "Butoh"
+
+["voc_Ernährung"]
+hash = "sha1-cc09b95e2e922a725a3415107b14d9c3539f7c2c"
+other = "Ernährung"
+
+[voc_Konflikt]
+hash = "sha1-d5beea7dd29183703c0774c180033749885b8e80"
+other = "Konflikt"
+
+[voc_Lockdown]
+hash = "sha1-8ba04349b45eb22d0ad96e1fda02157b984d8ba6"
+other = "Lockdown"
+
+[voc_Medienecho]
+hash = "sha1-43fadc5a3f64f59eeeaa2b1e38b0ee79fb6ff324"
+other = "Medienecho"
+
+[voc_Performance]
+hash = "sha1-63c904559993935c470f516c8b549ca7f3640dbb"
+other = "Performance"
+
+["voc_Physical Theatre"]
+hash = "sha1-8b2a1f3b7b6fac82b278b1a183190a1247b32f18"
+other = "Physical Theatre"
+
+[voc_Privatraum]
+hash = "sha1-9bfe02b37450196b24ea9baea45736395d4a5ae5"
+other = "Privatraum"
+
+[voc_Reperformance]
+hash = "sha1-604014527950062bef08c12fdb10ee69caeaad07"
+other = "Reperformance"
+
+[voc_Schule]
+hash = "sha1-9ac4bb0469fe1732c4982dd0ca5ebe06f21124fa"
+other = "Schule"
+
+[voc_Spiegelung]
+hash = "sha1-e5b2d8dc31d9d1e8f440d2bc560583bc8f839b4d"
+other = "Spiegelung"
+
+[voc_Tanzfilm]
+hash = "sha1-56d488a3b58e7340377b6dd2d876d23e4f18a71e"
+other = "Tanzfilm"
+
+["voc_Virtueller Raum"]
+hash = "sha1-22aa738ce813938b016e067fe8cf77215a006ecf"
+other = "Virtueller Raum"
+
+[voc_Workshop]
+hash = "sha1-13b8fe38a93b1e74be75932a7d667b18af065fa8"
+other = "Workshop"
+
+[voc_Zirkus]
+hash = "sha1-78767baa7965f34fcd7faa403e545f12b1864518"
+other = "Zirkus"
+
+[voc_giessen]
+hash = "sha1-c5e283db3d43c5e54d56df9a582df0fa08e2300c"
+other = "giessen"
+
+[voc_schneiden]
+hash = "sha1-6fd4542b2a63a89c8e3b3e941ed65d76210b79cd"
+other = "schneiden"
 
 [year]
 hash = "sha1-956a6e5ab6c7475264edfbfd35848eb3a5577811"
