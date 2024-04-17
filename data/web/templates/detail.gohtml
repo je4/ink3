@@ -68,20 +68,21 @@
                     {{ if $source.Base.Tags }}
                         {{- $num := 0 }}
                         {{- range $voc := $source.Base.Tags }}
-                            {{ if hasPrefix "voc:" $voc }}
+                            {{- $parts := vocTag $voc }}
+                            {{- if eq (len $parts) 2 }}
                                 {{- $num = add $num 1 }}
-                            {{ end }}
+                            {{- end }}
                         {{- end }}
                         {{- if gt $num 0 }}
                             <div class="p-2 borderedge">
                                 <div style="font-weight: bold; margin-top: 10px;">Tags</div>
                                 {{- $extraIgnore = append $extraIgnore "schlagwort"}}
                                 {{- range $voc := $source.Base.Tags }}
-                                    {{ if hasPrefix "voc:" $voc }}
-                                        {{ $parts := split ":"  (trimPrefix "voc:" $voc) }}
-                                        {{ $base := index $parts "_0" }}
+                                    {{- $parts := vocTag $voc }}
+                                    {{- if eq (len $parts) 2 }}
+                                        {{ $base := index $parts 0 }}
                                         {{ $base = (localize $base $lang) }}
-                                        {{ $tag := index $parts "_1" }}
+                                        {{ $tag := index $parts 1 }}
                                         {{ $tag = (localize $tag $lang) }}
                                         <a class="btn btn-csp vocButton m-1 btn-outline-secondary pborder" href="{{ if or $isExhibition $isIFrame }}#{{ else }}{{ printf "%svocabulary=%s" $searchBase $voc }}{{ end }}" role="button">{{ localize $tag $lang }}</a>
                                     {{ end }}

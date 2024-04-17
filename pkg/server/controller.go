@@ -71,6 +71,16 @@ type CollFacetType struct {
 func (ctrl *Controller) funcMap(name string) template.FuncMap {
 	fm := sprig.FuncMap()
 
+	fm["vocTag"] = func(tag string) []string {
+		if strings.HasPrefix(tag, "voc:") {
+			parts := strings.Split(tag[4:], ":")
+			if len(parts) == 2 && strings.HasPrefix(parts[0], "voc_") && strings.HasPrefix(parts[1], "voc_") {
+				return parts
+			}
+		}
+		return []string{}
+	}
+
 	fm["qrCode"] = func(s string) template.URL {
 		qrc, err := qrcode.NewWith(s,
 			qrcode.WithEncodingMode(qrcode.EncModeByte),
