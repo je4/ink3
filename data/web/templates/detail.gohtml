@@ -67,13 +67,16 @@
                     <img class="number" style="width: 376px; height:15px;" src="{{ $root }}static/img/line_short.png" />
                     {{ if $source.Base.Tags }}
                         {{- $num := 0 }}
+                        {{- $num2 := 0 }}
                         {{- range $voc := $source.Base.Tags }}
                             {{- $parts := vocTag $voc }}
                             {{- if eq (len $parts) 2 }}
                                 {{- $num = add $num 1 }}
+                            {{- else }}
+                                {{- $num2 = add $num2 1 }}
                             {{- end }}
                         {{- end }}
-                        {{- if gt $num 0 }}
+                        {{- if or (gt $num 0) (gt $num2 0) }}
                             <div class="p-2 borderedge">
                                 <div style="font-weight: bold; margin-top: 10px;">Tags</div>
                                 {{- $extraIgnore = append $extraIgnore "schlagwort"}}
@@ -85,6 +88,8 @@
                                         {{ $tag := index $parts 1 }}
                                         {{ $tag = (localize $tag $lang) }}
                                         <a class="btn btn-csp vocButton m-1 btn-outline-secondary pborder" href="{{ if or $isExhibition $isIFrame }}#{{ else }}{{ printf "%svocabulary=%s" $searchBase $voc }}{{ end }}" role="button">{{ localize $tag $lang }}</a>
+                                    {{- else }}
+                                        <a class="btn btn-csp vocButton m-1 btn-outline-secondary pborder" role="button">{{ $voc }}</a>
                                     {{ end }}
 
                                 {{- end }}
