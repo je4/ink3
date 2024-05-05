@@ -97,7 +97,7 @@
                     {{- $abstractOriginalLang := $abstract.GetNativeLanguage  }}
                     {{- if ne $abstractStr "" }}
                     <div class="mt-4 p-2 borderedge" style="text-align: left;">
-                        {{ toHTML $abstractStr }}
+                        {{ toHTML (nl2br $abstractStr) }}
                         {{- if ne $abstractOriginalLang.String $lang }}
                             <div class="alert alert-secondary p-1 mt-1" role="alert" style="font-size: smaller;">
                                 {{ localize "autotranslatefrom" $lang }} {{ localize (printf "%sen" $abstractOriginalLang.String) $lang }}

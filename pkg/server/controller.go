@@ -30,6 +30,7 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -198,6 +199,13 @@ func (ctrl *Controller) funcMap(name string) template.FuncMap {
 		return m
 	}
 	fm["name"] = func() string { return name }
+	var checkHTMLRegexp = regexp.MustCompile(`<\/?[a-zA-Z][\s\S]*>`)
+	fm["nl2br"] = func(s string) string {
+		if checkHTMLRegexp.MatchString(s) {
+			return s
+		}
+		return strings.Replace(s, "\n", "<br>\n", -1)
+	}
 
 	return fm
 }
