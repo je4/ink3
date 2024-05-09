@@ -34,6 +34,10 @@ other = "Titel"
 hash = "sha1-7df406c521a08117384be6a92f473108a09ab4fb"
 other = "Akrobatik"
 
+[voc_Ambivalenzen]
+hash = "sha1-ff9432fbcdc0019b7eb6b10f7828b21fbf50726d"
+other = "Ambivalenzen"
+
 [voc_Behausung]
 hash = "sha1-b7b7f371e080c9abd824b879ed02855c95d282a9"
 other = "Behausung"
@@ -46,6 +50,26 @@ other = "Butoh"
 hash = "sha1-cc09b95e2e922a725a3415107b14d9c3539f7c2c"
 other = "Ernährung"
 
+[voc_Familie]
+hash = "sha1-674e9d39f3b0f1f112df3ab837d094cd8e99bea2"
+other = "Familie"
+
+[voc_Gentrifizierung]
+hash = "sha1-a5fea726a92dd38ad12f3c59dee507ab2e9ff3c7"
+other = "Gentrifizierung"
+
+[voc_Gesten]
+hash = "sha1-94297befda6ce579cc80d9e3e69698abf0cd3838"
+other = "Gesten"
+
+["voc_Identität"]
+hash = "sha1-966792d66d55247493b8a9df551437dc2ebd8f09"
+other = "Identität"
+
+[voc_Kolonialismuskritik]
+hash = "sha1-85f0007deb338ae97b8ef4472dbd9134f7346ca9"
+other = "Kolonialismuskritik"
+
 [voc_Konflikt]
 hash = "sha1-d5beea7dd29183703c0774c180033749885b8e80"
 other = "Konflikt"
@@ -54,9 +78,21 @@ other = "Konflikt"
 hash = "sha1-8ba04349b45eb22d0ad96e1fda02157b984d8ba6"
 other = "Lockdown"
 
+["voc_Luft/Atem"]
+hash = "sha1-00959ae78cf07026d9b480a68822162d3f3e5a2a"
+other = "Luft/Atem"
+
 [voc_Medienecho]
 hash = "sha1-43fadc5a3f64f59eeeaa2b1e38b0ee79fb6ff324"
 other = "Medienecho"
+
+["voc_Mensch und Tier"]
+hash = "sha1-d2937334cbfcd6c566e65c08107e5d2f32c077ab"
+other = "Mensch und Tier"
+
+[voc_Normen]
+hash = "sha1-fe4176b6acd1e1e0e335d8232272587796dfda1e"
+other = "Normen"
 
 [voc_Performance]
 hash = "sha1-63c904559993935c470f516c8b549ca7f3640dbb"
@@ -70,6 +106,10 @@ other = "Physical Theatre"
 hash = "sha1-9bfe02b37450196b24ea9baea45736395d4a5ae5"
 other = "Privatraum"
 
+[voc_Publikation]
+hash = "sha1-faf6865f4c42998535dd3d5267dd78fa244d4224"
+other = "Publikation"
+
 [voc_Reperformance]
 hash = "sha1-604014527950062bef08c12fdb10ee69caeaad07"
 other = "Reperformance"
@@ -78,17 +118,37 @@ other = "Reperformance"
 hash = "sha1-9ac4bb0469fe1732c4982dd0ca5ebe06f21124fa"
 other = "Schule"
 
+["voc_Setting/Installation"]
+hash = "sha1-b920fa5b47dde3a6919458df5094162fc435e828"
+other = "Setting/Installation"
+
+["voc_Social Media"]
+hash = "sha1-3d84a8bdc9460014256846aa3df74056a3e9cf68"
+other = "Social Media"
+
 [voc_Spiegelung]
 hash = "sha1-e5b2d8dc31d9d1e8f440d2bc560583bc8f839b4d"
 other = "Spiegelung"
+
+[voc_Stuhl]
+hash = "sha1-79d17a4c150eb16bbb3d72a01ab3377e3f2be9e2"
+other = "Stuhl"
 
 [voc_Tanzfilm]
 hash = "sha1-56d488a3b58e7340377b6dd2d876d23e4f18a71e"
 other = "Tanzfilm"
 
+[voc_Tod]
+hash = "sha1-2a1b14d4ce2c1109a8f3076ead301e651b746355"
+other = "Tod"
+
 ["voc_Virtueller Raum"]
 hash = "sha1-22aa738ce813938b016e067fe8cf77215a006ecf"
 other = "Virtueller Raum"
+
+[voc_Wissenschaft]
+hash = "sha1-a7becac758f4ebdb9d2c159d2dc4b62f81d0e716"
+other = "Wissenschaft"
 
 [voc_Workshop]
 hash = "sha1-13b8fe38a93b1e74be75932a7d667b18af065fa8"
@@ -98,13 +158,33 @@ other = "Workshop"
 hash = "sha1-78767baa7965f34fcd7faa403e545f12b1864518"
 other = "Zirkus"
 
+[voc_balancieren]
+hash = "sha1-017b59fd37eec9c448ffbda9dcf622a98e08c7e4"
+other = "balancieren"
+
+[voc_bildhaft]
+hash = "sha1-27a83c0b23bcf1f7109ce4537e609bf49b16a3cd"
+other = "bildhaft"
+
 [voc_giessen]
 hash = "sha1-c5e283db3d43c5e54d56df9a582df0fa08e2300c"
 other = "giessen"
 
+[voc_kochen]
+hash = "sha1-6f01d637412e1dd4bea91c97fd892e8205abff42"
+other = "kochen"
+
+[voc_sammeln]
+hash = "sha1-f5b61f7bb9003c23fe9009fe3d0866667dcc7d75"
+other = "sammeln"
+
 [voc_schneiden]
 hash = "sha1-6fd4542b2a63a89c8e3b3e941ed65d76210b79cd"
 other = "schneiden"
+
+[voc_wild]
+hash = "sha1-0ce0cb683d02f030f1ddf06d763bdcfea5c76a59"
+other = "wild"
 
 [year]
 hash = "sha1-956a6e5ab6c7475264edfbfd35848eb3a5577811"
