@@ -38,6 +38,10 @@ other = "Akrobatik"
 hash = "sha1-ff9432fbcdc0019b7eb6b10f7828b21fbf50726d"
 other = "Ambivalenzen"
 
+[voc_Band]
+hash = "sha1-895f49cf2852b3d72847bd8f71a7dbf57ebe0148"
+other = "Band"
+
 ["voc_Band - Schnur"]
 hash = "sha1-62b14544a6cabbae2340e5db9e943f73e643e81d"
 other = "Band - Schnur"
@@ -77,6 +81,10 @@ other = "Gesten"
 ["voc_Identität"]
 hash = "sha1-966792d66d55247493b8a9df551437dc2ebd8f09"
 other = "Identität"
+
+["voc_Identitäten"]
+hash = "sha1-f38a9e2f72871d9a62cfb460901b884f241ce4ed"
+other = "Identitäten"
 
 [voc_Klebeband]
 hash = "sha1-39e247d18fe7dc4bb619f68253ec015dcdfb00a5"
