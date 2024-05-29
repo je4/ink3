@@ -12,8 +12,6 @@ import (
 	"github.com/je4/revcat/v2/tools/client"
 	"github.com/je4/revcatfront/v2/config"
 	"github.com/je4/revcatfront/v2/data/certs"
-	"github.com/je4/revcatfront/v2/data/web/static"
-	"github.com/je4/revcatfront/v2/data/web/templates"
 	"github.com/je4/revcatfront/v2/pkg/server"
 	"github.com/je4/utils/v2/pkg/openai"
 	"github.com/je4/utils/v2/pkg/zLogger"
@@ -135,19 +133,20 @@ func main() {
 		}
 	}
 
-	var templateFS fs.FS = templates.FS
-	if conf.Templates != "" {
-		templateFS = os.DirFS(conf.Templates)
-	}
-	var staticFS fs.FS = static.FS
-	if conf.StaticFiles != "" {
-		staticFS = os.DirFS(conf.StaticFiles)
-	}
-
 	var dataFS fs.FS
 	if conf.DataDir != "" {
 		dataFS = os.DirFS(conf.DataDir)
 	}
+
+  var templateFS fs.FS
+	if conf.Templates != "" {
+    templateFS = os.DirFS(conf.Templates)
+  }
+
+  var staticFS fs.FS
+	if conf.StaticFiles != "" {
+    staticFS = os.DirFS(conf.StaticFiles)
+  }
 
 	var embeddings *openai.ClientV2
 	if string(conf.OpenAIApiKey) != "" {
