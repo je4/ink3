@@ -58,6 +58,10 @@ other = "Mentions légales"
 hash = "sha1-8a9b000dcba62bc43c44698da1f6af909d72bd91"
 other = "italienne"
 
+[kontakt]
+hash = "sha1-a92b9bcb166569797fbf3ac4689fcf144151b1e6"
+other = "Contact"
+
 [language]
 hash = "sha1-3d9f5cb4ee692ee0740e7da86ab6cfcc921c5bcb"
 other = "Langue"
