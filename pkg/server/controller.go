@@ -458,6 +458,9 @@ func (ctrl *Controller) init() error {
 	router.GET("/detailtext/:signature/:lang", func(c *gin.Context) {
 		ctrl.detailText(c)
 	})
+	router.GET("/detailjson/:signature/:lang", func(c *gin.Context) {
+		ctrl.detailJSON(c)
+	})
 	router.GET("/detailtextlist/:collection", func(c *gin.Context) {
 		ctrl.detailTextList(c)
 	})
@@ -1312,6 +1315,32 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
 		return
 	}
+}
+
+func (ctrl *Controller) detailJSON(c *gin.Context) {
+	var lang = c.Param("lang")
+	if !ctrl.langAvailable(lang) {
+		lang = "de"
+	}
+	id := c.Param("signature")
+	if id == "" {
+		ctrl.logger.Error().Msgf("id missing")
+		c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("id missing"))
+		return
+	}
+
+	source, err := ctrl.client.MediathekEntries(context.Background(), []string{id})
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot get source '%s'", id)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot get source '%s': %v", id, err))
+		return
+	}
+	if source == nil || len(source.MediathekEntries) == 0 {
+		ctrl.logger.Error().Err(err).Msgf("source '%s' not found", id)
+		c.AbortWithStatusJSON(http.StatusNotFound, fmt.Sprintf("source '%s' not found", id))
+		return
+	}
+	c.JSON(http.StatusOK, source.MediathekEntries[0])
 }
 
 func (ctrl *Controller) detailText(c *gin.Context) {
