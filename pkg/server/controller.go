@@ -1149,12 +1149,13 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		Checked bool   `json:"checked"`
 	}
 	type edge struct {
-		Edge       *client.Search_Search_Edges `json:"edge"`
-		Title      *translate.MultiLangString  `json:"title"`
-		Persons    string                      `json:"persons"`
-		Type       string                      `json:"type"`
-		Date       string                      `json:"date"`
-		PersonRole map[string][]string
+		Edge        *client.Search_Search_Edges `json:"edge"`
+		Title       *translate.MultiLangString  `json:"title"`
+		Persons     string                      `json:"persons"`
+		Type        string                      `json:"type"`
+		Date        string                      `json:"date"`
+		PersonRole  map[string][]string
+		ShowContent bool
 	}
 	currentSearchURL := url.Values{}
 	if searchString != "" {
@@ -1214,6 +1215,12 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 			Type:       emptyIfNil(e.Base.GetType()),
 			Date:       emptyIfNil(e.Base.GetDate()),
 			PersonRole: map[string][]string{},
+		}
+		for _, acl := range e.Base.GetACL() {
+			if acl.GetName() == "content" {
+				ne.ShowContent = slices.Contains(acl.GetGroups(), "global/guest")
+				break
+			}
 		}
 		for _, t := range e.Base.GetTitle() {
 			ne.Title.Set(t.Value, language.MustParse(t.Lang), t.Translated)
@@ -1466,6 +1473,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 		Source          *client.MediathekEntries_MediathekEntries `json:"source"`
 		MediaserverBase string                                    `json:"mediaserverBase"`
 		SearchSource    string                                    `json:"searchSource"`
+		ShowContent     bool
 	}
 	var searchParams string
 	if len(query) > 0 {
@@ -1487,6 +1495,12 @@ func (ctrl *Controller) detail(c *gin.Context) {
 			Params: template.URL(strings.TrimPrefix(searchParams, "?")),
 		},
 		MediaserverBase: ctrl.mediaserverBase,
+	}
+	for _, acl := range source.MediathekEntries[0].Base.GetACL() {
+		if acl.GetName() == "content" {
+			data.ShowContent = slices.Contains(acl.GetGroups(), "global/guest")
+			break
+		}
 	}
 
 	if err := textTemplate.Execute(c.Writer, data); err != nil {

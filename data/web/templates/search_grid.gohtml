@@ -101,7 +101,7 @@
                                                 {{- if $useKI }}{{- $query = printf "%s&ki" $query }}{{- end }}
                                                 {{- $query = trimPrefix "&" $query }}
                                                 <tr onclick="window.location='{{ $detailAddr }}/detail/{{ $edge.Edge.Base.Signature }}/{{ $lang }}{{ if ne $query "" }}?{{ $query | toURL }}{{ end }}';">
-                                                    <td>{{- if $edge.Edge.Base.Poster }}
+                                                    <td>{{- if and $edge.Edge.Base.Poster $edge.ShowContent }}
                                                             <img src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $edge.Edge.Base.Poster.URI }}/resize/size100x100/formatPNG/autorotate" class="img-fluid rounded" alt="">
                                                         {{- end }}
                                                     </td>
@@ -188,8 +188,40 @@
                                             <div class="m-2 p-2" style="transform: rotate({{randInt -5 5}}deg)">
                                                 <div style="align-content: center; text-align: center">
                                                     {{- if $edge.Edge.Base.Poster }}
-                                                        {{- $size := calcAspectSize $edge.Edge.Base.Poster.Width $edge.Edge.Base.Poster.Height 200 200 }}
-                                                        <img class="bd-placeholder-img card-img-top" style="width: {{$size.Width}}px; height: {{$size.Height}}px" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $edge.Edge.Base.Poster.URI }}/resize/size200x200/formatPNG/autorotate" />
+                                                        {{- if $edge.ShowContent }}
+                                                            {{- $size := calcAspectSize $edge.Edge.Base.Poster.Width $edge.Edge.Base.Poster.Height 200 200 }}
+                                                            <img class="bd-placeholder-img card-img-top" style="width: {{$size.Width}}px; height: {{$size.Height}}px" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $edge.Edge.Base.Poster.URI }}/resize/size200x200/formatPNG/autorotate" />
+                                                        {{- else }}
+                                                            <svg
+                                                                    class="bd-placeholder-img card-img-top" style="width: 200px; height: 200px;"
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    version="1.1"
+                                                                    viewBox="0 0 705 705">
+                                                                <title>media access denied</title>
+                                                                <g>
+                                                                    <circle id="circle1"
+                                                                            cx="352.5"
+                                                                            cy="352.5"
+                                                                            r="350"
+                                                                            style="fill:none;stroke:none;stroke-width:2.5px"/>
+                                                                </g>
+                                                                <g>
+                                                                    <circle id="circle2"
+                                                                            cx="352.5"
+                                                                            cy="352.5"
+                                                                            r="290"
+                                                                            style="fill:none;stroke:#212529;stroke-width:90"/>
+                                                                </g>
+                                                                <g transform="rotate(40 352.5 352.5) ">
+                                                                    <rect
+                                                                            x="62.5"
+                                                                            y="307.5"
+                                                                            width="580"
+                                                                            height="90"
+                                                                            fill="#212529" stroke="none" stroke-width="0"/>
+                                                                </g>
+                                                            </svg>
+                                                        {{- end }}
                                                     {{- else }}
                                                         <svg class="bd-placeholder-img card-img-top" style="width: 200px; height: 200px;" width="100px" height="200px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em"></text></svg>
                                                     {{- end }}

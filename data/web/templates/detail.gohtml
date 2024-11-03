@@ -2,6 +2,7 @@
 {{- $lang := .Lang}}
 {{- $root := .RootPath }}
 {{- $source := .Source }}
+{{- $showContent := .ShowContent }}
 {{- $mediaserverBase := .MediaserverBase }}
 {{- $extraIgnore := list "jahrgang" "remark" "performers" "camera" "sprache" "function" }}
 {{- $isExhibition := .Exhibition }}
@@ -35,12 +36,47 @@
         <div class="p-4">
             <div class="row">
                 <div class="col col-lg-7" style="text-align: center;">
-                    {{ template "detail_image.gohtml" . }}
-                    {{ template "detail_video.gohtml" . }}
-                    {{ template "detail_audio.gohtml" . }}
-                    {{/* template "detail_pdf_pdfjsexpress.gohtml" . */}}
-                    {{/* template "detail_pdf_viewerjs.gohtml" . */}}
-                    {{ template "detail_pdf_pdfjs.gohtml" . }}
+                    {{- if $source.Base.Poster }}
+                        {{- if $showContent }}
+                            {{ template "detail_image.gohtml" . }}
+                            {{ template "detail_video.gohtml" . }}
+                            {{ template "detail_audio.gohtml" . }}
+                            {{/* template "detail_pdf_pdfjsexpress.gohtml" . */}}
+                            {{/* template "detail_pdf_viewerjs.gohtml" . */}}
+                            {{ template "detail_pdf_pdfjs.gohtml" . }}
+                        {{- else }}
+                            <svg
+                                    class="bd-placeholder-img card-img-top" style="width: 100%;"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    version="1.1"
+                                    viewBox="0 0 705 705">
+                                <title>media access denied</title>
+                                <g>
+                                    <circle id="circle1"
+                                            cx="352.5"
+                                            cy="352.5"
+                                            r="350"
+                                            style="fill:none;stroke:none;stroke-width:2.5px"/>
+                                </g>
+                                <g>
+                                    <circle id="circle2"
+                                            cx="352.5"
+                                            cy="352.5"
+                                            r="290"
+                                            style="fill:none;stroke:#212529;stroke-width:90"/>
+                                </g>
+                                <g transform="rotate(40 352.5 352.5) ">
+                                    <rect
+                                            x="62.5"
+                                            y="307.5"
+                                            width="580"
+                                            height="90"
+                                            fill="#212529" stroke="none" stroke-width="0"/>
+                                </g>
+                            </svg>
+
+                        {{- end }}
+                    {{- end }}
                 </div>
                 <div class="col col-lg-5">
                     {{ if ne (ptrString $source.Base.CollectionTitle) "" }}{{ $source.Base.CollectionTitle }} (#{{ $source.Base.Signature }}){{ else }}#{{ $source.Base.Signature }}{{ end }}
