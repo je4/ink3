@@ -1111,7 +1111,19 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 			Order: sortOrder,
 		})
 	}
-	filter := []*client.InFilter{}
+	filter := []*client.InFilter{
+		{
+			ExistsTerm: &client.InFilterExistsTerm{
+				Field: "poster",
+			},
+		},
+		{
+			BoolTerm: &client.InFilterBoolTerm{
+				Field:  "acl.content.keyword",
+				Values: []string{"global/guest"},
+			},
+		},
+	}
 	if len(filterStrings) > 0 {
 		for field, value := range filterStrings {
 			internalField, ok := ctrl.fieldMapping[field]
