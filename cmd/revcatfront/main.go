@@ -9,6 +9,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/Yamashou/gqlgenc/clientv2"
 	"github.com/bluele/gcache"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/je4/revcat/v2/tools/client"
 	"github.com/je4/revcatfront/v2/config"
 	"github.com/je4/revcatfront/v2/data/certs"
@@ -24,6 +25,7 @@ import (
 	"io"
 	"io/fs"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -41,6 +43,11 @@ func auth(apikey string) func(ctx context.Context, req *http.Request, gqlInfo *c
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apikey))
 		return next(ctx, req, gqlInfo, res)
 	}
+}
+
+type GroupClaims struct {
+	jwt.RegisteredClaims
+	Groups string `json:"groups"`
 }
 
 func main() {
@@ -160,7 +167,28 @@ func main() {
 	}
 	httpClient := &http.Client{}
 	revcatClient := client.NewClient(httpClient, conf.Revcat.Endpoint, nil, func(ctx context.Context, req *http.Request, gqlInfo *clientv2.GQLRequestInfo, res interface{}, next clientv2.RequestInterceptorFunc) error {
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", conf.Revcat.Apikey))
+		userAny := ctx.Value("user")
+		groups := []string{"global/guest"}
+		if user, ok := userAny.(*server.User); ok {
+			groups = user.Groups
+		}
+		bearer := fmt.Sprintf("Bearer %s", conf.Revcat.Apikey)
+		claims := &GroupClaims{
+			RegisteredClaims: jwt.RegisteredClaims{
+				Subject:   "revcatfront",
+				Issuer:    "revcatfront",
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 5)),
+				IssuedAt:  jwt.NewNumericDate(time.Now()),
+			},
+			Groups: strings.Join(groups, ";"),
+		}
+		token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
+		tokenString, err := token.SignedString([]byte(conf.JWTKey))
+		if err != nil {
+			req.Header.Set("Authorization", bearer)
+			return next(ctx, req, gqlInfo, res)
+		}
+		req.Header.Set("Authorization", bearer+"."+tokenString)
 		return next(ctx, req, gqlInfo, res)
 	})
 
@@ -185,6 +213,14 @@ func main() {
 		}
 	}
 
+	locations := map[string][]net.IPNet{}
+	for _, loc := range conf.Locations {
+		locations[loc.Group] = []net.IPNet{}
+		for _, net := range loc.Networks {
+			locations[loc.Group] = append(locations[loc.Group], net.IPNet)
+		}
+	}
+
 	ctrl, err := server.NewController(
 		conf.LocalAddr,
 		conf.ExternalAddr,
@@ -199,12 +235,19 @@ func main() {
 		revcatClient,
 		collagePos,
 		conf.MediaserverBase,
+		conf.MediaserverKey,
+		time.Duration(conf.MediaserverTokenExp),
 		bundle,
 		conf.Collections,
 		conf.FieldMapping,
 		embeddings,
 		conf.Templates != "",
 		conf.ZoomOnly,
+		conf.Login.URL,
+		conf.Login.Issuer,
+		conf.Login.JWTKey,
+		conf.Login.JWTAlg,
+		locations,
 		logger)
 	if err != nil {
 		logger.Fatal().Msgf("cannot create controller: %v", err)

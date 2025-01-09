@@ -102,7 +102,7 @@
                                                 {{- $query = trimPrefix "&" $query }}
                                                 <tr onclick="window.location='{{ $detailAddr }}/detail/{{ $edge.Edge.Base.Signature }}/{{ $lang }}{{ if ne $query "" }}?{{ $query | toURL }}{{ end }}';">
                                                     <td>{{- if and $edge.Edge.Base.Poster $edge.ShowContent }}
-                                                            <img src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $edge.Edge.Base.Poster.URI }}/resize/size100x100/formatPNG/autorotate" class="img-fluid rounded" alt="">
+                                                            <img src="{{ medialink $edge.Edge.Base.Poster.URI "resize" "size100x100/formatPNG/autorotate" (and $edge.ShowContent $edge.ProtectedContent) }}" class="img-fluid rounded" alt="">
                                                         {{- end }}
                                                     </td>
                                                     <td>{{ $edge.Edge.Base.Signature }}</td>
@@ -146,7 +146,9 @@
                                             <div class="row g-0">
                                                 <div class="col-md-2">
                                                     {{- if $edge.Edge.Base.Poster }}
-                                                    <img src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $edge.Edge.Base.Poster.URI }}/resize/size160x160/formatPNG/autorotate" class="img-fluid rounded-start" alt="">
+                                                        {{- if $edge.ShowContent }}
+                                                    <img src="{{ medialink $edge.Edge.Base.Poster.URI "resize" "size160x160/formatPNG/autorotate" (and $edge.ShowContent $edge.ProtectedContent) }}" class="img-fluid rounded-start" alt="">
+                                                        {{- end }}
                                                     {{- end }}
                                                 </div>
                                                 <div class="col-md-10">
@@ -190,7 +192,7 @@
                                                     {{- if $edge.Edge.Base.Poster }}
                                                         {{- if $edge.ShowContent }}
                                                             {{- $size := calcAspectSize $edge.Edge.Base.Poster.Width $edge.Edge.Base.Poster.Height 200 200 }}
-                                                            <img class="bd-placeholder-img card-img-top" style="width: {{$size.Width}}px; height: {{$size.Height}}px" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $edge.Edge.Base.Poster.URI }}/resize/size200x200/formatPNG/autorotate" />
+                                                            <img class="bd-placeholder-img card-img-top" style="width: {{$size.Width}}px; height: {{$size.Height}}px" src="{{ medialink $edge.Edge.Base.Poster.URI "resize" "size200x200/formatPNG/autorotate" (and $edge.ShowContent $edge.ProtectedContent) }}" />
                                                         {{- else }}
                                                             <svg
                                                                     class="bd-placeholder-img card-img-top" style="width: 200px; height: 200px;"

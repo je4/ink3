@@ -1,5 +1,6 @@
 {{- $mediaserverBase := .MediaserverBase }}
 {{- $source := .Source }}
+{{- $data := . }}
 {{ range $typedMedia := $source.Media }}
     {{ if eq $typedMedia.GetName "video" }}
         {{ range $key, $media := $typedMedia.GetItems }}
@@ -15,10 +16,10 @@
                                 preload="auto"
                                 width="{{ $size.Width }}"
                                 height="{{ $size.Height }}"
-                                poster="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}$$timeshot$$3/resize/size{{ $size.Width }}x{{ $size.Height }}/formatPNG/autorotate"
+                                poster="{{ medialink (printf "%s%s" $media.URI "$$timeshot$$3") "resize" (printf "size%vx%v/formatPNG/autorotate" $size.Width $size.Height) (and $data.ShowContent $data.ProtectedContent) }}"
                                 data-setup="{}"
                         >
-                            <source src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}$$web/master" type="video/mp4" />
+                            <source src="{{ medialink (printf "%s%s" $media.URI "$$web") "master" "" (and $data.ShowContent $data.ProtectedContent) }}" type="video/mp4" />
                             <p class="vjs-no-js">
                                 To view this video please enable JavaScript, and consider upgrading to a
                                 web browser that
@@ -32,7 +33,9 @@
                 <tr>
                     {{ range $num := list 3 8 12 17 22 }}
                         <td>
-                            <a onclick="videoJumpToShot('video-{{ $key }}', {{ $num }})"><img width="100%" xwidth="{{ div $size.Width 5 }}" xheight="{{ div $size.Height 5 }}" class="bd-placeholder-img" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}$$timeshot$${{ $num }}/resize/size{{ div $size.Width 5 }}x{{ div $size.Height 5 }}/formatPNG/autorotate" /></a>
+                            <a onclick="videoJumpToShot('video-{{ $key }}', {{ $num }})">
+                                <img width="100%" xwidth="{{ div $size.Width 5 }}" xheight="{{ div $size.Height 5 }}" class="bd-placeholder-img" src="{{ medialink (printf "%s%s%v" $media.URI "$$timeshot$$" $num) "resize" (printf "size%vx%v/formatPNG/autorotate" (div $size.Width 5) (div $size.Height 5)) (and $data.ShowContent $data.ProtectedContent) }}" />
+                            </a>
                         </td>
                     {{ end }}
                 </tr>

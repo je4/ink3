@@ -11,6 +11,7 @@ import (
 	"github.com/docker/docker/pkg/ioutils"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/gosimple/slug"
 	"github.com/je4/basel-collections/v2/directus"
 	"github.com/je4/revcat/v2/tools/client"
@@ -27,15 +28,18 @@ import (
 	"html/template"
 	"image"
 	"io/fs"
+	"net"
 	"net/http"
 	"net/url"
 	"path/filepath"
 	"regexp"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
 	tmpl "text/template"
+	"time"
 )
 
 var languageNamer = map[string]display.Namer{
@@ -56,6 +60,9 @@ type baseData struct {
 	SearchAddr string
 	DetailAddr string
 	Page       string
+	LoginURL   string
+	Self       string
+	User       *User
 }
 
 type CollFacetType struct {
@@ -67,6 +74,53 @@ type CollFacetType struct {
 	Identifier string `toml:"identifier" json:"identifier"`
 	Image      string `toml:"image" json:"image"`
 	Contact    string `toml:"contact" json:"contact"`
+}
+
+func NewJWT(secret string, subject string, alg string, valid int64, domain string, issuer string, userId string) (tokenString string, err error) {
+
+	var signingMethod jwt.SigningMethod
+	switch strings.ToLower(alg) {
+	case "hs256":
+		signingMethod = jwt.SigningMethodHS256
+	case "hs384":
+		signingMethod = jwt.SigningMethodHS384
+	case "hs512":
+		signingMethod = jwt.SigningMethodHS512
+	case "es256":
+		signingMethod = jwt.SigningMethodES256
+	case "es384":
+		signingMethod = jwt.SigningMethodES384
+	case "es512":
+		signingMethod = jwt.SigningMethodES512
+	case "ps256":
+		signingMethod = jwt.SigningMethodPS256
+	case "ps384":
+		signingMethod = jwt.SigningMethodPS384
+	case "ps512":
+		signingMethod = jwt.SigningMethodPS512
+	default:
+		return "", errors.Wrapf(err, "invalid signing method %s", alg)
+	}
+	exp := time.Now().Unix() + valid
+	claims := jwt.MapClaims{
+		"sub": strings.ToLower(subject),
+		"exp": exp,
+	}
+	// keep jwt short, no empty Fields
+	if domain != "" {
+		claims["aud"] = domain
+	}
+	if issuer != "" {
+		claims["iss"] = issuer
+	}
+	if userId != "" {
+		claims["user"] = userId
+	}
+
+	token := jwt.NewWithClaims(signingMethod, claims)
+	//	log.Println("NewJWT( ", secret, ", ", subject, ", ", exp)
+	tokenString, err = token.SignedString([]byte(secret))
+	return tokenString, err
 }
 
 func (ctrl *Controller) funcMap(name string) template.FuncMap {
@@ -206,6 +260,34 @@ func (ctrl *Controller) funcMap(name string) template.FuncMap {
 		}
 		return strings.Replace(s, "\n", "<br>\n", -1)
 	}
+	mediaMatch := regexp.MustCompile(`^mediaserver:([^/]+)/([^/]+)$`)
+	fm["medialink"] = func(uri, action, param string, token bool) string {
+		matches := mediaMatch.FindStringSubmatch(uri)
+		params := strings.Split(param, "/")
+		sort.Strings(params)
+		// if not matching, just return the uri
+		if matches == nil {
+			return uri
+		}
+		collection := matches[1]
+		signature := matches[2]
+		urlstr := fmt.Sprintf("%s/%s/%s/%s/%s", ctrl.mediaserverBase, collection, signature, action, param)
+		if token {
+			jwt, err := NewJWT(
+				ctrl.mediaserverKey,
+				strings.TrimRight(fmt.Sprintf("mediaserver:%s/%s/%s/%s", collection, signature, action, strings.Join(params, "/")), "/"),
+				"HS256",
+				int64(ctrl.mediaserverTokenExp.Seconds()),
+				"mediaserver",
+				"mediathek",
+				"")
+			if err != nil {
+				return fmt.Sprintf("ERROR: %v", err)
+			}
+			urlstr = fmt.Sprintf("%s?token=%s", urlstr, jwt)
+		}
+		return urlstr
+	}
 
 	return fm
 }
@@ -218,37 +300,51 @@ func NewController(localAddr, externalAddr, searchAddr, detailAddr string,
 	client client.RevCatGraphQLClient,
 	zoomPos map[string][]image.Rectangle,
 	mediaserverBase string,
+	mediaserverKey string,
+	mediaserverTokenExp time.Duration,
 	bundle *i18n.Bundle,
 	collections []*CollFacetType,
 	fieldMapping map[string]string,
 	embeddings *openai.ClientV2,
 	templateDebug, zoomOnly bool,
+	loginURL string,
+	loginIssuer string,
+	loginJWTKey string,
+	loginJWTAlgs []string,
+	locations map[string][]net.IPNet,
 	logger zLogger.ZLogger) (*Controller, error) {
 
 	ctrl := &Controller{
-		localAddr:       localAddr,
-		externalAddr:    externalAddr,
-		searchAddr:      searchAddr,
-		detailAddr:      detailAddr,
-		protoHTTP:       protoHTTP,
-		auth:            auth,
-		srv:             nil,
-		cert:            cert,
-		templateFS:      templateFS,
-		staticFS:        staticFS,
-		dataFS:          dataFS,
-		zoomPos:         zoomPos,
-		templateDebug:   templateDebug,
-		templateCache:   make(map[string]any),
-		logger:          logger,
-		client:          client,
-		fieldMapping:    fieldMapping,
-		mediaserverBase: mediaserverBase,
-		bundle:          bundle,
-		embeddings:      embeddings,
-		zoomOnly:        zoomOnly,
-		languageMatcher: language.NewMatcher(bundle.LanguageTags()),
-		collections:     collections,
+		localAddr:           localAddr,
+		externalAddr:        externalAddr,
+		searchAddr:          searchAddr,
+		detailAddr:          detailAddr,
+		protoHTTP:           protoHTTP,
+		auth:                auth,
+		srv:                 nil,
+		cert:                cert,
+		templateFS:          templateFS,
+		staticFS:            staticFS,
+		dataFS:              dataFS,
+		zoomPos:             zoomPos,
+		templateDebug:       templateDebug,
+		templateCache:       make(map[string]any),
+		logger:              logger,
+		client:              client,
+		fieldMapping:        fieldMapping,
+		mediaserverBase:     mediaserverBase,
+		mediaserverKey:      mediaserverKey,
+		mediaserverTokenExp: mediaserverTokenExp,
+		bundle:              bundle,
+		embeddings:          embeddings,
+		zoomOnly:            zoomOnly,
+		languageMatcher:     language.NewMatcher(bundle.LanguageTags()),
+		collections:         collections,
+		loginURL:            loginURL,
+		loginIssuer:         loginIssuer,
+		loginJWTKey:         loginJWTKey,
+		loginJWTAlgs:        loginJWTAlgs,
+		locations:           locations,
 	}
 	ctrl.logger.Info().Msgf("Zoom only: %v", ctrl.zoomOnly)
 	if err := ctrl.init(); err != nil {
@@ -257,11 +353,119 @@ func NewController(localAddr, externalAddr, searchAddr, detailAddr string,
 	return ctrl, nil
 }
 
+type loginClaim struct {
+	jwt.RegisteredClaims
+	UserID    string `json:"userId"`
+	Email     string `json:"email"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	HomeOrg   string `json:"homeOrg"`
+	Groups    string `json:"groups"`
+}
+
+type User struct {
+	UserID    string   `json:"userId"`
+	Email     string   `json:"email"`
+	FirstName string   `json:"firstName"`
+	LastName  string   `json:"lastName"`
+	HomeOrg   string   `json:"homeOrg"`
+	Groups    []string `json:"groups"`
+}
+
+func (user *User) IsLoggedIn() bool {
+	return !(len(user.Groups) == 0 || (len(user.Groups) == 1 && user.Groups[0] == "global/guest"))
+}
+
+func (ctrl *Controller) AuthHandler(ctx *gin.Context) {
+	bearerToken := ctx.Request.Header.Get("Authorization")
+	if bearerToken == "" {
+		bearerToken = ctx.Request.URL.Query().Get("token")
+	} else {
+		if bearerToken[:7] != "Bearer " {
+			ctx.Next()
+			return
+		}
+		bearerToken = bearerToken[7:]
+	}
+	if bearerToken == "" {
+		if cookie, err := ctx.Cookie("token"); err == nil {
+			bearerToken = cookie
+		}
+	}
+	if bearerToken == "" {
+		ctx.Next()
+		return
+	}
+
+	claim := &loginClaim{}
+	token, err := jwt.ParseWithClaims(bearerToken, claim, func(token *jwt.Token) (interface{}, error) {
+		talg := token.Method.Alg()
+		algOK := false
+		for _, a := range ctrl.loginJWTAlgs {
+			if talg == a {
+				algOK = true
+				break
+			}
+		}
+		if !algOK {
+			return false, fmt.Errorf("unexpected signing method (allowed are %v): %v", ctrl.loginJWTAlgs, token.Header["alg"])
+		}
+		return []byte(ctrl.loginJWTKey), nil
+	})
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, fmt.Sprintf("cannot parse token: %v", err))
+		return
+	}
+	if !token.Valid {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, "invalid token")
+		return
+	}
+	if !slices.Contains([]string{ctrl.loginIssuer, "revcatfront"}, claim.Issuer) {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, fmt.Sprintf("invalid issuer: %s", claim.Issuer))
+		return
+	}
+	user := &User{
+		UserID:    claim.UserID,
+		Email:     claim.Email,
+		FirstName: claim.FirstName,
+		LastName:  claim.LastName,
+		HomeOrg:   claim.HomeOrg,
+		Groups:    ctrl.locationGroups(ctx),
+	}
+	if claim.Groups != "" {
+		user.Groups = append(user.Groups, strings.Split(claim.Groups, ";")...)
+	}
+	ctx.Set("user", user)
+	claim.Issuer = "revcatfront"
+	claim.ExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Hour * 8))
+	claim.IssuedAt = jwt.NewNumericDate(time.Now())
+	if newTokenString, err := jwt.NewWithClaims(jwt.SigningMethodHS512, claim).SignedString([]byte(ctrl.loginJWTKey)); err == nil {
+		ctx.SetCookie("token", newTokenString, 60*23, "/", "", false, false)
+	}
+	ctx.Next()
+}
+
+func GetUser(ctx *gin.Context) *User {
+	userAny, ok := ctx.Get("user")
+	if !ok {
+		return &User{
+			Groups: []string{"global/guest"},
+		}
+	}
+	user, ok := userAny.(*User)
+	if !ok {
+		return &User{
+			Groups: []string{"global/guest"},
+		}
+	}
+	return user
+}
+
 func (ctrl *Controller) init() error {
 	router := gin.Default()
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
-	router.Use(cors.New(corsConfig))
+	router.Use(cors.New(corsConfig), ctrl.AuthHandler)
 	if len(ctrl.auth) > 0 {
 		router.Use(gin.BasicAuth(ctrl.auth))
 	}
@@ -509,31 +713,55 @@ func (ctrl *Controller) langAvailable(lang string) bool {
 }
 
 type Controller struct {
-	localAddr       string
-	externalAddr    string
-	srv             *http.Server
-	cert            *tls.Certificate
-	logger          zLogger.ZLogger
-	templateFS      fs.FS
-	staticFS        fs.FS
-	dataFS          fs.FS
-	dir             *directus.Directus
-	templateDebug   bool
-	templateCache   map[string]any
-	templateMutex   sync.Mutex
-	client          client.RevCatGraphQLClient
-	mediaserverBase string
-	bundle          *i18n.Bundle
-	languageMatcher language.Matcher
-	searchAddr      string
-	detailAddr      string
-	zoomPos         map[string][]image.Rectangle
-	embeddings      *openai.ClientV2
-	zoomOnly        bool
-	protoHTTP       bool
-	auth            map[string]string
-	collections     []*CollFacetType
-	fieldMapping    map[string]string
+	localAddr           string
+	externalAddr        string
+	srv                 *http.Server
+	cert                *tls.Certificate
+	logger              zLogger.ZLogger
+	templateFS          fs.FS
+	staticFS            fs.FS
+	dataFS              fs.FS
+	dir                 *directus.Directus
+	templateDebug       bool
+	templateCache       map[string]any
+	templateMutex       sync.Mutex
+	client              client.RevCatGraphQLClient
+	mediaserverBase     string
+	bundle              *i18n.Bundle
+	languageMatcher     language.Matcher
+	searchAddr          string
+	detailAddr          string
+	zoomPos             map[string][]image.Rectangle
+	embeddings          *openai.ClientV2
+	zoomOnly            bool
+	protoHTTP           bool
+	auth                map[string]string
+	collections         []*CollFacetType
+	fieldMapping        map[string]string
+	loginURL            string
+	loginIssuer         string
+	loginJWTKey         string
+	loginJWTAlgs        []string
+	locations           map[string][]net.IPNet
+	mediaserverKey      string
+	mediaserverTokenExp time.Duration
+}
+
+func (ctrl *Controller) locationGroups(ctx *gin.Context) []string {
+	ip := net.ParseIP(ctx.ClientIP())
+	if ip == nil {
+		return []string{}
+	}
+	groups := []string{}
+	for location, nets := range ctrl.locations {
+		for _, n := range nets {
+			if n.Contains(ip) {
+				groups = append(groups, location)
+				break
+			}
+		}
+	}
+	return groups
 }
 
 func (ctrl *Controller) Start() error {
@@ -588,6 +816,9 @@ func (ctrl *Controller) impressumPage(c *gin.Context) {
 			Lang:       lang,
 			RootPath:   "../../",
 			SearchAddr: ctrl.searchAddr,
+			LoginURL:   ctrl.loginURL,
+			Self:       c.Request.URL.String(),
+			User:       GetUser(c),
 		},
 	}
 	collFacet := &client.InFacet{
@@ -633,7 +864,7 @@ func (ctrl *Controller) impressumPage(c *gin.Context) {
 			Order: sortOrder,
 		})
 	}
-	result, err := ctrl.client.Search(context.Background(), "", []*client.InFacet{collFacet}, nil, nil, nil, &size, nil, sort)
+	result, err := ctrl.client.Search(c, "", []*client.InFacet{collFacet}, nil, nil, nil, &size, nil, sort)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", "")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", "", err))
@@ -702,6 +933,9 @@ func (ctrl *Controller) kontaktPage(c *gin.Context) {
 			Lang:       lang,
 			RootPath:   "../../",
 			SearchAddr: ctrl.searchAddr,
+			LoginURL:   ctrl.loginURL,
+			Self:       c.Request.URL.String(),
+			User:       GetUser(c),
 		},
 	}
 	collFacet := &client.InFacet{
@@ -747,7 +981,7 @@ func (ctrl *Controller) kontaktPage(c *gin.Context) {
 			Order: sortOrder,
 		})
 	}
-	result, err := ctrl.client.Search(context.Background(), "", []*client.InFacet{collFacet}, nil, nil, nil, &size, nil, sort)
+	result, err := ctrl.client.Search(c, "", []*client.InFacet{collFacet}, nil, nil, nil, &size, nil, sort)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", "")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", "", err))
@@ -789,8 +1023,8 @@ func (ctrl *Controller) kontaktPage(c *gin.Context) {
 	}
 }
 
-func (ctrl *Controller) indexPage(c *gin.Context) {
-	var lang = c.Param("lang")
+func (ctrl *Controller) indexPage(ctx *gin.Context) {
+	var lang = ctx.Param("lang")
 	if lang == "" {
 		lang = "de"
 	}
@@ -802,7 +1036,7 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 	indexTemplate, err := ctrl.loadHTMLTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
 		return
 	}
 
@@ -817,6 +1051,9 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 			RootPath:   "",
 			SearchAddr: ctrl.searchAddr,
 			DetailAddr: ctrl.detailAddr,
+			LoginURL:   ctrl.loginURL,
+			Self:       fmt.Sprintf("%s%s", ctrl.externalAddr, ctx.Request.URL.Path),
+			User:       GetUser(ctx),
 		},
 	}
 
@@ -849,13 +1086,13 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 			collFacet.Query.BoolTerm.Values = append(collFacet.Query.BoolTerm.Values, val)
 		default:
 			ctrl.logger.Error().Err(err).Msgf("unknown collection identifier '%s'", coll.Identifier)
-			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("unknown collection identifier '%s'", coll.Identifier))
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("unknown collection identifier '%s'", coll.Identifier))
 			return
 		}
 	}
 	var size int64 = 1
-	var sortField = c.Query("sortField")
-	var sortOrder = c.Query("sortOrder")
+	var sortField = ctx.Query("sortField")
+	var sortOrder = ctx.Query("sortOrder")
 	var sort = []*client.SortField{}
 	if sortField != "" {
 		sort = append(sort, &client.SortField{
@@ -863,10 +1100,24 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 			Order: sortOrder,
 		})
 	}
-	result, err := ctrl.client.Search(context.Background(), "", []*client.InFacet{collFacet}, nil, nil, nil, &size, nil, sort)
+	user := GetUser(ctx)
+	filter := []*client.InFilter{
+		{
+			ExistsTerm: &client.InFilterExistsTerm{
+				Field: "poster",
+			},
+		},
+		{
+			BoolTerm: &client.InFilterBoolTerm{
+				Field:  "acl.content.keyword",
+				Values: user.Groups,
+			},
+		},
+	}
+	result, err := ctrl.client.Search(ctx, "", []*client.InFacet{collFacet}, filter, nil, nil, &size, nil, sort)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", "")
-		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", "", err))
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", "", err))
 		return
 	}
 
@@ -908,9 +1159,9 @@ func (ctrl *Controller) indexPage(c *gin.Context) {
 		}
 	}
 
-	if err := indexTemplate.Execute(c.Writer, data); err != nil {
+	if err := indexTemplate.Execute(ctx.Writer, data); err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
 		return
 	}
 }
@@ -1111,6 +1362,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 			Order: sortOrder,
 		})
 	}
+	user := GetUser(c)
 	filter := []*client.InFilter{
 		{
 			ExistsTerm: &client.InFilterExistsTerm{
@@ -1120,7 +1372,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		{
 			BoolTerm: &client.InFilterBoolTerm{
 				Field:  "acl.content.keyword",
-				Values: []string{"global/guest"},
+				Values: user.Groups,
 			},
 		},
 	}
@@ -1141,7 +1393,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 			})
 		}
 	}
-	result, err = ctrl.client.Search(context.Background(), queryString, []*client.InFacet{collFacet, vocFacet}, filter, embedding64, nil, nil, &cursorString, sort)
+	result, err = ctrl.client.Search(c, queryString, []*client.InFacet{collFacet, vocFacet}, filter, embedding64, nil, nil, &cursorString, sort)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", searchString)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", searchString, err))
@@ -1161,13 +1413,14 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		Checked bool   `json:"checked"`
 	}
 	type edge struct {
-		Edge        *client.Search_Search_Edges `json:"edge"`
-		Title       *translate.MultiLangString  `json:"title"`
-		Persons     string                      `json:"persons"`
-		Type        string                      `json:"type"`
-		Date        string                      `json:"date"`
-		PersonRole  map[string][]string
-		ShowContent bool
+		Edge             *client.Search_Search_Edges `json:"edge"`
+		Title            *translate.MultiLangString  `json:"title"`
+		Persons          string                      `json:"persons"`
+		Type             string                      `json:"type"`
+		Date             string                      `json:"date"`
+		PersonRole       map[string][]string
+		ShowContent      bool
+		ProtectedContent bool
 	}
 	currentSearchURL := url.Values{}
 	if searchString != "" {
@@ -1212,6 +1465,9 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 			SearchAddr: ctrl.searchAddr,
 			DetailAddr: ctrl.detailAddr,
 			Page:       page,
+			LoginURL:   ctrl.loginURL,
+			Self:       fmt.Sprintf("%s%s", ctrl.externalAddr, c.Request.URL.Path),
+			User:       GetUser(c),
 		},
 		TotalCount: int(result.GetSearch().GetTotalCount()),
 		RequestQuery: &queryData{
@@ -1220,17 +1476,29 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		CollectionFacets: []*collFacetType{},
 		VocabularyFacets: map[string][]*vocFacetType{},
 	}
+	if data.baseData.User.IsLoggedIn() {
+		data.baseData.DetailAddr = data.baseData.SearchAddr
+	}
 	for _, e := range result.GetSearch().GetEdges() {
 		ne := &edge{
-			Edge:       e,
-			Title:      &translate.MultiLangString{},
-			Type:       emptyIfNil(e.Base.GetType()),
-			Date:       emptyIfNil(e.Base.GetDate()),
-			PersonRole: map[string][]string{},
+			Edge:             e,
+			Title:            &translate.MultiLangString{},
+			Type:             emptyIfNil(e.Base.GetType()),
+			Date:             emptyIfNil(e.Base.GetDate()),
+			PersonRole:       map[string][]string{},
+			ShowContent:      false,
+			ProtectedContent: false,
 		}
 		for _, acl := range e.Base.GetACL() {
 			if acl.GetName() == "content" {
-				ne.ShowContent = slices.Contains(acl.GetGroups(), "global/guest")
+				groups := acl.GetGroups()
+				for _, group := range data.baseData.User.Groups {
+					if slices.Contains(groups, group) {
+						ne.ShowContent = true
+						break
+					}
+				}
+				ne.ProtectedContent = !slices.Contains(groups, "global/guest")
 				break
 			}
 		}
@@ -1348,7 +1616,7 @@ func (ctrl *Controller) detailJSON(c *gin.Context) {
 		return
 	}
 
-	source, err := ctrl.client.MediathekEntries(context.Background(), []string{id})
+	source, err := ctrl.client.MediathekEntries(c, []string{id})
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot get source '%s'", id)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot get source '%s': %v", id, err))
@@ -1375,7 +1643,7 @@ func (ctrl *Controller) detailText(c *gin.Context) {
 		return
 	}
 
-	source, err := ctrl.client.MediathekEntries(context.Background(), []string{id})
+	source, err := ctrl.client.MediathekEntries(c, []string{id})
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot get source '%s'", id)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot get source '%s': %v", id, err))
@@ -1398,6 +1666,9 @@ func (ctrl *Controller) detailText(c *gin.Context) {
 			Lang:       lang,
 			RootPath:   "../",
 			SearchAddr: ctrl.searchAddr,
+			LoginURL:   ctrl.loginURL,
+			Self:       fmt.Sprintf("%s%s", ctrl.externalAddr, c.Request.URL.Path),
+			User:       GetUser(c),
 		},
 		MediaserverBase: ctrl.mediaserverBase,
 	}
@@ -1467,7 +1738,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 		return
 	}
 
-	source, err := ctrl.client.MediathekEntries(context.Background(), []string{id})
+	source, err := ctrl.client.MediathekEntries(c, []string{id})
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot get source '%s'", id)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot get source '%s': %v", id, err))
@@ -1481,11 +1752,12 @@ func (ctrl *Controller) detail(c *gin.Context) {
 
 	type tplData struct {
 		baseData
-		IFrame          bool
-		Source          *client.MediathekEntries_MediathekEntries `json:"source"`
-		MediaserverBase string                                    `json:"mediaserverBase"`
-		SearchSource    string                                    `json:"searchSource"`
-		ShowContent     bool
+		IFrame           bool
+		Source           *client.MediathekEntries_MediathekEntries `json:"source"`
+		MediaserverBase  string                                    `json:"mediaserverBase"`
+		SearchSource     string                                    `json:"searchSource"`
+		ShowContent      bool
+		ProtectedContent bool
 	}
 	var searchParams string
 	if len(query) > 0 {
@@ -1504,13 +1776,23 @@ func (ctrl *Controller) detail(c *gin.Context) {
 			SearchAddr: ctrl.searchAddr,
 			DetailAddr: ctrl.detailAddr,
 			//Search:     template.URL(fmt.Sprintf("%s/search/%s%s", ctrl.searchAddr, lang, searchParams)),
-			Params: template.URL(strings.TrimPrefix(searchParams, "?")),
+			Params:   template.URL(strings.TrimPrefix(searchParams, "?")),
+			LoginURL: ctrl.loginURL,
+			Self:     fmt.Sprintf("%s%s", ctrl.externalAddr, c.Request.URL.Path),
+			User:     GetUser(c),
 		},
 		MediaserverBase: ctrl.mediaserverBase,
 	}
 	for _, acl := range source.MediathekEntries[0].Base.GetACL() {
 		if acl.GetName() == "content" {
-			data.ShowContent = slices.Contains(acl.GetGroups(), "global/guest")
+			groups := acl.GetGroups()
+			for _, group := range data.baseData.User.Groups {
+				if slices.Contains(groups, group) {
+					data.ShowContent = true
+					break
+				}
+			}
+			data.ProtectedContent = !slices.Contains(groups, "global/guest")
 			break
 		}
 	}
@@ -1591,7 +1873,7 @@ func (ctrl *Controller) detailTextList(c *gin.Context) {
 	c.Header("Content-Type", "text/plain; charset=utf-8")
 	for {
 		result, err := ctrl.client.Search(
-			context.Background(),
+			c,
 			"",
 			[]*client.InFacet{},
 			[]*client.InFilter{
@@ -1650,6 +1932,9 @@ func (ctrl *Controller) zoomPage(c *gin.Context) {
 			SearchAddr: ctrl.searchAddr,
 			DetailAddr: ctrl.detailAddr,
 			Page:       "zoom",
+			LoginURL:   ctrl.loginURL,
+			Self:       fmt.Sprintf("%s%s", ctrl.externalAddr, c.Request.URL.Path),
+			User:       GetUser(c),
 		},
 	}
 	if err := zoomTemplate.Execute(c.Writer, data); err != nil {

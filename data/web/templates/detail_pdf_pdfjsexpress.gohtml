@@ -3,6 +3,7 @@
 {{- $root := .RootPath }}
 {{- $lang := .Lang }}
 {{- $isExhibition := .Exhibition }}
+{{- $data := . }}
 {{ range $typedMedia := $source.Media }}
     {{ if eq $typedMedia.GetName "pdf" }}
         <script src="{{ $root }}static/pdfjs/lib/webviewer.min.js"></script>
@@ -60,7 +61,7 @@
                         {{ $webViewerVar := printf "webViewer%d" $id}}
                         <script>
                         {{ if eq $id 0 }}
-                            showPDF('viewer-{{ $id }}', '{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}/master');
+                            showPDF('viewer-{{ $id }}', '{{ medialink $media.URI "master" "" (and $data.ShowContent $data.ProtectedContent) }}');
                         {{ end }}
 
                         {{ $viewerVar := printf "viewer%d" $id}}

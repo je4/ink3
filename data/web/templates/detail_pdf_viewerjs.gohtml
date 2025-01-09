@@ -3,6 +3,7 @@
 {{- $root := .RootPath }}
 {{- $lang := .Lang }}
 {{- $isExhibition := .Exhibition }}
+{{- $data := . }}
 {{ range $typedMedia := $source.Media }}
     {{ if eq $typedMedia.GetName "pdf" }}
         <div class="accordion" id="accordionPDF">
@@ -27,7 +28,7 @@
                         });
                         {{ $var | toJS }}.addEventListener("show.bs.collapse", function () {
                             console.log("show.bs.collapse " + {{ $id }});
-                            {{ $viewerVar | toJS }}.src = '{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}/master';
+                            {{ $viewerVar | toJS }}.src = '{{ medialink $media.URI "master" "" (and $data.ShowContent $data.ProtectedContent) }}';
                         });
                         </script>
                     </div>

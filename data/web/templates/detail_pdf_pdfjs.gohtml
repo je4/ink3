@@ -3,6 +3,7 @@
 {{- $root := .RootPath }}
 {{- $lang := .Lang }}
 {{- $isExhibition := .Exhibition }}
+{{- $data := . }}
 {{ range $typedMedia := $source.Media }}
     {{ if eq $typedMedia.GetName "pdf" }}
         <div class="accordion" id="accordionPDF">
@@ -15,7 +16,7 @@
                 </h2>
                 <div id="collapsePDF{{ $id }}" class="accordion-collapse collapse{{ if eq $id 0 }} show{{ end }}" data-bs-parent="#accordionPDF">
                     <div class="accordion-body">
-                        <iframe id="viewer-{{ $id }}" src="{{ $root }}static/pdf.js/web/viewer.html?file={{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}/master#zoom=page-fit&pagemode=none" style="width:100%; height:800px; margin-left:auto;margin-right:auto;"></iframe>
+                        <iframe id="viewer-{{ $id }}" src="{{ $root }}static/pdf.js/web/viewer.html?file={{ medialink $media.URI "master" "#zoom=page-fit&pagemode=none" (and $data.ShowContent $data.ProtectedContent) }}" style="width:100%; height:800px; margin-left:auto;margin-right:auto;"></iframe>
                         <script>
 
                         {{ $viewerVar := printf "viewer%d" $id}}
