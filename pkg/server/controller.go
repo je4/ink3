@@ -377,6 +377,7 @@ func (user *User) IsLoggedIn() bool {
 }
 
 func (ctrl *Controller) AuthHandler(ctx *gin.Context) {
+	hasCookie := false
 	bearerToken := ctx.Request.Header.Get("Authorization")
 	if bearerToken == "" {
 		bearerToken = ctx.Request.URL.Query().Get("token")
@@ -390,6 +391,7 @@ func (ctrl *Controller) AuthHandler(ctx *gin.Context) {
 	if bearerToken == "" {
 		if cookie, err := ctx.Cookie("token"); err == nil {
 			bearerToken = cookie
+			hasCookie = true
 		}
 	}
 	if bearerToken == "" {
@@ -408,19 +410,25 @@ func (ctrl *Controller) AuthHandler(ctx *gin.Context) {
 			}
 		}
 		if !algOK {
+			ctx.SetCookie("token", "", -1, "/", "", false, false)
 			return false, fmt.Errorf("unexpected signing method (allowed are %v): %v", ctrl.loginJWTAlgs, token.Header["alg"])
 		}
 		return []byte(ctrl.loginJWTKey), nil
 	})
 	if err != nil {
+		ctx.SetCookie("token", "", -1, "/", "", false, false)
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, fmt.Sprintf("cannot parse token: %v", err))
 		return
 	}
 	if !token.Valid {
-		ctx.AbortWithStatusJSON(http.StatusUnauthorized, "invalid token")
+		// remove cookie
+		ctx.SetCookie("token", "", -1, "/", "", false, false)
+		//		ctx.AbortWithStatusJSON(http.StatusUnauthorized, "invalid token")
+		ctx.Next()
 		return
 	}
 	if !slices.Contains([]string{ctrl.loginIssuer, "revcatfront"}, claim.Issuer) {
+		ctx.SetCookie("token", "", -1, "/", "", false, false)
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, fmt.Sprintf("invalid issuer: %s", claim.Issuer))
 		return
 	}
@@ -436,11 +444,13 @@ func (ctrl *Controller) AuthHandler(ctx *gin.Context) {
 		user.Groups = append(user.Groups, strings.Split(claim.Groups, ";")...)
 	}
 	ctx.Set("user", user)
-	claim.Issuer = "revcatfront"
-	claim.ExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Hour * 8))
-	claim.IssuedAt = jwt.NewNumericDate(time.Now())
-	if newTokenString, err := jwt.NewWithClaims(jwt.SigningMethodHS512, claim).SignedString([]byte(ctrl.loginJWTKey)); err == nil {
-		ctx.SetCookie("token", newTokenString, 60*23, "/", "", false, false)
+	if !hasCookie {
+		claim.Issuer = "revcatfront"
+		claim.ExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Hour * 8))
+		claim.IssuedAt = jwt.NewNumericDate(time.Now())
+		if newTokenString, err := jwt.NewWithClaims(jwt.SigningMethodHS512, claim).SignedString([]byte(ctrl.loginJWTKey)); err == nil {
+			ctx.SetCookie("token", newTokenString, 60*23, "/", "", false, false)
+		}
 	}
 	ctx.Next()
 }

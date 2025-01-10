@@ -1,7 +1,7 @@
 logfile = ""
 loglevel = "DEBUG"
 
-localaddr = "localhost:8445"
+localaddr = ":8445"
 externaladdr = "https://localhost:8445"
 searchaddr = "https://localhost:8445"
 detailaddr = "https://localhost:8445"
@@ -15,8 +15,43 @@ staticfiles = "data/web/static"
 datadir = "/temp/performance"
 #mediaserverbase = "https://localhost:8446"
 mediaserverbase = "https://ba14ns21403-sec1.fhnw.ch/mediasrv"
+mediaserverkey = "%%MEDIASERVER_KEY%%"
+mediaservertokenexp = "6h"
+
+jwtkey = "%%JWTKEY%%" # ":Xf/#|IKYrDsNi4]LN*o(W7;:"
+jwtalg = "HS512"
+
 
 fieldmapping.author = "[persons].name.keyword"
+
+[login]
+jwtkey = "%%LOGIN_JWTKEY%%" # ":Xf/#|IKYrDsNi4]LN*o(W7;:"
+jwtalg = ["HS256","HS384","HS512"]
+linktokenexp = "1h"
+#url = "https://intern.hgk.fhnw.ch/ango/shib/auth/localhost"
+url = "https://intern.hgk.fhnw.ch/ango/oidc/auth/localhost"
+issuer = "auth.hgk.fhnw.ch/localhost"
+
+
+[[locations]]
+group = "net/local"
+networks = ["127.0.0.1/32", "::1/128"]
+
+[[locations]]
+group = "location/fhnw"
+networks = ["10.0.0.0/8", "192.168.0.0/16", "147.86.0.0/16"]
+
+[[locations]]
+group = "net/fhnw"
+networks = ["10.0.0.0/8", "192.168.0.0/16", "147.86.0.0/16"]
+
+[[locations]]
+group = "location/memoriav"
+networks = ["62.2.199.158/32"]
+
+[[locations]]
+group = "net/bfh"
+networks = ["147.87.0.0/16", "5.35.244.248/32", "213.200.195.102/32", "193.5.80.0/21", "2a07:6b40::/29", "2001:620:500::/48"]
 
 [mediaserver]
 localaddr = "localhost:8446"

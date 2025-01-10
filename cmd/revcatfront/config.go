@@ -57,11 +57,11 @@ type AuthConfig struct {
 }
 
 type Login struct {
-	JWTKey       string              `toml:"jwtkey"`
-	JWTAlg       []string            `toml:"jwtalg"`
-	LinkTokenExp configutil.Duration `toml:"linktokenexp"`
-	URL          string              `toml:"url"`
-	Issuer       string              `toml:"issuer"`
+	JWTKey       configutil.EnvString `toml:"jwtkey"`
+	JWTAlg       []string             `toml:"jwtalg"`
+	LinkTokenExp configutil.Duration  `toml:"linktokenexp"`
+	URL          string               `toml:"url"`
+	Issuer       string               `toml:"issuer"`
 }
 
 type RevCatFrontConfig struct {
@@ -84,11 +84,11 @@ type RevCatFrontConfig struct {
 	ZoomOnly            bool                    `toml:"zoomonly"`
 	MediaserverBase     string                  `toml:"mediaserverbase"`
 	MediaserverTokenExp configutil.Duration     `toml:"mediaservertokenexp"`
-	MediaserverKey      string                  `toml:"mediaserverkey"`
+	MediaserverKey      configutil.EnvString    `toml:"mediaserverkey"`
 	DataDir             string                  `toml:"datadir"`
 	Collections         []*server.CollFacetType `toml:"collections"`
 	FieldMapping        map[string]string       `toml:"fieldmapping"`
-	JWTKey              string                  `toml:"jwtkey"`
+	JWTKey              configutil.EnvString    `toml:"jwtkey"`
 	JWTAlg              string                  `toml:"jwtalg"`
 	Login               Login                   `toml:"login"`
 	Locations           []Network               `toml:"locations"`

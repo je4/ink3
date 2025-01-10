@@ -235,7 +235,7 @@ func main() {
 		revcatClient,
 		collagePos,
 		conf.MediaserverBase,
-		conf.MediaserverKey,
+		string(conf.MediaserverKey),
 		time.Duration(conf.MediaserverTokenExp),
 		bundle,
 		conf.Collections,
@@ -245,7 +245,7 @@ func main() {
 		conf.ZoomOnly,
 		conf.Login.URL,
 		conf.Login.Issuer,
-		conf.Login.JWTKey,
+		string(conf.Login.JWTKey),
 		conf.Login.JWTAlg,
 		locations,
 		logger)
