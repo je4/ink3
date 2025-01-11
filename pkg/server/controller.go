@@ -1734,7 +1734,9 @@ func (ctrl *Controller) detail(c *gin.Context) {
 		"detail_image.gohtml",
 		"detail_video.gohtml",
 		"detail_audio.gohtml",
-		"detail_pdf_pdfjs.gohtml",
+		"detail_pdf_dflip.gohtml",
+		//"detail_pdf_pdfjs.gohtml",
+		//"detail_pdf_3dflipbook.gohtml",
 		templateName})
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
