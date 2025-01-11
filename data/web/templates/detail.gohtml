@@ -4,13 +4,14 @@
 {{- $source := .Source }}
 {{- $showContent := .ShowContent }}
 {{- $mediaserverBase := .MediaserverBase }}
-{{- $extraIgnore := list "jahrgang" "remark" "performers" "camera" "sprache" "function" }}
+{{- $extraIgnore := list "jahrgang" "remark" "performers" "camera" "sprache" "function" "references" }}
 {{- $isExhibition := .Exhibition }}
 {{- $isIFrame := .IFrame }}
 {{- $searchSource := .SearchSource }}
 {{- if (eq $searchSource "") }}{{- $searchSource = "grid" }}{{- end }}
 {{- $searchAddr := .SearchAddr }}
 {{- $searchBase := printf "%s/%s/%s?" .SearchAddr $searchSource .Lang }}
+{{- $detailAddr := .DetailAddr }}
 {{- if $isExhibition }}{{ $searchBase = printf "%sexhibition&" $searchBase }}{{ end }}
 {{- $search := $searchBase }}
 {{- if ne .Params "" }}{{ $search = printf "%s%s" $search .Params }}{{ end }}
@@ -129,7 +130,7 @@
                                         {{ $tag = (localize $tag $lang) }}
                                         <a class="btn btn-csp vocButton m-1 btn-outline-secondary pborder" href="{{ if or $isExhibition $isIFrame }}#{{ else }}{{ printf "%svocabulary=%s" $searchBase $voc }}{{ end }}" role="button">{{ localize $tag $lang }}</a>
                                     {{- else }}
-                                        <a class="btn btn-csp vocButton m-1 btn-outline-secondary pborder" role="button">{{ $voc }}</a>
+                                        {{ if ne $voc "vwg:declare" }}<a class="btn btn-csp vocButton m-1 btn-outline-secondary pborder" role="button">{{ $voc }}</a>{{ end }}
                                     {{ end }}
 
                                 {{- end }}
@@ -213,6 +214,46 @@
                         <a href="{{ printf "https://performance.sammlung.cc/detail/%s" $source.Base.Signature }}"><img class="qr" src="{{ qrCode (printf "performance.sammlung.cc/detail/%s" $source.Base.Signature) }}" style="width: 100px; height: 100px; margin-top: 10px;" /></a><br />
                     </div>
                     <img class="number" style="width: 376px; height:15px;" src="{{ $root }}static/img/line_short.png" /><br />
+                    {{- $references := $source.GetReferencesFull }}
+                    {{- if gt (len $references) 0 }}
+                    <div class="p-2 borderedge">
+                        <div style="font-weight: bold;margin-bottom: 10px;">Relation</div>
+                        <table>
+                        {{ range $ref := $references }}
+                            <tr>
+                                <td style="vertical-align: top;" class="pe-2">
+                                    {{ if ne $ref.Poster.URI "" }}
+                                        <a href="{{ printf "%s/detail/%s/%s" $detailAddr $ref.Signature $lang }}"><img src="{{ medialink $ref.Poster.URI "resize" "size100x100/formatJPEG/autorotate" false }}"  /></a>
+                                    {{ end }}
+                                </td>
+                                <td>
+                            {{- $title := multiLang $ref.Title }}
+                                    <a href="{{ printf "%s/detail/%s/%s" $detailAddr $ref.Signature $lang }}"><span style="font-weight: bold;">{{ $title.String }}</span>
+                            {{ if $source.Base.Date }}<span style="font-weight: normal;">{{ if ne ( ptrString $source.Base.Date) "" }}({{ $source.Base.Date }}){{ end }}</span>{{ end }}
+                                    </a>
+                            <br />
+                            {{- range $key, $p := $ref.Person}}
+                                {{- if hasPrefix "artist" $p.Role}}
+                                    {{- if gt $key 0}}; {{end}}<a class="link-underline link-underline-opacity-10" href="{{ printf "%s/%s/%s?search=author:\"%s\"" $searchAddr $searchSource $lang $p.Name }}">{{$p.Name}}</a>
+                                {{- end}}
+                            {{- end}}<br />
+                            {{- range $p := $source.Base.Person}}
+                                {{- if not (hasPrefix "artist" $p.Role)}}
+                                    <a class="link-underline link-underline-opacity-10" href="{{ printf "%s/%s/%s?search=author:\"%s\"" $searchAddr $searchSource $lang $p.Name }}">{{$p.Name}}</a> ({{camelcase (trimPrefix "performer:" $p.Role)}})<br />
+                                {{- end}}
+                            {{- end}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>
+                                    <img class="number" style="width: 376px; height:15px;" src="{{ $root }}static/img/line_short.png" /><br />
+                                </td>
+                            </tr>
+                        {{ end }}
+                        </table>
+                    </div>
+                    {{- end  }}
                     {{- $num := 0 }}
                     {{- range $extra := $source.Extra }}
                         {{- if not (has $extra.Key $extraIgnore) }}

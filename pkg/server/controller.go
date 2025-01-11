@@ -1795,6 +1795,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 		},
 		MediaserverBase: ctrl.mediaserverBase,
 	}
+
 	for _, acl := range source.MediathekEntries[0].Base.GetACL() {
 		if acl.GetName() == "content" {
 			groups := acl.GetGroups()
