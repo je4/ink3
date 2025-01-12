@@ -223,7 +223,7 @@
                             <tr>
                                 <td style="vertical-align: top;" class="pe-2">
                                     {{ if ne $ref.Poster.URI "" }}
-                                        <a href="{{ printf "%s/detail/%s/%s" $detailAddr $ref.Signature $lang }}"><img src="{{ medialink $ref.Poster.URI "resize" "size100x100/formatJPEG/autorotate" false }}"  /></a>
+                                        <a href="{{ printf "%s/detail/%s/%s" $detailAddr $ref.Signature $lang }}"><img src="{{ medialink $ref.Poster.URI "resize" "size100x100/formatJPEG/autorotate" true }}"  /></a>
                                     {{ end }}
                                 </td>
                                 <td>
