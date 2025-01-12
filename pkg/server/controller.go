@@ -689,10 +689,15 @@ func (ctrl *Controller) init() error {
 		langTag, _ := language.MatchStrings(ctrl.languageMatcher, cookieLang.String(), accept)
 		langBase, _ := langTag.Base()
 		lang := langBase.String()
+		detailAddr := ctrl.detailAddr
+		user := GetUser(c)
+		if user.IsLoggedIn() {
+			detailAddr = ctrl.searchAddr
+		}
 		if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
 			lang = "en"
 		}
-		newURL := fmt.Sprintf("%s/detail/%s/%s", ctrl.detailAddr, c.Param("signature"), lang)
+		newURL := fmt.Sprintf("%s/detail/%s/%s", detailAddr, c.Param("signature"), lang)
 		if c.Request.URL.RawQuery != "" {
 			newURL += "?" + c.Request.URL.RawQuery
 		}
@@ -1777,6 +1782,11 @@ func (ctrl *Controller) detail(c *gin.Context) {
 	}
 	_, isIFrame := c.GetQuery("iframe")
 	_, isExhibition := c.GetQuery("exhibition")
+	user := GetUser(c)
+	detailAddr := ctrl.detailAddr
+	if user.IsLoggedIn() {
+		detailAddr = ctrl.searchAddr
+	}
 	var data = &tplData{
 		Source:       source.MediathekEntries[0],
 		IFrame:       isIFrame,
@@ -1786,12 +1796,12 @@ func (ctrl *Controller) detail(c *gin.Context) {
 			RootPath:   "../../",
 			Exhibition: isExhibition,
 			SearchAddr: ctrl.searchAddr,
-			DetailAddr: ctrl.detailAddr,
+			DetailAddr: detailAddr,
 			//Search:     template.URL(fmt.Sprintf("%s/search/%s%s", ctrl.searchAddr, lang, searchParams)),
 			Params:   template.URL(strings.TrimPrefix(searchParams, "?")),
 			LoginURL: ctrl.loginURL,
 			Self:     fmt.Sprintf("%s%s", ctrl.externalAddr, c.Request.URL.Path),
-			User:     GetUser(c),
+			User:     user,
 		},
 		MediaserverBase: ctrl.mediaserverBase,
 	}
