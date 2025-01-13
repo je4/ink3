@@ -1,0 +1,21 @@
+include:
+  - component: $CI_SERVER_FQDN/fhnw/fhnw-ink-app/fhnw-go-docker-deploy/build@main
+    inputs:
+      name: revcatfront
+      cmd_path: ./cmd/revcatfront
+  - component: $CI_SERVER_FQDN/fhnw/fhnw-ink-app/fhnw-go-docker-deploy/publish@main
+  - component: $CI_SERVER_FQDN/fhnw/fhnw-ink-app/fhnw-go-docker-deploy/deploy@main
+    inputs:
+      service_name: revcat_front
+
+stages:
+  - build
+  - publish
+  - deploy
+
+staging:
+  extends: .deploy
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  variables:
+    DEPLOY_HOST: v001340.fhnw.ch

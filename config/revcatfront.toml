@@ -12,7 +12,7 @@ openaiapikey = "%%OPENAI_API_KEY%%"
 
 templates = "data/web/templates"
 staticfiles = "data/web/static"
-datadir = "/temp/performance"
+datadir = "performance"
 #mediaserverbase = "https://localhost:8446"
 mediaserverbase = "https://ba14ns21403-sec1.fhnw.ch/mediasrv"
 mediaserverkey = "%%MEDIASERVER_KEY%%"
@@ -56,12 +56,13 @@ networks = ["147.87.0.0/16", "5.35.244.248/32", "213.200.195.102/32", "193.5.80.
 [mediaserver]
 localaddr = "localhost:8446"
 externaladdr = "https://localhost:8446"
-basedir = "/temp/performance/mediaserver"
+basedir = "performance/mediaserver"
 
 [revcat]
 endpoint = "https://localhost:8443/graphql"
 insecure = true
-apikey = "%%REVCAT_APIKEY%%"
+#apikey = "%%REVCAT_APIKEY%%"
+apikey = "laksedjpwo43iucn45i"
 
 [directus]
 baseurl = "https://cms.basel-collections.ch"
