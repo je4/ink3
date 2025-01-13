@@ -355,7 +355,7 @@ func NewController(localAddr, externalAddr, searchAddr, detailAddr string,
 
 type loginClaim struct {
 	jwt.RegisteredClaims
-	UserID    string `json:"userId"`
+	UserID    any    `json:"userId"`
 	Email     string `json:"email"`
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
@@ -433,7 +433,7 @@ func (ctrl *Controller) AuthHandler(ctx *gin.Context) {
 		return
 	}
 	user := &User{
-		UserID:    claim.UserID,
+		UserID:    fmt.Sprintf("%v", claim.UserID),
 		Email:     claim.Email,
 		FirstName: claim.FirstName,
 		LastName:  claim.LastName,
