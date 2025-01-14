@@ -2,12 +2,35 @@ package main
 
 import (
 	"emperror.dev/errors"
+	"fmt"
 	"github.com/BurntSushi/toml"
 	"github.com/je4/revcatfront/v2/pkg/server"
 	configutil "github.com/je4/utils/v2/pkg/config"
 	"io/fs"
+	"net"
 	"os"
 )
+
+type network struct {
+	net.IPNet
+}
+
+func (n *network) UnmarshalText(text []byte) error {
+	_, net, err := net.ParseCIDR(string(text))
+	if err != nil {
+		return err
+	}
+	if net == nil {
+		return fmt.Errorf("no network - %s", string(text))
+	}
+	n.IPNet = *net
+	return nil
+}
+
+type Network struct {
+	Group    string    `toml:"group"`
+	Networks []network `toml:"networks"`
+}
 
 type RevcatConfig struct {
 	Endpoint string               `toml:"endpoint"`
@@ -33,28 +56,42 @@ type AuthConfig struct {
 	Password string `toml:"password"`
 }
 
+type Login struct {
+	JWTKey       configutil.EnvString `toml:"jwtkey"`
+	JWTAlg       []string             `toml:"jwtalg"`
+	LinkTokenExp configutil.Duration  `toml:"linktokenexp"`
+	URL          string               `toml:"url"`
+	Issuer       string               `toml:"issuer"`
+}
+
 type RevCatFrontConfig struct {
-	LocalAddr       string                  `toml:"localaddr"`
-	ExternalAddr    string                  `toml:"externaladdr"`
-	SearchAddr      string                  `toml:"searchaddr"`
-	DetailAddr      string                  `toml:"detailaddr"`
-	TLSCert         string                  `toml:"tlscert"`
-	TLSKey          string                  `toml:"tlskey"`
-	ProtoHTTP       bool                    `toml:"protohttp"`
-	Auth            []*AuthConfig           `toml:"auth"`
-	OpenAIApiKey    configutil.EnvString    `toml:"openaiapikey"`
-	Templates       string                  `toml:"templates"`
-	StaticFiles     string                  `toml:"staticfiles"`
-	Locale          LocaleConfig            `toml:"locale"`
-	LogFile         string                  `toml:"logfile"`
-	LogLevel        string                  `toml:"loglevel"`
-	Revcat          RevcatConfig            `toml:"revcat"`
-	Directus        Directus                `toml:"directus"`
-	ZoomOnly        bool                    `toml:"zoomonly"`
-	MediaserverBase string                  `toml:"mediaserverbase"`
-	DataDir         string                  `toml:"datadir"`
-	Collections     []*server.CollFacetType `toml:"collections"`
-	FieldMapping    map[string]string       `toml:"fieldmapping"`
+	LocalAddr           string                  `toml:"localaddr"`
+	ExternalAddr        string                  `toml:"externaladdr"`
+	SearchAddr          string                  `toml:"searchaddr"`
+	DetailAddr          string                  `toml:"detailaddr"`
+	TLSCert             string                  `toml:"tlscert"`
+	TLSKey              string                  `toml:"tlskey"`
+	ProtoHTTP           bool                    `toml:"protohttp"`
+	Auth                []*AuthConfig           `toml:"auth"`
+	OpenAIApiKey        configutil.EnvString    `toml:"openaiapikey"`
+	Templates           string                  `toml:"templates"`
+	StaticFiles         string                  `toml:"staticfiles"`
+	Locale              LocaleConfig            `toml:"locale"`
+	LogFile             string                  `toml:"logfile"`
+	LogLevel            string                  `toml:"loglevel"`
+	Revcat              RevcatConfig            `toml:"revcat"`
+	Directus            Directus                `toml:"directus"`
+	ZoomOnly            bool                    `toml:"zoomonly"`
+	MediaserverBase     string                  `toml:"mediaserverbase"`
+	MediaserverTokenExp configutil.Duration     `toml:"mediaservertokenexp"`
+	MediaserverKey      configutil.EnvString    `toml:"mediaserverkey"`
+	DataDir             string                  `toml:"datadir"`
+	Collections         []*server.CollFacetType `toml:"collections"`
+	FieldMapping        map[string]string       `toml:"fieldmapping"`
+	JWTKey              configutil.EnvString    `toml:"jwtkey"`
+	JWTAlg              string                  `toml:"jwtalg"`
+	Login               Login                   `toml:"login"`
+	Locations           []Network               `toml:"locations"`
 }
 
 func LoadRevCatFrontConfig(fSys fs.FS, fp string, conf *RevCatFrontConfig) error {

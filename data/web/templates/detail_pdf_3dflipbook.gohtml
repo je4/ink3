@@ -1,0 +1,149 @@
+{{- $mediaserverBase := .MediaserverBase }}
+{{- $source := .Source }}
+{{- $root := .RootPath }}
+{{- $lang := .Lang }}
+{{- $isExhibition := .Exhibition }}
+{{- $data := . }}
+<script src="{{ .RootPath }}static/js/jquery.min.js"></script>
+<script src="{{ .RootPath }}static/js/html2canvas.min.js"></script>
+<script src="{{ .RootPath }}static/js/three.min.js"></script>
+<script src="{{ .RootPath }}static/js/pdf.min.js"></script>
+<script type="text/javascript">
+    window.PDFJS_LOCALE = {
+        pdfJsWorker: '{{ .RootPath }}static/js/pdf.worker.js',
+        pdfJsCMapUrl: 'cmaps'
+    };
+</script>
+<script src="{{ .RootPath }}static/js/flip-book.min.js"></script>
+
+<script>
+    let options = {
+        pdf: '', // you should use this property or pageCallback and pages to specify your book
+        /*
+        pageCallback: function(n) { // this function has to return source description for FlipBook page
+            // for image sources
+            let imageDescription = {
+                type: 'image',
+                src: 'example/' + n + '.jpg',
+                interactive: false
+            };
+            // for html sources
+            var htmlDescription = {
+                type: 'html',
+                src: 'example/' + n + '.html',
+                interactive: true // or false - if your page interact with the user then use true
+            };
+            // for blank page
+            var blankDescription = {
+                type: 'blank'
+            };
+            return htmlDescription; // or imageDescription or blankDescription
+        },
+        pages: 10, // amount of pages
+        */
+        controlsProps: { // set of optional properties that allow to customize 3D FlipBook control
+    {{/* //downloadURL: '{{ medialink $media.URI "master" "" (and $data.ShowContent $data.ProtectedContent) }}'*/}}
+        },
+        propertiesCallback: function(props) { // optional function - it lets to customize 3D FlipBook
+            props.page.depth /= 2;
+            props.cover.binderTexture = 'exampleTexture.jpg';
+            props.cssLayersLoader = function(n, clb) {// n - page number
+                clb([{
+                    css: '.heading {margin-top: 200px;background-color: red;}',
+                    html: '<h1 class="heading">Hello</h1>',
+                    js: function (jContainer, props) { // jContainer - jQuery element that contains HTML Layer content
+                        console.log('init');
+                        return { // set of callbacks
+                            hide: function() {console.log('hide');},
+                            hidden: function() {console.log('hidden');},
+                            show: function() {console.log('show');},
+                            shown: function() {console.log('shown');},
+                            dispose: function() {console.log('dispose');}
+                        };
+                    }
+                }]);
+            };
+            return props;
+        },
+        template: { // by means this property you can choose appropriate skin
+            html: '{{ $root }}static/templates/default-book-view.html',
+            styles: [
+                '{{ $root }}static/css/black-book-view.css'// or one of white-book-view.css, short-white-book-view.css, shart-black-book-view.css
+            ],
+            links: [{
+                rel: 'stylesheet',
+                href: '{{ $root }}static/css/font-awesome.min.css'
+            }],
+            script: '{{ $root }}static/js/default-book-view.js',
+            printStyle: undefined, // or you can set your stylesheet for printing ('print-style.css')
+            sounds: {
+                startFlip: '{{ $root }}static/sounds/start-flip.mp3',
+                endFlip: '{{ $root }}static/sounds/end-flip.mp3'
+            }
+        },
+        pdfLinks: {
+            handler: function(type, destination) { // type: 'internal' (destination - page number), 'external' (destination - url)
+                return true; // true - prevent default handler, false - call default handler
+            }
+        },
+        autoNavigation: {
+            urlParam: 'fb3d-page', // url query param name for deep linking: http://example.com?fb3d-page=10
+            navigates: 1, // number of instances that will be navigated automatically,
+            pageN: undefined // auto open page pageN
+        },
+        bookStyle: 'volume', // volume, flat or volume-paddings
+        activateFullScreen: false, // activate fullscreen if it is possible (API can only be initiated by a user gesture)
+        ready: function(scene) { // optional function - this function executes when loading is complete
+
+        },
+        error: function(e) { // optional function for notification about errors
+
+        }
+    };
+</script>
+
+
+{{ range $typedMedia := $source.Media }}
+    {{ if eq $typedMedia.GetName "pdf" }}
+        <div class="accordion" id="accordionPDF">
+            {{ range $id, $media := $typedMedia.GetItems }}
+                <div class="accordion-item borderedge">
+                    <h2 class="accordion-header"    >
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePDF{{ $id }}" aria-expanded="{{ if eq $id 0 }}true{{ else }}false{{ end }}" aria-controls="collapsePDF{{ $id }}">
+                            PDF #{{ add $id 1 }}{{ if ne $media.Name "" }} - {{ $media.Name }}{{ end }}
+                        </button>
+                    </h2>
+                    <div id="collapsePDF{{ $id }}" class="accordion-collapse collapse{{ if eq $id 0 }} show{{ end }}" data-bs-parent="#accordionPDF">
+                        <div class="accordion-body">
+                            <div class="viewer-{{ $id }}" style="width:100%; height:800px;">
+
+                            </div>
+                            <script>
+                                {{ $bookvar := printf "book%d" $id }}
+                                let {{ $bookvar | toJS }};
+                                if( {{ $id }} == 0) {
+                                    options.pdf = '{{ medialink $media.URI "master" "" (and $data.ShowContent $data.ProtectedContent) }}';
+                                    {{ $bookvar | toJS }} = $('.viewer-{{ $id }}').FlipBook(options);
+                                }
+
+                                {{ $var := printf "collapsePDF%d" $id }}
+
+                                {{ $var | toJS }}.addEventListener("hide.bs.collapse", function () {
+                                    console.log("hide.bs.collapse " + {{ $id }});
+                                    {{ $bookvar | toJS }}.dispose();
+                                });
+
+                                {{ $var | toJS }}.addEventListener("show.bs.collapse", function () {
+                                    console.log("show.bs.collapse " + {{ $id }});
+                                    options.pdf = '{{ medialink $media.URI "master" "" (and $data.ShowContent $data.ProtectedContent) }}';
+                                    {{ $bookvar | toJS }} = $('.viewer-{{ $id }}').FlipBook(options);
+                                });
+                            </script>
+                        </div>
+                    </div>
+                </div>
+            {{ end }}
+        </div>
+    {{ end }}
+{{ end }}
+

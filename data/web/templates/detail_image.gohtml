@@ -1,5 +1,6 @@
 {{- $mediaserverBase := .MediaserverBase }}
 {{- $source := .Source }}
+{{- $data := .}}
 <a id="imageTop"></a>
 {{- range $typedMedia := $source.Media }}
     {{- if eq $typedMedia.GetName "image" }}
@@ -8,9 +9,16 @@
             <div id="carouselDetailImage" class="mb-2 carousel slide">
                 <div class="carousel-inner">
             {{- range $key, $media := $typedMedia.GetItems }}
+                {{- $width := $media.Width }}
+                {{- $height := $media.Height }}
+                {{- if or (eq $media.Orientation 8) (eq $media.Orientation 6) }}
+                    {{- $width = $media.Height }}
+                    {{- $height = $media.Width }}
+                {{- end }}
                     <div style="text-align: center;" class="start-50 carousel-item{{ if eq $key 0 }} active{{ end }}">
-                        {{- $size := calcAspectSize $media.Width $media.Height 800 400 }}
-                        <img style="transform: translate(-50%,0)!important;" width="{{ $size.Width }}" height="{{ $size.Height }}" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}/resize/size800x400/formatJPEG/autorotate" class="d-block" loading="lazy">
+                        {{- $size := calcAspectSize $width $height 800 400 }}
+                        <!-- <img style="transform: translate(-50%,0)!important;" width="{{ $size.Width }}" height="{{ $size.Height }}" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}/resize/size800x400/formatJPEG/autorotate" class="d-block" loading="lazy"> -->
+                        <img style="transform: translate(-50%,0)!important;" width="{{ $size.Width }}" height="{{ $size.Height }}" src="{{ medialink $media.URI "resize" "size800x400/formatJPEG/autorotate" (and $data.ShowContent $data.ProtectedContent) }}" class="d-block" loading="lazy">
                     </div>
             {{- end }}
                 </div>
@@ -25,7 +33,7 @@
             </div>
         {{- range $key, $media := $typedMedia.GetItems }}
             <span class="masked">
-                <img onclick="carouselTo({{ $key }});" class="bd-placeholder-img card-img-top" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}/resize/size100x1000/formatPNG/autorotate" />
+                <img onclick="carouselTo({{ $key }});" class="bd-placeholder-img card-img-top" src="{{ medialink $media.URI "resize" "size100x1000/formatPNG/autorotate" (and $data.ShowContent $data.ProtectedContent) }}" />
             </span>
         {{- end }}
        </div>
