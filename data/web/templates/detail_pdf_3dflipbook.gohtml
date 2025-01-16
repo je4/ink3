@@ -42,7 +42,7 @@
         pages: 10, // amount of pages
         */
         controlsProps: { // set of optional properties that allow to customize 3D FlipBook control
-    {{/* //downloadURL: '{{ medialink $media.URI "master" "" (and $data.ShowContent $data.ProtectedContent) }}'*/}}
+    {{/* //downloadURL: '{{ medialink $media.URI "master" "" (and $source.Base.MediaVisible $source.Base.MediaProtected) }}'*/}}
         },
         propertiesCallback: function(props) { // optional function - it lets to customize 3D FlipBook
             props.page.depth /= 2;
@@ -104,7 +104,7 @@
 
 
 {{ range $typedMedia := $source.Media }}
-    {{ if eq $typedMedia.GetName "pdf" }}
+    {{ if eq $typedMedia.GetType "pdf" }}
         <div class="accordion" id="accordionPDF">
             {{ range $id, $media := $typedMedia.GetItems }}
                 <div class="accordion-item borderedge">
@@ -122,7 +122,7 @@
                                 {{ $bookvar := printf "book%d" $id }}
                                 let {{ $bookvar | toJS }};
                                 if( {{ $id }} == 0) {
-                                    options.pdf = '{{ medialink $media.URI "master" "" (and $data.ShowContent $data.ProtectedContent) }}';
+                                    options.pdf = '{{ medialink $media.URI "master" "" (and $source.Base.MediaVisible $source.Base.MediaProtected) }}';
                                     {{ $bookvar | toJS }} = $('.viewer-{{ $id }}').FlipBook(options);
                                 }
 
@@ -135,7 +135,7 @@
 
                                 {{ $var | toJS }}.addEventListener("show.bs.collapse", function () {
                                     console.log("show.bs.collapse " + {{ $id }});
-                                    options.pdf = '{{ medialink $media.URI "master" "" (and $data.ShowContent $data.ProtectedContent) }}';
+                                    options.pdf = '{{ medialink $media.URI "master" "" (and $source.Base.MediaVisible $source.Base.MediaProtected) }}';
                                     {{ $bookvar | toJS }} = $('.viewer-{{ $id }}').FlipBook(options);
                                 });
                             </script>

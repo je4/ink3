@@ -2,7 +2,7 @@
 {{- $lang := .Lang}}
 {{- $root := .RootPath }}
 {{- $source := .Source }}
-{{- $showContent := .ShowContent }}
+{{- $showContent := $source.Base.MediaVisible }}
 {{- $mediaserverBase := .MediaserverBase }}
 {{- $extraIgnore := list "jahrgang" "remark" "performers" "camera" "sprache" "function" "references" }}
 {{- $isExhibition := .Exhibition }}

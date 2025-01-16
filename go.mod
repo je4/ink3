@@ -18,7 +18,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/gosimple/slug v1.15.0
 	github.com/je4/basel-collections/v2 v2.0.2
-	github.com/je4/revcat/v2 v2.0.12
+	github.com/je4/revcat/v2 v2.0.13
 	github.com/je4/utils/v2 v2.0.56
 	github.com/je4/zsearch/v2 v2.0.8
 	github.com/nicksnyder/go-i18n/v2 v2.4.1

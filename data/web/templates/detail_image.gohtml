@@ -3,7 +3,7 @@
 {{- $data := .}}
 <a id="imageTop"></a>
 {{- range $typedMedia := $source.Media }}
-    {{- if eq $typedMedia.GetName "image" }}
+    {{- if eq $typedMedia.GetType "image" }}
         {{- if gt (len $typedMedia.GetItems) 0 }}
         <div class="borderedge mt-2">
             <div id="carouselDetailImage" class="mb-2 carousel slide">
@@ -18,7 +18,7 @@
                     <div style="text-align: center;" class="start-50 carousel-item{{ if eq $key 0 }} active{{ end }}">
                         {{- $size := calcAspectSize $width $height 800 400 }}
                         <!-- <img style="transform: translate(-50%,0)!important;" width="{{ $size.Width }}" height="{{ $size.Height }}" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}/resize/size800x400/formatJPEG/autorotate" class="d-block" loading="lazy"> -->
-                        <img style="transform: translate(-50%,0)!important;" width="{{ $size.Width }}" height="{{ $size.Height }}" src="{{ medialink $media.URI "resize" "size800x400/formatJPEG/autorotate" (and $data.ShowContent $data.ProtectedContent) }}" class="d-block" loading="lazy">
+                        <img style="transform: translate(-50%,0)!important;" width="{{ $size.Width }}" height="{{ $size.Height }}" src="{{ medialink $media.URI "resize" "size800x400/formatJPEG/autorotate" (and $source.Base.MediaVisible $source.Base.MediaProtected) }}" class="d-block" loading="lazy">
                     </div>
             {{- end }}
                 </div>
@@ -33,7 +33,7 @@
             </div>
         {{- range $key, $media := $typedMedia.GetItems }}
             <span class="masked">
-                <img onclick="carouselTo({{ $key }});" class="bd-placeholder-img card-img-top" src="{{ medialink $media.URI "resize" "size100x1000/formatPNG/autorotate" (and $data.ShowContent $data.ProtectedContent) }}" />
+                <img onclick="carouselTo({{ $key }});" class="bd-placeholder-img card-img-top" src="{{ medialink $media.URI "resize" "size100x1000/formatPNG/autorotate" (and $source.Base.MediaVisible $source.Base.MediaProtected) }}" />
             </span>
         {{- end }}
        </div>
