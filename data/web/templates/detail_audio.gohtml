@@ -2,7 +2,7 @@
 {{- $source := .Source }}
 {{- $data := . }}
 {{ range $typedMedia := $source.Media }}
-    {{ if eq $typedMedia.GetName "audio" }}
+    {{ if eq $typedMedia.GetType "audio" }}
         {{ range $key, $media := $typedMedia.GetItems }}
             <div class="borderedge mt-2">
                 <table style="max-height: 480px; width: 100%; border: none; margin-left:auto;margin-right:auto;">
@@ -13,10 +13,10 @@
                                     class="video-js vjs-fluid"
                                     controls
                                     preload="auto"
-                                    poster="{{ medialink (printf "%s%s" $media.URI "$$poster") "resize" "size640x480/formatPNG/autorotate" (and $data.ShowContent $data.ProtectedContent) }}"
+                                    poster="{{ medialink (printf "%s%s" $media.URI "$$poster") "resize" "size640x480/formatPNG/autorotate" (and $source.Base.MediaVisible $source.Base.MediaProtected) }}"
                                     data-setup="{}"
                             >
-                                <source src="{{ medialink (printf "%s%s" $media.URI "$$web$$1") "master" "" (and $data.ShowContent $data.ProtectedContent) }}" type="video/mp4" />
+                                <source src="{{ medialink (printf "%s%s" $media.URI "$$web$$1") "master" "" (and $source.Base.MediaVisible $source.Base.MediaProtected) }}" type="video/mp4" />
                                 <p class="vjs-no-js">
                                     To view this audio please enable JavaScript, and consider upgrading to a
                                     web browser that

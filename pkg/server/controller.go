@@ -1496,26 +1496,13 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 	}
 	for _, e := range result.GetSearch().GetEdges() {
 		ne := &edge{
-			Edge:             e,
-			Title:            &translate.MultiLangString{},
-			Type:             emptyIfNil(e.Base.GetType()),
-			Date:             emptyIfNil(e.Base.GetDate()),
-			PersonRole:       map[string][]string{},
-			ShowContent:      false,
-			ProtectedContent: false,
-		}
-		for _, acl := range e.Base.GetACL() {
-			if acl.GetName() == "content" {
-				groups := acl.GetGroups()
-				for _, group := range data.baseData.User.Groups {
-					if slices.Contains(groups, group) {
-						ne.ShowContent = true
-						break
-					}
-				}
-				ne.ProtectedContent = !slices.Contains(groups, "global/guest")
-				break
-			}
+			Edge:       e,
+			Title:      &translate.MultiLangString{},
+			Type:       emptyIfNil(e.Base.GetType()),
+			Date:       emptyIfNil(e.Base.GetDate()),
+			PersonRole: map[string][]string{},
+			//ShowContent:      false,
+			//ProtectedContent: false,
 		}
 		for _, t := range e.Base.GetTitle() {
 			ne.Title.Set(t.Value, language.MustParse(t.Lang), t.Translated)
@@ -1769,12 +1756,12 @@ func (ctrl *Controller) detail(c *gin.Context) {
 
 	type tplData struct {
 		baseData
-		IFrame           bool
-		Source           *client.MediathekEntries_MediathekEntries `json:"source"`
-		MediaserverBase  string                                    `json:"mediaserverBase"`
-		SearchSource     string                                    `json:"searchSource"`
-		ShowContent      bool
-		ProtectedContent bool
+		IFrame          bool
+		Source          *client.MediathekEntries_MediathekEntries `json:"source"`
+		MediaserverBase string                                    `json:"mediaserverBase"`
+		SearchSource    string                                    `json:"searchSource"`
+		//ShowContent      bool
+		//ProtectedContent bool
 	}
 	var searchParams string
 	if len(query) > 0 {
@@ -1804,20 +1791,6 @@ func (ctrl *Controller) detail(c *gin.Context) {
 			User:     user,
 		},
 		MediaserverBase: ctrl.mediaserverBase,
-	}
-
-	for _, acl := range source.MediathekEntries[0].Base.GetACL() {
-		if acl.GetName() == "content" {
-			groups := acl.GetGroups()
-			for _, group := range data.baseData.User.Groups {
-				if slices.Contains(groups, group) {
-					data.ShowContent = true
-					break
-				}
-			}
-			data.ProtectedContent = !slices.Contains(groups, "global/guest")
-			break
-		}
 	}
 
 	if err := textTemplate.Execute(c.Writer, data); err != nil {

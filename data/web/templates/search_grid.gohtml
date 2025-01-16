@@ -101,8 +101,8 @@
                                                 {{- if $useKI }}{{- $query = printf "%s&ki" $query }}{{- end }}
                                                 {{- $query = trimPrefix "&" $query }}
                                                 <tr onclick="window.location='{{ $detailAddr }}/detail/{{ $edge.Edge.Base.Signature }}/{{ $lang }}{{ if ne $query "" }}?{{ $query | toURL }}{{ end }}';">
-                                                    <td>{{- if and $edge.Edge.Base.Poster $edge.ShowContent }}
-                                                            <img src="{{ medialink $edge.Edge.Base.Poster.URI "resize" "size100x100/formatPNG/autorotate" (and $edge.ShowContent $edge.ProtectedContent) }}" class="img-fluid rounded" alt="">
+                                                    <td>{{- if and $edge.Edge.Base.Poster ($edge.Edge.Base.MediaVisible) }}
+                                                            <img src="{{ medialink $edge.Edge.Base.Poster.URI "resize" "size100x100/formatPNG/autorotate" (and ($edge.Edge.Base.MediaVisible) $edge.ProtectedContent) }}" class="img-fluid rounded" alt="">
                                                         {{- end }}
                                                     </td>
                                                     <td>{{ $edge.Edge.Base.Signature }}</td>
@@ -146,8 +146,8 @@
                                             <div class="row g-0">
                                                 <div class="col-md-2">
                                                     {{- if $edge.Edge.Base.Poster }}
-                                                        {{- if $edge.ShowContent }}
-                                                    <img src="{{ medialink $edge.Edge.Base.Poster.URI "resize" "size160x160/formatPNG/autorotate" (and $edge.ShowContent $edge.ProtectedContent) }}" class="img-fluid rounded-start" alt="">
+                                                        {{- if ($edge.Edge.Base.MediaVisible) }}
+                                                    <img src="{{ medialink $edge.Edge.Base.Poster.URI "resize" "size160x160/formatPNG/autorotate" (and $edge.Edge.Base.MediaVisible $edge.ProtectedContent) }}" class="img-fluid rounded-start" alt="">
                                                         {{- end }}
                                                     {{- end }}
                                                 </div>
@@ -190,9 +190,9 @@
                                             <div class="m-2 p-2" style="transform: rotate({{randInt -5 5}}deg)">
                                                 <div style="align-content: center; text-align: center">
                                                     {{- if $edge.Edge.Base.Poster }}
-                                                        {{- if $edge.ShowContent }}
+                                                        {{- if ($edge.Edge.Base.MediaVisible) }}
                                                             {{- $size := calcAspectSize $edge.Edge.Base.Poster.Width $edge.Edge.Base.Poster.Height 200 200 }}
-                                                            <img class="bd-placeholder-img card-img-top" style="width: {{$size.Width}}px; height: {{$size.Height}}px" src="{{ medialink $edge.Edge.Base.Poster.URI "resize" "size200x200/formatPNG/autorotate" (and $edge.ShowContent $edge.ProtectedContent) }}" />
+                                                            <img class="bd-placeholder-img card-img-top" style="width: {{$size.Width}}px; height: {{$size.Height}}px" src="{{ medialink $edge.Edge.Base.Poster.URI "resize" "size200x200/formatPNG/autorotate" (and ($edge.Edge.Base.MediaVisible) $edge.ProtectedContent) }}" />
                                                         {{- else }}
                                                             <svg
                                                                     class="bd-placeholder-img card-img-top" style="width: 200px; height: 200px;"
@@ -231,7 +231,14 @@
                                                 <div class="card-body pb-2">
                                                     <p class="card-title">
                                                         <b>{{$edge.Title.String}}</b>{{ if ne $edge.Date "" }} ({{ $edge.Date }}){{ end }}<br />
-                                                        {{ $edge.Persons }}
+                                                        {{- if ne $edge.Persons "" }}{{ $edge.Persons }}<br />{{ end }}
+                                                        {{- range $mc := $edge.Edge.Base.MediaCount }}
+                                                            {{ if eq $mc.Type "video" }}<i class="bi bi-camera-video"></i>{{ end }}
+                                                            {{ if eq $mc.Type "audio" }}<i class="bi bi-soundwave"></i>{{ end }}
+                                                            {{ if eq $mc.Type "image" }}<i class="bi bi-card-image"></i>{{ end }}
+                                                            {{ if eq $mc.Type "pdf" }}<i class="bi bi-file-pdf"></i>{{ end }}
+                                                            {{ $mc.Count }}
+                                                        {{- end }}
                                                     </p>
                                                     <!--
                                                     <p class="card-text"></p>

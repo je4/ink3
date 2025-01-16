@@ -10,7 +10,7 @@
 
 
 {{ range $typedMedia := $source.Media }}
-    {{ if eq $typedMedia.GetName "pdf" }}
+    {{ if eq $typedMedia.GetType "pdf" }}
         <div class="accordion" id="accordionPDF">
             {{ range $id, $media := $typedMedia.GetItems }}
                 <div class="accordion-item borderedge">
@@ -42,7 +42,7 @@
                                 jQuery(document).ready(function () {
 
                                     //FOR PDFs
-                                    let source_pdf = "{{ medialink $media.URI "master" "" (and $data.ShowContent $data.ProtectedContent) }}";
+                                    let source_pdf = "{{ medialink $media.URI "master" "" (and $source.Base.MediaVisible $source.Base.MediaProtected) }}";
                                     {{ $bookvar | toJS }} = $('.viewer-{{ $id }}').flipBook(source_pdf,option_pdf);
                                 });
                                 {{ end }}
@@ -56,7 +56,7 @@
 
                                 {{ $var | toJS }}.addEventListener("show.bs.collapse", function () {
                                     console.log("show.bs.collapse " + {{ $id }});
-                                        let source_pdf = "{{ medialink $media.URI "master" "" (and $data.ShowContent $data.ProtectedContent) }}";
+                                        let source_pdf = "{{ medialink $media.URI "master" "" (and $source.Base.MediaVisible $source.Base.MediaProtected) }}";
                                         {{ $bookvar | toJS }} = $('.viewer-{{ $id }}').flipBook(source_pdf,option_pdf);
                                 });
                             </script>

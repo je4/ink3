@@ -29,5 +29,5 @@ import "embed"
 //go:embed pdf.js/build/pdf.mjs pdf.js/web/cmaps/* pdf.js/build/pdf.worker.mjs
 //go:embed openseadragon/images/* openseadragon/openseadragon.min.js openseadragon/openseadragon.min.js.map
 //go:embed css/_csp_dark.scss css/_csp_light.scss css/ibm-plex*.css
-//go:embed dflip/*
+//go:embed dflip/css/* dflip/js/* dflip/fonts/* dflip/images/* dflip/sound/*
 var FS embed.FS

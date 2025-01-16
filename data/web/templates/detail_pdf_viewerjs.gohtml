@@ -5,7 +5,7 @@
 {{- $isExhibition := .Exhibition }}
 {{- $data := . }}
 {{ range $typedMedia := $source.Media }}
-    {{ if eq $typedMedia.GetName "pdf" }}
+    {{ if eq $typedMedia.GetType "pdf" }}
         <div class="accordion" id="accordionPDF">
         {{ range $id, $media := $typedMedia.GetItems }}
             <div class="accordion-item borderedge">
@@ -28,7 +28,7 @@
                         });
                         {{ $var | toJS }}.addEventListener("show.bs.collapse", function () {
                             console.log("show.bs.collapse " + {{ $id }});
-                            {{ $viewerVar | toJS }}.src = '{{ medialink $media.URI "master" "" (and $data.ShowContent $data.ProtectedContent) }}';
+                            {{ $viewerVar | toJS }}.src = '{{ medialink $media.URI "master" "" (and $source.Base.MediaVisible $source.Base.MediaProtected) }}';
                         });
                         </script>
                     </div>
