@@ -13,6 +13,8 @@ import (
 	"github.com/je4/revcat/v2/tools/client"
 	"github.com/je4/revcatfront/v2/config"
 	"github.com/je4/revcatfront/v2/data/certs"
+	"github.com/je4/revcatfront/v2/data/web/templates/ink"
+	performance "github.com/je4/revcatfront/v2/data/web/templates/perfomance"
 	"github.com/je4/revcatfront/v2/pkg/server"
 	"github.com/je4/utils/v2/pkg/openai"
 	"github.com/je4/utils/v2/pkg/zLogger"
@@ -145,15 +147,24 @@ func main() {
 		dataFS = os.DirFS(conf.DataDir)
 	}
 
-  var templateFS fs.FS
+	var templateFS fs.FS
 	if conf.Templates != "" {
-    templateFS = os.DirFS(conf.Templates)
-  }
+		templateFS = os.DirFS(conf.Templates)
+	} else {
+		switch conf.Name {
+		case "performance":
+			templateFS = performance.FS
+		case "ink":
+			templateFS = ink.FS
+		default:
+			logger.Fatal().Msgf("no template folder specified")
+		}
+	}
 
-  var staticFS fs.FS
+	var staticFS fs.FS
 	if conf.StaticFiles != "" {
-    staticFS = os.DirFS(conf.StaticFiles)
-  }
+		staticFS = os.DirFS(conf.StaticFiles)
+	}
 
 	var embeddings *openai.ClientV2
 	if string(conf.OpenAIApiKey) != "" {
@@ -165,31 +176,35 @@ func main() {
 		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
 	httpClient := &http.Client{}
-	revcatClient := client.NewClient(httpClient, conf.Revcat.Endpoint, nil, func(ctx context.Context, req *http.Request, gqlInfo *clientv2.GQLRequestInfo, res interface{}, next clientv2.RequestInterceptorFunc) error {
-		userAny := ctx.Value("user")
-		groups := []string{"global/guest"}
-		if user, ok := userAny.(*server.User); ok {
-			groups = user.Groups
-		}
-		bearer := fmt.Sprintf("Bearer %s", conf.Revcat.Apikey)
-		claims := &GroupClaims{
-			RegisteredClaims: jwt.RegisteredClaims{
-				Subject:   "revcatfront",
-				Issuer:    "revcatfront",
-				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 5)),
-				IssuedAt:  jwt.NewNumericDate(time.Now()),
-			},
-			Groups: strings.Join(groups, ";"),
-		}
-		token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
-		tokenString, err := token.SignedString([]byte(conf.JWTKey))
-		if err != nil {
-			req.Header.Set("Authorization", bearer)
+	revcatClient := client.NewClient(
+		httpClient,
+		conf.Revcat.Endpoint,
+		nil,
+		func(ctx context.Context, req *http.Request, gqlInfo *clientv2.GQLRequestInfo, res interface{}, next clientv2.RequestInterceptorFunc) error {
+			userAny := ctx.Value("user")
+			groups := []string{"global/guest"}
+			if user, ok := userAny.(*server.User); ok {
+				groups = user.Groups
+			}
+			bearer := fmt.Sprintf("Bearer %s", conf.Revcat.Apikey)
+			claims := &GroupClaims{
+				RegisteredClaims: jwt.RegisteredClaims{
+					Subject:   "revcatfront",
+					Issuer:    "revcatfront",
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 5)),
+					IssuedAt:  jwt.NewNumericDate(time.Now()),
+				},
+				Groups: strings.Join(groups, ";"),
+			}
+			token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
+			tokenString, err := token.SignedString([]byte(conf.JWTKey))
+			if err != nil {
+				req.Header.Set("Authorization", bearer)
+				return next(ctx, req, gqlInfo, res)
+			}
+			req.Header.Set("Authorization", bearer+"."+tokenString)
 			return next(ctx, req, gqlInfo, res)
-		}
-		req.Header.Set("Authorization", bearer+"."+tokenString)
-		return next(ctx, req, gqlInfo, res)
-	})
+		})
 
 	var collagePos = map[string][]image.Rectangle{}
 	collageFilename := filepath.Join(conf.DataDir, "collage/collage.json")

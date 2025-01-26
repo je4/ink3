@@ -1,7 +1,7 @@
-name = "performance"
+name = "ink"
 logfile = ""
 loglevel = "DEBUG"
-
+notemplatecache = true
 localaddr = ":8445"
 externaladdr = "https://localhost:8445"
 searchaddr = "https://localhost:8445"
@@ -11,7 +11,7 @@ zoomonly = false
 
 openaiapikey = "%%OPENAI_API_KEY%%"
 
-templates = "data/web/templates/perfomance"
+templates = "data/web/templates/ink"
 staticfiles = "data/web/static"
 datadir = "c:/temp/performance"
 #mediaserverbase = "https://localhost:8446"
@@ -63,7 +63,7 @@ basedir = "performance/mediaserver"
 endpoint = "https://localhost:8443/graphql"
 insecure = true
 #apikey = "%%REVCAT_APIKEY%%"
-apikey = "%%REVCAT_APIKEY_PERFORMANCE%%"
+apikey = "%%REVCAT_APIKEY_INK%%"
 
 [directus]
 baseurl = "https://cms.basel-collections.ch"
@@ -79,14 +79,6 @@ available = ["de", "fr", "it", "en"]
 
 [[collections]]
 id = 1
-identifier = "cat:\"zotero2!!PCB_Basel\""
-title = "Performance Chronik Basel"
-url = "https://www.performancechronikbasel.ch/"
-image = "performance_chronik_klein.png"
-contact = "Muda Mathis, Sabine Gebhardt Fink, Margarit von Büren"
-
-[[collections]]
-id = 5
 identifier = "cat:\"zotero2!!ACT Performance Festival\""
 title = "ACT Basel"
 url = "https://www.act-perform.net/"
@@ -94,7 +86,71 @@ image = "act_klein.png"
 contact = "Marion Ritzmann, Hannah Weinberger"
 
 [[collections]]
+id = 2
+identifier = "cat:\"forms2!!diplom\""
+title = "Next Generation"
+url = "https://nextgeneration.hgk.fhnw.ch/"
+contact = "kommunikation.hgk@fhnw.ch"
+
+[[collections]]
+id = 3
+identifier = "cat:\"zotero2!!Werke\""
+title = "Forschungsdaten & Publikationen"
+url = "https://mediathek.hgk.fhnw.ch/"
+image = "act_klein.png"
+contact = "mediathek.hgk@fhnw.ch"
+
+[[collections]]
+id = 5
+identifier = "cat:\"zotero2!!Werke!!Data-Publications!!CulturalSpace&Design - Research\""
+title = "Cultural Spaces and Design"
+url = "https://mediathek.hgk.fhnw.ch/front/#/de/bestaende/32"
+image = "act_klein.png"
+contact = "Regine Halter, Catherine Walthard, Anka Falk"
+
+
+[[collections]]
+id = 6
+identifier = "cat:\"zotero2!!Werke!!Memory Full\""
+title = "Memory Full"
+url = "https://mediathek.hgk.fhnw.ch/front/#/de/bestaende/31"
+image = "act_klein.png"
+contact = "Meret Ernst"
+
+[[collections]]
+id = 7
+identifier = "cat:\"zotero2!!Videonetzwerke\""
+title = "Videonetzwerke"
+url = "https://mediathek.hgk.fhnw.ch/collection/videonetzwerke"
+image = "act_klein.png"
+contact = "Point de Vue, Piet Esch, Stefanie Bräuer"
+
+[[collections]]
+id = 8
+identifier = "cat:\"zotero2!!Videowochen im Wenkenpark\""
+title = "Video Wochen Wenkenpark"
+url = "https://mediathek.hgk.fhnw.ch/front/#/de/bestaende/5"
+image = "act_klein.png"
+contact = "mediathek.hgk@fhnw.ch"
+
+[[collections]]
+id = 9
+identifier = "cat:\"zotero2!!Film + Design\""
+title = "Film + Design"
+url = "https://mediathek.hgk.fhnw.ch/front/#/de/bestaende/28"
+image = "act_klein.png"
+contact = "Marion Ritzmann, Hannah Weinberger"
+
+[[collections]]
 id = 10
+identifier = "cat:\"zotero2!!PCB_Basel\""
+title = "Performance Chronik Basel"
+url = "https://www.performancechronikbasel.ch/"
+image = "performance_chronik_klein.png"
+contact = "Muda Mathis, Sabine Gebhardt Fink, Margarit von Büren"
+
+[[collections]]
+id = 11
 identifier = "cat:\"zotero2!!Performance Art!!6x2 Performance-Duos\""
 title = "6x2 Performance-Duos"
 url = "https://mediathek.hgk.fhnw.ch/#/de/bestaende/23"
@@ -102,15 +158,7 @@ image = "6x2duos_klein.png"
 contact = "Pascale Grau, Claudia Grimm"
 
 [[collections]]
-id = 11
-identifier = "cat:\"zotero2!!Archive des Ephemeren\""
-title = "Archive des Ephemeren"
-url = "https://mediathek.hgk.fhnw.ch/#/de/bestaende/12"
-image = "archive_des_ephemeren_klein.png"
-contact = "Pascale Grau, Margarit von Büren, PANCH"
-
-[[collections]]
-id = 27
+id = 12
 identifier = "cat:\"zotero2!!Performance Art!!Together Elsewhere\""
 title = "Together Elsewhere"
 url = "https://mediathek.hgk.fhnw.ch/#/de/bestaende/26"
@@ -118,7 +166,7 @@ image = "together_elsewhere_klein.png"
 contact = "Gisela Hochuli (PANCH), Pavana Reid (PAB)"
 
 [[collections]]
-id = 28
+id = 13
 identifier = "cat:\"bangbang\""
 title = "Revolving Histories"
 url = "https://revolving-histories.ch/"
@@ -126,7 +174,7 @@ image = "revolving_histories_klein.png"
 contact = "Sabine Gebhardt Fink, Muda Mathis, Chris Regn, Andrea Saemann, Margarit von Büren"
 
 [[collections]]
-id = 55
+id = 14
 identifier = "cat:\"zotero2!!Performance Art!!Doce en Diciembre\""
 title = "Doce en Diciembre"
 url = "https://mediathek.hgk.fhnw.ch/#/de/bestaende/25"
@@ -134,7 +182,15 @@ image = "doce_en_diciembre_klein.png"
 contact = "Barbara Naegelin, Chris Regn, Andrea Saemann"
 
 [[collections]]
-id = 57
+id = 15
+identifier = "cat:\"zotero2!!Archive des Ephemeren\""
+title = "Archive des Ephemeren"
+url = "https://mediathek.hgk.fhnw.ch/#/de/bestaende/12"
+image = "archive_des_ephemeren_klein.png"
+contact = "Pascale Grau, Margarit von Büren, PANCH"
+
+[[collections]]
+id = 16
 identifier = "cat:\"zotero2!!Interviews Archiv Performativ\""
 title = "Interviews: Archiv Performativ "
 url = "http://archivperformativ.zhdk.ch/"
@@ -142,7 +198,7 @@ image = "interviews_archiv_performativ_klein.png"
 contact = "Pascale Grau, Margarit von Büren"
 
 [[collections]]
-id = 59
+id = 17
 identifier = "cat:\"zotero2!!Perf en Bref\""
 title = "Perf En Bref"
 url = "https://apresperf.ch/category/interviews"
@@ -150,9 +206,25 @@ image = "perf_en_bref_klein.png"
 contact = "Chris Regn, Andrea Saemann"
 
 [[collections]]
-id = 60
+id = 18
 identifier = "cat:\"zotero2!!Kaskadenkondensator_ Basel!!Kasko-Videodokumentationen\""
 title = "Kasko"
 url = "https://www.kasko.ch/"
 image = "kasko_klein.png"
 contact = "Pascale Grau, Chris Regn"
+
+[[collections]]
+id = 19
+identifier = "cat:\"iid-Arbeit\""
+title = "IID Arbeiten"
+url = ""
+image = ""
+contact = "Tabea Lurk"
+
+[[collections]]
+id = 20
+identifier = "cat:\"iid-Modul\""
+title = "IID Module"
+url = ""
+image = ""
+contact = "Tabea Lurk"

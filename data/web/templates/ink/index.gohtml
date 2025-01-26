@@ -1,0 +1,181 @@
+<!doctype html>
+{{- $lang := .Lang}}
+{{- $root := .RootPath }}
+{{- $searchBase := printf "%s/grid/%s" .SearchAddr .Lang }}
+<html lang="{{ $lang }}" data-bs-theme="dark">
+<head>
+    {{ template "head.gohtml" . }}
+    <style>
+        .btn-csp {
+            --bs-btn-bg: #212529;
+        }
+    </style>
+</head>
+<body class="w-100" style="" data-bs-theme="dark">
+    {{ template "nav.gohtml" . }}
+
+    <main class="container-fluid">
+            <div class="row d-none d-md-block">
+                <div class="col p-0 csp-bubble-area" style="" id="bubbleArea"></div>
+            </div>
+        <div class="container mt-3 mb-3">
+                <div class="row">
+                    <div class="col-md d-flex justify-content-end align-items-center">
+                        <div class="input-group">
+                            <input style="" id="search" class="form-control w-auto" type="search" placeholder="{{ localize "searchtext" $lang }}" aria-label="{{ localize "search" $lang }}">&nbsp;
+                        </div>
+                        <button onclick="search('{{ $searchBase }}')" class="btn noborder" type="submit"><i class="bi bi-search"></i></button>
+                        <button onclick="search('{{ $searchBase }}', '', false, true)" class="btn noborder" type="submit"><i class="bi bi-stars"></i></button>
+                    </div>
+                </div>
+                <div class="container mt-5">
+                    {{- range $key, $coll := .Collections }}
+                        <span class="me-3">
+                        <button style="" onclick="this.setAttribute('selected', 'true');search('{{ $searchBase }}', '', false, false)" type="button" class="btn btn-primary m-1 collectionButton" value="{{ $coll.Id }}" selected="false">
+                            {{ $coll.Title }} [{{ $coll.Count}}]
+                        </button>
+                        </span>
+                    {{ end }}
+
+                </div>
+
+        </div>
+
+        <div class="px-4 py-1 text-center">
+            <!-- h1 class="display-5 fw-bold text-body-emphasis">Centered hero</h1 -->
+            <div class="col-lg-8 mx-auto">
+                <p class="lead mb-4 fw-medium rounded-2" style="">
+                    {{- if eq $lang "en" }}
+                    The web portal <span style="font-variant: small-caps;">Collections Performance Art Switzerland</span> offers a panorama of the performance art scenes in Switzerland. As a catalogue of a public collection, it brings together a number of collections and places the artistic works in relation to one another. It offers the potential to read very different events in various constellations. The connections and diversity of performance histories from its beginnings to the present day become visible. 
+					<br />
+					The web portal <span style="font-variant: small-caps;">Collections Performance Art Switzerland</span> provides a basis for historical interpretations, for processing translocal performance histories and gives access to source material. Videos, photos, texts, interviews, scores and concepts can still be contributed, and existing entries corrected. Individual artists can continue to upload their contributions to the Revolving Histories collection using the form at the bottom left of the masthead. Organizers with extensive collections should contact the media library directly for new entries.
+                    <br />
+					As a public collection, the media library of Basel Academy of Art and Design FHNW provides the catalogue and thus makes findability easier.
+                    <br />
+					{{- else if eq $lang "fr" }}
+                    Le portail <span style="font-variant: small-caps;">Collections de l'Art Performance Suisse</span> offre un panorama de l’actualité artistique de la performance en Suisse. En tant que catalogue d'une collection publique, il réunit une série de collections et met les travaux artistiques en relation les uns avec les autres. Il offre le potentiel de lire des événements très différents dans des constellations variées. Les liens et la diversité des histoires de la performance, de ses débuts à aujourd'hui, deviennent ainsi visibles.  
+					<br />
+					Le portail <span style="font-variant: small-caps;">Collections de l'Art Performance Suisse</span> offre une base pour des interprétations historiques, pour l'élaboration d'histoires translocales de la performance et pour la mise à dispositions de matériel source. Il est toujours possible de saisir de nouveaux contenus comme des vidéos, des photos, des textes, des interviews, des scores et des concepts, et de corriger des entrées existantes. Les artistes individuels peuvent continuer à télécharger leurs contributions dans la collection Revolving Histories – via le formulaire en bas à gauche à côté des mentions légales. Les organisateurs disposant de collections importantes sont priés de s'adresser directement à la médiathèque pour des nouvelles inscriptions.
+					<br />
+					La médiathèque de l' Haute École d'Art et de Design Bâle FHNW met ce catalogue à disposition en tant que collection publique et facilite ainsi la recherche.
+                    <br />
+                    {{- else if eq $lang "it" }}
+                    Il portale <span style="font-variant: small-caps;">Collezioni Performance Art Svizzera</span> dalle scene della performance art in Svizzera. In quanto catalogo di una collezione pubblica, riunisce una serie di collezioni e mette le opere artistiche in relazione tra loro. Offre la possibilità di leggere eventi molto diversi in varie costellazioni. Le connessioni e la diversità dalle storie della performance, dagli inizi ai giorni nostri, diventano visibili.  
+					<br />
+					Il portale <span style="font-variant: small-caps;">Collezioni Performance Art Svizzera</span> fornisce una base per le interpretazioni storiche, per l'analisi di storie di performance translocali e rende accessibile il materiale di partenza. È ancora possibile inserire nuovi contenuti - video, foto, testi, interviste, partiture e concetti - e correggere quelli esistenti. I singoli artisti possono continuare a caricare i loro contributi nella collezione Revolving Histories utilizzando il modulo in basso a sinistra della testata. Gli organizzatori con collezioni estese dovrebbero contattare direttamente la mediateca per nuovi inserimenti.
+					<br />
+					Come collezione pubblica, la mediateca dell’Accademia d'Arte e Design di Basilea FHNW mette a disposizione questo catalogo, e quindi la rende più facilmente reperibile.
+					<br />
+                    {{- else }}
+                    Das Portal <span style="font-variant: small-caps;">Sammlungen Performance Kunst Schweiz</span> bietet ein Panorama zum Performance Kunstgeschehen in der Schweiz. Als Katalog einer öffentlichen Sammlung vereint es eine Reihe von Beständen zur Performance Kunst und setzt die künstlerischen Arbeiten damit ins Verhältnis zueinander. Es bietet das Potenzial, ganz verschiedene Ereignisse in unterschiedlichen Konstellationen zu lesen. Dabei werden die Zusammenhänge und Diversität der Performance Geschichte:n von ihren Anfängen bis heute sichtbar. 
+					<br /> 
+					Das Portal <span style="font-variant: small-caps;">Sammlungen Performance Kunst Schweiz</span> bietet eine Grundlage für historische Auslegeordnungen, für das Aufarbeiten translokaler Performance Geschichte:n und macht Quellenmaterial zugänglich. Neue Inhalte wie Videos, Fotos, Texte, Interviews, Scores und Konzepte können weiterhin eingegeben und vorhandene Einträge korrigiert werden. Einzelne Kunstschaffenden können ihre Beiträge weiterhin über das Formular – unten links neben dem Impressum – in der Sammlung Revolving Histories hochladen. Veranstalter:innen mit umfangreichen Sammlungen wenden sich für die Neuaufnahme bitte direkt an die Mediathek.
+					<br />
+					Die Mediathek der HGK Basel der Fachhochschule Nordwestschweiz stellt als öffentliche Sammlung diesen Katalog zur Verfügung und erleichtert damit die Auffindbarkeit.
+                    <br />
+                    {{- end }}
+                </p>
+            </div>
+        </div>
+    </main>
+
+    {{ template "footer.gohtml" . }}
+
+    <script src="static/bootstrap/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="static/js/d3.js"></script>
+    <script src="static/js/d3bubble.js"></script>
+    <script src="static/js/search.js"></script>
+    <script>
+        function getImgUrl(img, diameter) {
+            return `{{ $root }}/static/img/wesen_behaelter/${img}`
+        }
+
+        {{- $maxRadius := 100 }}
+        {{- $minRadius := 60 }}
+        {{- $maxDiameter := mul $maxRadius 2 }}
+        const collections =  [
+            {{- range $key, $coll := .Collections }}
+            { id: '{{ $key }}', image: {{ $coll.Image }}, title: '{{ $coll.Title }}', link: '{{ printf "%s?collections=%d" $searchBase $coll.Id }}{{/* $coll.Url */}}', radius: {{ randInt $minRadius $maxRadius}}, value: {{ divf (randInt 10 99) 100 }} },
+            {{- end }}
+        ]
+
+
+        const area = document.getElementById('bubbleArea');
+        const width = area.offsetWidth;
+        const height = area.offsetHeight;
+
+        const svg = d3.create("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("viewBox", [0, 0, width, height])
+            .attr("style", "max-width: 100%; height: auto; height: intrinsic;")
+            //.attr("fill", "currentColor")
+            .attr("font-size", "0.7em")
+            .attr("font-family", "sans-serif")
+            .attr("text-anchor", "middle");
+
+        const xScale = d3.scaleLinear().domain([0, 1]).range([0, width-100]);
+
+        const numNodes = {{ len .Collections }}; // 40;
+        const nodes = collections;
+
+
+        const simulation = d3.forceSimulation(nodes)
+            .force('charge', d3.forceManyBody().strength(5))
+            .force('x', d3.forceX().x(function (d) {
+                return xScale(d.value);
+            }))
+            .force('y', d3.forceY().y(function (d) {
+                return 0;
+            }))
+            .force('collision', d3.forceCollide().radius(function (d) {
+                return d.radius;
+            }))
+            .on('tick', ticked);
+
+        const leaf = svg.selectAll('a')
+            .data(nodes)
+            .join('a')
+            .attr("xlink:href", d => d.link)
+            .attr("target", "_blank")
+
+        leaf.append("clipPath")
+            .attr("id", d => `clip-${d.id}`)
+            .append("circle")
+            .attr('transform', d => 'translate(' + [d.radius, d.radius] + ')')
+            .attr("r", d => d.radius);
+
+        let maxDiameter = {{ $maxDiameter }};
+        leaf.append("image")
+            .attr("width", d => d.radius*2)
+            .attr("height", d => d.radius*2)
+            .attr("clip-path", d => `url(#clip-${d.id})`)
+            .attr('transform', d => 'translate(' + [-d.radius, -d.radius] + ')')
+            //.attr("xlink:href", d => `https://cms.basel-collections.ch/assets/${ d.image }?fit=cover&width=${maxDiameter}&height=${maxDiameter}`);
+            .attr("xlink:href", d => getImgUrl( d.image, maxDiameter)   );
+
+
+        var ticksPerRender = 2;
+        var tickCount = 0;
+        function ticked() {
+            tickCount++;
+            if (tickCount <= ticksPerRender) {
+                return;
+            }
+            tickCount = 0;
+
+            const leaf = svg.selectAll('a')
+                .data(nodes)
+                .join('a')
+                .attr('transform', d => 'translate(' + [d.x, d.y+height/2] + ')')
+
+        }
+
+        let container = document.getElementById('bubbleArea');
+
+        // Append the SVG element.
+        container.append(svg.node());
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,155 @@
+<!doctype html>
+{{- $lang := .Lang}}
+{{- $root := .RootPath }}
+{{- $searchBase := printf "%s/search/%s?" .SearchAddr .Lang }}
+<html lang="{{ $lang }}">
+<head>
+    {{ template "head.gohtml" . }}
+</head>
+
+<body class="w-100 bg">
+    {{ template "nav.gohtml" . }}
+
+<div class="container-fluid p-0 d-flex h-100">
+    <div class="px-4 py-1">
+        <div class="col-lg-8 mx-auto">
+        {{- if eq $lang "en" }}
+            <h1 class="pt-3">Imprint</h1>
+
+            <h3 class="pt-3" style="font-variant: small-caps;">Collections of Swiss Performance Art</h3>
+            is a collaborative project. As a public collection, the HGK Basel FHNW media library makes this catalogue of the contents of its holdings freely available online.  The responsibility for the content of the website lies with the respective owners of the copyrights. For questions regarding the content of the portal and the selection, please contact persons of the collections and/or the Media Library of the Academy of Art and Design Basel FHNW. Technical support is provided by the Media Library.
+
+            <h3 class="pt-3">Concept & Realization</h3>
+            Media Library of the Academy of Art and Design FHNW
+            | info-age GmbH
+
+            <h3 class="pt-3">Editorial Team</h3>
+            Andrea Saemann,
+            Sabine Gebhard-Fink,
+            Tabea Lurk
+
+            <h3 class="pt-3">Design, Visual Material, Collection Icons</h3>
+            Lena Eriksson
+
+            <h3 class="pt-3">Implementation and System</h3>
+            Jürgen Enge, info-age GmbH
+
+            <h3 class="pt-3">Publisher</h3>
+            Academy of Art and Design Basel FHNW<br />
+            Media Library<br />
+            Freilager-Platz 1<br />
+            4142 Münchenstein<br />
+
+            <h3 class="pt-3">Warranty and Liability Disclaimer</h3>
+            Content has been carefully checked and is continuously updated. We strive to provide accurate and complete information but assume no responsibility, guarantees, or liability for the accuracy, completeness, or timeliness of the information provided through this website.
+            <br />
+            We reserve the right to change the information on this website at any time and without prior notice and do not commit to updating the information contained herein. All links to external systems, collections, and providers have been checked for accuracy at the time of inclusion. Nevertheless, we cannot be held responsible for the content and availability of websites accessible via hyperlinks. Providers of the respective pages to which reference has been made are solely liable for illegal, incorrect, or incomplete content and in particular for damages resulting from the use of content on linked pages. This applies regardless of whether the damage is direct, indirect, financial, or of any other nature, arising from data loss, downtime, or other reasons of any kind.
+
+            <h6 class="pt-4">(c) 2024 Katalog für Sammlungen Performance Kunst Schweiz</h6>
+        {{- else if eq $lang "fr" }}
+            <h1 class="pt-3">Mentions</h1>
+
+            <h3 class="pt-3" style="font-variant: small-caps;">Collections de l'Art Performance Suisse</h3>
+            est un projet de collaboration. En tant que collection publique, la médiathèque de la HGK Basel FHNW met librement à disposition en ligne ce catalogue sur les contenus des fonds qu'elle gère. La responsabilité du contenu du site web incombe aux titulaires respectifs des droits d'auteur. Pour des questions de contenu concernant le portail et la sélection, veuillez contacter directement la personne de contact de la collection et/ou la Médiathèque de la Haute école d'art et de design de Bâle FHNW. Le support technique est assuré par la Médiathèque.
+
+            <h3 class="pt-3">Concept & Réalisation</h3>
+            Médiathèque de la Haute école d'art et de design FHNW
+            | info-age GmbH
+
+            <h3 class="pt-3">Rédaction</h3>
+            Andrea Saemann,
+            Sabine Gebhard-Fink,
+            Tabea Lurk
+
+            <h3 class="pt-3">Conception, Matériel Visuel, Icônes de Collection</h3>
+            Lena Eriksson
+
+            <h3 class="pt-3">Implémentation et Système</h3>
+            Jürgen Enge, info-age GmbH
+
+            <h3 class="pt-3">Éditeur</h3>
+            Haute école d'art et de design de Bâle FHNW<br />
+            Médiathèque<br />
+            Freilager-Platz 1<br />
+            4142 Münchenstein<br />
+
+            <h3 class="pt-3">Clause de Non-Garantie et de Responsabilité</h3>
+            Le contenu a été soigneusement vérifié et est continuellement mis à jour. Nous nous efforçons de fournir des informations exactes et complètes mais n'assumons aucune responsabilité, garantie ou responsabilité quant à l'exactitude, l'exhaustivité ou l'actualité des informations fournies via ce site web.
+            <br />
+            Nous nous réservons le droit de modifier les informations sur ce site web à tout moment et sans préavis et ne nous engageons pas à mettre à jour les informations contenues ici. Tous les liens vers des systèmes externes, des collections et des fournisseurs ont été vérifiés pour leur exactitude au moment de leur inclusion. Néanmoins, nous ne pouvons être tenus responsables du contenu et de la disponibilité des sites web accessibles via des liens hypertextes. Les fournisseurs des pages respectives auxquelles il est fait référence sont seuls responsables du contenu illégal, incorrect ou incomplet et en particulier des dommages résultant de l'utilisation du contenu sur les pages liées. Cela s'applique indépendamment que le dommage soit direct, indirect, financier ou de toute autre nature, découlant de la perte de données, de l'indisponibilité ou d'autres raisons de toute nature.
+
+            <h6 class="pt-4">(c) 2024 Katalog für Sammlungen Performance Kunst Schweiz</h6>
+        {{- else if eq $lang "it" }}
+            <h1 class="pt-3">Impressum</h1>
+
+            <h3 class="pt-3" style="font-variant: small-caps;">Collezioni Performance Art Svizzera</h3>
+           è un progetto di collaborazione. In quanto collezione pubblica, la mediateca HGK Basel FHNW mette a disposizione gratuitamente online il catalogo dei contenuti del suo patrimonio. La responsabilità dei contenuti del sito web è dei rispettivi proprietari dei diritti d'autore. Per domande di contenuto riguardanti il portale e la selezione, si prega di contattare direttamente il referente della raccolta e/o la Mediateca della Scuola di Design e Arte di Basilea FHNW. Il supporto tecnico è fornito dalla Mediateca.
+
+            <h3 class="pt-3">Concept & Realizzazione</h3>
+            Mediateca della Scuola di Design e Arte FHNW
+            | info-age GmbH
+
+            <h3 class="pt-3">Redazione</h3>
+			Andrea Saemann,
+            Sabine Gebhard-Fink,
+            Tabea Lurk
+
+            <h3 class="pt-3">Progettazione, Materiale Visivo, Icone di Collezione</h3>
+            Lena Eriksson
+
+            <h3 class="pt-3">Implementazione e Sistema</h3>
+            Jürgen Enge, info-age GmbH
+
+            <h3 class="pt-3">Editore</h3>
+            Scuola di Design e Arte di Basilea FHNW<br />
+            Mediateca<br />
+            Freilager-Platz 1<br />
+            4142 Münchenstein<br />
+
+            <h3 class="pt-3">Esclusione di Garanzia e Responsabilità</h3>
+            Il contenuto è stato attentamente verificato e viene continuamente aggiornato. Ci sforziamo di fornire informazioni accurate e complete ma non assumiamo alcuna responsabilità, garanzia o responsabilità per l'accuratezza, completezza o tempestività delle informazioni fornite attraverso questo sito web.
+            <br />
+            Ci riserviamo il diritto di modificare le informazioni su questo sito web in qualsiasi momento e senza preavviso e non ci impegniamo ad aggiornare le informazioni qui contenute. Tutti i collegamenti a sistemi esterni, collezioni e fornitori sono stati verificati per la loro accuratezza al momento dell'inclusione. Tuttavia, non possiamo essere ritenuti responsabili per il contenuto e la disponibilità dei siti web accessibili tramite collegamenti ipertestuali. I fornitori delle rispettive pagine a cui è stato fatto riferimento sono i soli responsabili per il contenuto illegale, non corretto o incompleto e in particolare per i danni derivanti dall'uso del contenuto su pagine collegate. Questo vale indipendentemente che il danno sia diretto, indiretto, finanziario o di qualsiasi altra natura, derivante dalla perdita di dati, dall'inattività o da altre cause di qualsiasi tipo.
+
+            <h6 class="pt-4">(c) 2024 Katalog für Sammlungen Performance Kunst Schweiz</h6>
+        {{ else }}
+        <h1 class="pt-3">Impressum</h1>
+
+        <h3 class="pt-3" style="font-variant: small-caps;">Sammlungen Performance Kunst Schweiz</h3>
+		ist ein Kooperationsprojekt. Die Mediathek der HGK Basel der Fachhochschule Nordwestschweiz stellt als öffentliche Sammlung diesen Katalog zu Inhalten der von ihr verwalteten Bestände frei online zur Verfügung. Die Verantwortung für die Inhalte der Website liegt bei den jeweiligen Inhaber:innen der Urheberrechte. Bei inhaltlichen Fragen zum Portal und der Auswahl wenden Sie sich bitte direkt an die Sammlungsverantwortlichen und/oder die Mediathek der Hochschule für Gestaltung und Kunst Basel FHNW. Die technische Betreuung erfolgt durch die Mediathek.
+
+        <h3 class="pt-3">Konzept & Realisierung</h3>
+        Mediathek der Hochschule für Gestaltung und Kunst FHNW
+        | info-age GmbH
+
+        <h3 class="pt-3">Redaktion</h3>
+		Andrea Saemann,
+        Sabine Gebhard-Fink,
+        Tabea Lurk
+
+        <h3 class="pt-3">Gestaltung, Bildmaterial, Sammlungsikons</h3>
+        Lena Eriksson
+
+        <h3 class="pt-3">Implementierung und System</h3>
+        Jürgen Enge, info-age GmbH
+
+        <h3 class="pt-3">Herausgeber</h3>
+        Hochschule für Gestaltung und Kunst Basel FHNW<br />
+        Mediathek<br />
+        Freilager-Platz 1<br />
+        4142 Münchenstein<br />
+
+        <h3 class="pt-3">Gewährleistungs- und Haftungsausschluss</h3>
+        Inhalte wurden sorgfältig geprüft und werden laufend aktualisiert. Wir sind bemüht, richtige und vollständige Information bereitzustellen, übernehmen aber keinerlei Verantwortung, Garantien oder Haftung dafür, dass die durch diese Website bereitgestellten Informationen, richtig, vollständig oder aktuell sind.
+        <br />
+        Wir behalten uns das Recht vor, jederzeit und ohne Vorankündigung die Informationen auf dieser Website zu ändern und verpflichten uns nicht, die enthaltenen Informationen zu aktualisieren. Alle Links zu externen Systemen, Sammlungen und Anbietern wurden zum Zeitpunkt ihrer Aufnahme auf ihre Richtigkeit überprüft. Dennoch können wir für Inhalte und Verfügbarkeit von Websites, die mittels Hyperlinks zu erreichen sind, nicht haften. Für illegale, fehlerhafte oder unvollständige Inhalte und insbesondere für Schäden, die durch Inhalte verknüpfter Seiten entstehen, haften allein die Anbieter der jeweiligen Seiten, auf welche verwiesen wurde. Dabei ist es gleichgültig, ob der Schaden direkter, indirekter oder finanzieller Natur ist oder ein sonstiger Schaden vorliegt, der sich aus Datenverlust, Nutzungsausfall oder anderen Gründen aller Art ergeben könnte.
+
+        <h6 class="pt-4">(c) 2024 Katalog für Sammlungen Performance Kunst Schweiz</h6>
+        {{ end }}
+        </div>
+    </div>
+</div>
+    {{ template "footer.gohtml" . }}
+<script src="{{ .RootPath }}static/bootstrap/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+</body>
+</html>
