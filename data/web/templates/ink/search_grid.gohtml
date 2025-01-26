@@ -27,9 +27,9 @@
                     <nav class="navbar navbar-expand-lg">
                         <div class="container-fluid">
                             <div class="d-flex w-100" role="search">
-                                <input onkeyup="if (event.keyCode === 13) search('{{ $searchBase }}') " id="search" class="form-control longborder me-2" type="search" placeholder="{{ localize "search" $lang }}" aria-label="{{ localize "search" $lang }}" value="{{.RequestQuery.Search}}"/>
-                                <button onclick="search('{{ $searchBase }}')" class="btn noborder" type="submit"><img alt="KI search" class="ki" width=28 src="{{ $root }}static/img/lupe.png"></button>
-                                <button onclick="search('{{ $searchBase }}', '', false, true)" class="btn noborder" type="submit"><img class="ki" width=28 src="{{ $root }}static/img/ki2.png"></button>
+                                <input onkeyup="if (event.keyCode === 13) search('{{ $searchBase }}') " id="search" class="form-control me-2" type="search" placeholder="{{ localize "search" $lang }}" aria-label="{{ localize "search" $lang }}" value="{{.RequestQuery.Search}}"/>
+                                <button onclick="search('{{ $searchBase }}')" class="btn noborder" type="submit"><i class="bi bi-search"></i></button>
+                                <button onclick="search('{{ $searchBase }}', '', false, true)" class="btn noborder" type="submit"><i class="bi bi-stars"></i></button>
                                 <div class="ms-2 d-lg-none d-flex">
                                     <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#facetBar" aria-controls="facetBar" aria-expanded="false" aria-label="Toggle navigation">
                                         <span class="navbar-toggler-icon"></span>
@@ -40,18 +40,13 @@
                     </nav>
                     <div class="album py-5">
                         <nav class="navbar">
-                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.StartCursor }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn noborder">
-                                <img class="ki" src="{{ $root }}static/img/prev2.png" width="36">
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.StartCursor }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn btn-primary">
+                                <i class="bi bi-arrow-left"></i>
                             </a>
                             <span>{{ if $useKI }}<img alt="KI search" class="ki" width=28 src="{{ $root }}static/img/ki2.png">&nbsp;{{ end }}
-                                {{ localize "founditems" $lang }}:
-                                {{- $ds := digits .TotalCount }}
-                                {{- range $digit := $ds }}
-                                    <img class="number" style="height:25px;" src="{{ printf "%sstatic/img/%s.png" $root (runeString $digit) }}"/>
-                                {{- end }}{{ if $useKI }}&nbsp;
-                                <img alt="KI search" class="ki" width=28 src="{{ $root }}static/img/ki2.png">{{ end }}</span>
-                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.EndCursor }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn noborder">
-                                <img class="ki flipvertical" src="{{ $root }}static/img/prev2.png" width="36">
+                                {{ localize "founditems" $lang }}: {{ .TotalCount }}{{ if $useKI }}&nbsp;<i class="bi bi-stars"></i>{{ end }}</span>
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.EndCursor }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn btn-primary">
+                                <i class="bi bi-arrow-right"></i>
                             </a>
                         </nav>
                         <div class="container-fluid">
@@ -62,26 +57,12 @@
                                             <tr>
                                                 <th scope="col" style="min-width: 100px;">&nbsp</th>
                                                 <th scope="col" style="white-space: nowrap;">
-                                                    <!--
-                                                    <a class="btn btn-outline-secondary btn-sm" href="?{{ if ne $params "" }}{{ $params }}&{{ end }}sortField=signature.keyword&sortOrder=asc&{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.CurrentCursor }}">
-                                                        <i class="bi bi-sort-up"></i>
-                                                    </a>
-                                                    <a class="btn btn-outline-secondary btn-sm">
-                                                        <i class="bi bi-sort-down"></i>
-                                                    </a>
-                                                    -->
                                                     {{ localize "signature" $lang }}
                                                 </th>
                                                 <th scope="col" style="white-space: nowrap;">
-                                                    <!--
-                                                    <button><i class="bi bi-sort-up"></i></button><button><i class="bi bi-sort-down"></i></button>
-                                                    -->
                                                     {{ localize "titel" $lang }}
                                                 </th>
                                                 <th scope="col" style="white-space: nowrap;">
-                                                    <!--
-                                                    <button><i class="bi bi-sort-up"></i></button><button><i class="bi bi-sort-down"></i></button>
-                                                    -->
                                                     {{ localize "year" $lang }}
                                                 </th>
                                                 <th scope="col">
@@ -187,7 +168,7 @@
                                         {{- if $useKI }}{{- $query = printf "%s&ki" $query }}{{- end }}
                                         {{- $query = trimPrefix "&" $query }}
                                         <a style="color: inherit; text-decoration: inherit;" href="{{ $detailAddr }}/detail/{{ $edge.Edge.Base.Signature }}/{{ $lang }}{{ if ne $query "" }}?{{ $query | toURL }}{{ end }}">
-                                            <div class="m-2 p-2" style="transform: rotate({{randInt -5 5}}deg)">
+                                            <div class="m-2 p-2" style="">
                                                 <div style="align-content: center; text-align: center">
                                                     {{- if $edge.Edge.Base.Poster }}
                                                         {{- if ($edge.Edge.Base.MediaVisible) }}
@@ -240,15 +221,6 @@
                                                             {{ $mc.Count }}
                                                         {{- end }}
                                                     </p>
-                                                    <!--
-                                                    <p class="card-text"></p>
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <div class="btn-group">
-                                                            <button type="button" class="btn btn-sm btn-outline-secondary">Suche</button>
-                                                            <button type="button" class="btn btn-sm btn-outline-secondary">Sammlungsseite</button>
-                                                        </div>
-                                                    </div>
-                                                    -->
                                                 </div>
                                             </div>
                                         </a>
@@ -258,12 +230,13 @@
                             </div>
                         </div>
                         <nav class="navbar">
-                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.StartCursor }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn noborder">
-                                <img class="ki" src="{{ $root }}static/img/prev2.png" width="36">
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.StartCursor }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn btn-primary">
+                                <i class="bi bi-arrow-left"></i>
                             </a>
-                            <span>{{ if $useKI }}<img alt="KI search" class="ki" width=28 src="{{ $root }}static/img/ki2.png">&nbsp;{{ end }}{{ localize "founditems" $lang }}: {{ .TotalCount }}{{ if $useKI }}&nbsp;<img alt="KI search" class="ki" width=28 src="{{ $root }}static/img/ki2.png">{{ end }}</span>
-                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.EndCursor }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn noborder">
-                                <img class="ki flipvertical" src="{{ $root }}static/img/prev2.png" width="36">
+                            <span>{{ if $useKI }}<img alt="KI search" class="ki" width=28 src="{{ $root }}static/img/ki2.png">&nbsp;{{ end }}
+                                {{ localize "founditems" $lang }}: {{ .TotalCount }}{{ if $useKI }}&nbsp;<i class="bi bi-stars"></i>{{ end }}</span>
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.EndCursor }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn btn-primary">
+                                <i class="bi bi-arrow-right"></i>
                             </a>
                         </nav>
                     </div>
@@ -289,10 +262,10 @@
                                 style="margin: 1px; padding: 1px 4px 1px 4px;"
                                 onclick="{{ if $collFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}', '', {{ if $isExhibition }}true{{ else }}false{{ end }}, {{ if $useKI }}true{{ else }}false{{ end }})"
                                 type="button"
-                                class="noborder btn btn-csp collectionButton{{ if $collFacet.Checked }} btn-csp-hover{{ end }}"
+                                class="btn btn-secondary collectionButton"
                                 value="{{ $collFacet.ID }}"
                                 selected="{{ if $collFacet.Checked }}true{{ else }}false{{ end }}">
-                            {{ if $collFacet.Checked }}<img class="number" style="height: 20px;" src="{{ $root }}static/img/hook.png">&nbsp;{{ end }}<span class="fw-medium">{{ abbrev 50 $collFacet.Name }}</span>
+                            {{ if $collFacet.Checked }}<i class="bi bi-check"></i>&nbsp;{{ end }}<span class="fw-medium">{{ abbrev 50 $collFacet.Name }}</span>
                             {{- $ds := digits $collFacet.Count }}
                         </button>
                         {{- end }}
@@ -300,8 +273,14 @@
                     {{- range $parent, $vocabFacets := .VocabularyFacets }}
                         {{- range $vocabFacet := $vocabFacets }}
                             {{- if $vocabFacet.Checked }}
-                                <button style="margin: 1px; padding: 1px 4px 1px 4px;" onclick="{{ if $vocabFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}', '', {{ if $isExhibition }}true{{ else }}false{{ end }}, {{ if $useKI }}true{{ else }}false{{ end }})" type="button" class="noborder btn btn-csp vocButton{{ if $vocabFacet.Checked }} btn-csp-hover{{ end }}" value="voc:{{ $parent }}:{{ $vocabFacet.Name }}" selected="{{ if $vocabFacet.Checked }}true{{ else }}false{{ end }}">
-                                    {{ if $vocabFacet.Checked }}<img class="number" style="height: 20px;" src="{{ $root }}static/img/hook.png">&nbsp;{{ end }}{{ abbrev 32 (localize $vocabFacet.Name $lang) }}
+                                <button
+                                        style="margin: 1px; padding: 1px 4px 1px 4px;"
+                                        onclick="{{ if $vocabFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}', '', {{ if $isExhibition }}true{{ else }}false{{ end }}, {{ if $useKI }}true{{ else }}false{{ end }})"
+                                        type="button"
+                                        class="btn btn-secondary vocButton"
+                                        value="voc:{{ $parent }}:{{ $vocabFacet.Name }}" selected="{{ if $vocabFacet.Checked }}true{{ else }}false{{ end }}"
+                                >
+                                    {{ if $vocabFacet.Checked }}<i class="bi bi-check"></i>&nbsp;{{ end }}{{ abbrev 32 (localize $vocabFacet.Name $lang) }}
                                 </button>
                             {{- end }}
                         {{- end }}
@@ -309,17 +288,19 @@
                 </div>
             </li>
             <li class="nav-item mb-1">
-                <img class="number" style="width: 376px; height:15px;" src="{{ $root }}static/img/line_short.png" /><br />
+                <hr />
                 {{/* localize "Sammlung" $lang */}}
                 <div class="d-block gap-2">
                     {{ range $collFacet := .CollectionFacets }}
                         {{ if not $collFacet.Checked }}
-                        <button style="margin: 1px; padding: 1px 4px 1px 4px;" onclick="{{ if $collFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}', '', {{ if $isExhibition }}true{{ else }}false{{ end }}, {{ if $useKI }}true{{ else }}false{{ end }})" type="button" class="noborder btn btn-csp collectionButton{{ if $collFacet.Checked }} btn-csp-hover{{ end }}" value="{{ $collFacet.ID }}" selected="{{ if $collFacet.Checked }}true{{ else }}false{{ end }}">
-                            {{ if $collFacet.Checked }}<img class="number" style="height: 20px;" src="{{ $root }}static/img/hook.png">&nbsp;{{ end }}<span class="fw-medium">{{ abbrev 50 $collFacet.Name }}</span>
-                            {{- $ds := digits $collFacet.Count }}
-                            {{- range $digit := $ds }}
-                                <img class="number" style="height:25px;" src="{{ printf "%sstatic/img/%s.png" $root (runeString $digit) }}"/>
-                            {{- end }}
+                        <button
+                                style="margin: 1px; padding: 1px 4px 1px 4px;"
+                                onclick="{{ if $collFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}', '', {{ if $isExhibition }}true{{ else }}false{{ end }}, {{ if $useKI }}true{{ else }}false{{ end }})"
+                                type="button"
+                                class="btn btn-secondary collectionButton" value="{{ $collFacet.ID }}"
+                                selected="{{ if $collFacet.Checked }}true{{ else }}false{{ end }}"
+                        >
+                            {{ if $collFacet.Checked }}<i class="bi bi-check"></i>&nbsp;{{ end }}<span class="fw-medium">{{ abbrev 50 $collFacet.Name }} [{{ $collFacet.Count }}]</span>
                         </button>
                         {{ end }}
                     {{ end }}
@@ -334,17 +315,20 @@
                 {{ end }}
                 {{ if gt $num 0 }}
                 <li class="nav-item mb-1">
-                    <img class="number" style="width: 376px; height:15px;" src="{{ $root }}static/img/line_short.png" /><br />
+                    <hr />
                     <span class="fw-semibold">{{ localize $parent $lang }}</span>
                     <div class="d-block gap-2">
                     {{ range $vocabFacet := $vocabFacets }}
                         {{ if not $vocabFacet.Checked }}
-                        <button style="margin: 1px; padding: 1px 4px 1px 4px;" onclick="{{ if $vocabFacet.Checked }}this.removeAttribute('selected'){{ else }}this.setAttribute('selected', 'true'){{ end }};search('{{ $searchBase }}', '', {{ if $isExhibition }}true{{ else }}false{{ end }}, {{ if $useKI }}true{{ else }}false{{ end }})" type="button" class="noborder btn btn-csp vocButton{{ if $vocabFacet.Checked }} btn-csp-hover{{ end }}" value="voc:{{ $parent }}:{{ $vocabFacet.Name }}" selected="{{ if $vocabFacet.Checked }}true{{ else }}false{{ end }}">
-                            {{ if $vocabFacet.Checked }}<img class="number" style="height: 20px;" src="{{ $root }}static/img/hook.png">&nbsp;{{ end }}{{ abbrev 32 (localize $vocabFacet.Name $lang) }}
-                            {{- $ds := digits $vocabFacet.Count }}
-                            {{- range $digit := $ds }}
-                            <img class="number" style="height:25px;" src="{{ printf "%sstatic/img/%s.png" $root (runeString $digit) }}"/>
-                            {{- end }}
+                        <button
+                                style="margin: 1px; padding: 1px 4px 1px 4px;"
+                                onclick="{{ if $vocabFacet.Checked }}this.removeAttribute('selected'){{ else }}this.setAttribute('selected', 'true'){{ end }};search('{{ $searchBase }}', '', {{ if $isExhibition }}true{{ else }}false{{ end }}, {{ if $useKI }}true{{ else }}false{{ end }})"
+                                type="button"
+                                class="btn btn-secondary vocButton"
+                                value="voc:{{ $parent }}:{{ $vocabFacet.Name }}"
+                                selected="{{ if $vocabFacet.Checked }}true{{ else }}false{{ end }}"
+                        >
+                            {{ if $vocabFacet.Checked }}<i class="bi bi-check"></i>&nbsp;{{ end }}{{ abbrev 32 (localize $vocabFacet.Name $lang) }} [{{ $vocabFacet.Count }}]
                         </button>
                         {{ end }}
                    {{ end }}
@@ -359,8 +343,8 @@
 {{ template "footer.gohtml" . }}
 
 
-<script src="../static/bootstrap/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-<script src="../static/js/search.js"></script>
+<script src="../../static/bootstrap/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script src="../../static/js/search.js"></script>
 </body>
 </html>
 

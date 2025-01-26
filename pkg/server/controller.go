@@ -292,27 +292,7 @@ func (ctrl *Controller) funcMap(name string) template.FuncMap {
 	return fm
 }
 
-func NewController(localAddr, externalAddr, searchAddr, detailAddr string,
-	protoHTTP bool,
-	auth map[string]string,
-	cert *tls.Certificate,
-	templateFS, staticFS, dataFS fs.FS,
-	client client.RevCatGraphQLClient,
-	zoomPos map[string][]image.Rectangle,
-	mediaserverBase string,
-	mediaserverKey string,
-	mediaserverTokenExp time.Duration,
-	bundle *i18n.Bundle,
-	collections []*CollFacetType,
-	fieldMapping map[string]string,
-	embeddings *openai.ClientV2,
-	templateDebug, zoomOnly bool,
-	loginURL string,
-	loginIssuer string,
-	loginJWTKey string,
-	loginJWTAlgs []string,
-	locations map[string][]net.IPNet,
-	logger zLogger.ZLogger) (*Controller, error) {
+func NewController(localAddr, externalAddr, searchAddr, detailAddr string, protoHTTP bool, auth map[string]string, cert *tls.Certificate, templateFS, staticFS, dataFS fs.FS, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, mediaserverBase, mediaserverKey string, mediaserverTokenExp time.Duration, bundle *i18n.Bundle, collections []*CollFacetType, fieldMapping map[string]string, embeddings *openai.ClientV2, templateDebug, zoomOnly bool, loginURL, loginIssuer, loginJWTKey string, loginJWTAlgs []string, locations map[string][]net.IPNet, logger zLogger.ZLogger) (*Controller, error) {
 
 	ctrl := &Controller{
 		localAddr:           localAddr,
@@ -1129,7 +1109,11 @@ func (ctrl *Controller) indexPage(ctx *gin.Context) {
 			},
 		},
 	}
-	result, err := ctrl.client.Search(ctx, "", []*client.InFacet{collFacet}, filter, nil, nil, &size, nil, sort)
+	facets := []*client.InFacet{}
+	if len(collFacet.Query.BoolTerm.Values) > 0 {
+		facets = append(facets, collFacet)
+	}
+	result, err := ctrl.client.Search(ctx, "", facets, filter, nil, nil, &size, nil, sort)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", "")
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", "", err))

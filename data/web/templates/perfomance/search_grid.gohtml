@@ -1,0 +1,366 @@
+<!doctype html>
+{{- $data := . }}
+{{- $lang := .Lang}}
+{{- $root := .RootPath }}
+{{- $mediaserverBase := .MediaserverBase }}
+{{- $searchBase := printf "%s/%s/%s" .SearchAddr .Page .Lang }}
+{{- $params := .Params }}
+{{- $search := printf "%s%s" $searchBase .Params }}
+{{- $detailAddr := .DetailAddr }}
+{{- $isExhibition := .Exhibition }}
+{{- $useKI := .KI }}
+{{- $page := .Page }}
+{{- $roles := list "author" "performer" "artist" "director" "camera" }}
+<html lang="{{ $lang }}">
+
+{{template "head.gohtml" . }}
+
+<body class="w-100 bg">
+
+{{ template "nav.gohtml" . }}
+
+<div class="container-fluid p-0 d-flex h-100 maincolor" style="">
+    <div class="flex-fill">
+        <div class="p-4">
+            <div class="row">
+                <div class="col">
+                    <nav class="navbar navbar-expand-lg">
+                        <div class="container-fluid">
+                            <div class="d-flex w-100" role="search">
+                                <input onkeyup="if (event.keyCode === 13) search('{{ $searchBase }}') " id="search" class="form-control longborder me-2" type="search" placeholder="{{ localize "search" $lang }}" aria-label="{{ localize "search" $lang }}" value="{{.RequestQuery.Search}}"/>
+                                <button onclick="search('{{ $searchBase }}')" class="btn noborder" type="submit"><img alt="KI search" class="ki" width=28 src="{{ $root }}static/img/lupe.png"></button>
+                                <button onclick="search('{{ $searchBase }}', '', false, true)" class="btn noborder" type="submit"><img class="ki" width=28 src="{{ $root }}static/img/ki2.png"></button>
+                                <div class="ms-2 d-lg-none d-flex">
+                                    <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#facetBar" aria-controls="facetBar" aria-expanded="false" aria-label="Toggle navigation">
+                                        <span class="navbar-toggler-icon"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </nav>
+                    <div class="album py-5">
+                        <nav class="navbar">
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.StartCursor }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn noborder">
+                                <img class="ki" src="{{ $root }}static/img/prev2.png" width="36">
+                            </a>
+                            <span>{{ if $useKI }}<img alt="KI search" class="ki" width=28 src="{{ $root }}static/img/ki2.png">&nbsp;{{ end }}
+                                {{ localize "founditems" $lang }}:
+                                {{- $ds := digits .TotalCount }}
+                                {{- range $digit := $ds }}
+                                    <img class="number" style="height:25px;" src="{{ printf "%sstatic/img/%s.png" $root (runeString $digit) }}"/>
+                                {{- end }}{{ if $useKI }}&nbsp;
+                                <img alt="KI search" class="ki" width=28 src="{{ $root }}static/img/ki2.png">{{ end }}</span>
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.EndCursor }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn noborder">
+                                <img class="ki flipvertical" src="{{ $root }}static/img/prev2.png" width="36">
+                            </a>
+                        </nav>
+                        <div class="container-fluid">
+                            <div class="row g-12">
+                                {{- if eq $page "table" }}
+                                    <table class="table table-striped-columns table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col" style="min-width: 100px;">&nbsp</th>
+                                                <th scope="col" style="white-space: nowrap;">
+                                                    <!--
+                                                    <a class="btn btn-outline-secondary btn-sm" href="?{{ if ne $params "" }}{{ $params }}&{{ end }}sortField=signature.keyword&sortOrder=asc&{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.CurrentCursor }}">
+                                                        <i class="bi bi-sort-up"></i>
+                                                    </a>
+                                                    <a class="btn btn-outline-secondary btn-sm">
+                                                        <i class="bi bi-sort-down"></i>
+                                                    </a>
+                                                    -->
+                                                    {{ localize "signature" $lang }}
+                                                </th>
+                                                <th scope="col" style="white-space: nowrap;">
+                                                    <!--
+                                                    <button><i class="bi bi-sort-up"></i></button><button><i class="bi bi-sort-down"></i></button>
+                                                    -->
+                                                    {{ localize "titel" $lang }}
+                                                </th>
+                                                <th scope="col" style="white-space: nowrap;">
+                                                    <!--
+                                                    <button><i class="bi bi-sort-up"></i></button><button><i class="bi bi-sort-down"></i></button>
+                                                    -->
+                                                    {{ localize "year" $lang }}
+                                                </th>
+                                                <th scope="col">
+                                                    {{ localize "artist" $lang }}
+                                                </th>
+                                                <th scope="col">
+                                                    {{ localize "event" $lang }}
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {{- range $edge := .Edges }}
+                                                {{- $query := printf "source=%s" $page }}
+                                                {{- if ne $data.Cursor "" }}{{- $query = printf "%s&cursor=%s" $query $data.Cursor }}{{- end }}
+                                                {{- if ne $params "" }}{{- $query = printf "%s&%s" $query $params }}{{- end }}
+                                                {{- if $isExhibition }}{{- $query = printf "%s&exhibition" $query }}{{- end }}
+                                                {{- if $useKI }}{{- $query = printf "%s&ki" $query }}{{- end }}
+                                                {{- $query = trimPrefix "&" $query }}
+                                                <tr onclick="window.location='{{ $detailAddr }}/detail/{{ $edge.Edge.Base.Signature }}/{{ $lang }}{{ if ne $query "" }}?{{ $query | toURL }}{{ end }}';">
+                                                    <td>{{- if and $edge.Edge.Base.Poster ($edge.Edge.Base.MediaVisible) }}
+                                                            <img src="{{ medialink $edge.Edge.Base.Poster.URI "resize" "size100x100/formatPNG/autorotate" (and ($edge.Edge.Base.MediaVisible) $edge.ProtectedContent) }}" class="img-fluid rounded" alt="">
+                                                        {{- end }}
+                                                    </td>
+                                                    <td>{{ $edge.Edge.Base.Signature }}</td>
+                                                    <td>{{ $edge.Title.String }}</td>
+                                                    <td>{{ $edge.Date }}</td>
+                                                    <td>
+                                                        {{- range $role, $persons := $edge.PersonRole }}
+                                                            {{- if has $role (list "artist" "director") }}
+                                                                <div class="p-0 m-0" style="text-indent: 2em hanging;">
+                                                                    {{ range $k, $name := $persons }}{{ if ne $k 0 }}; {{ end }}{{ $name }}{{ end }}
+                                                                </div>
+                                                            {{- end }}
+                                                        {{- end }}
+                                                    </td>
+                                                    <td>
+                                                        {{- range $e := $edge.Edge.Extra }}
+                                                            {{- if has $e.Key (list "festival") }}
+                                                                <div class="p-0 m-0" style="text-indent: 2em hanging;">
+                                                                {{ $e.Value }}
+                                                                </div>
+                                                            {{- end }}
+                                                        {{- end }}
+                                                    </td>
+                                                </tr>
+                                            {{- end }}
+                                        </tbody>
+                                        </thead>
+                                    </table>
+                                {{- end }}
+                                {{- if eq $page "list"}}
+                                <div class="list-group">
+                                    {{- range $edge := .Edges }}
+                                        {{- $query := printf "source=%s" $page }}
+                                        {{- if ne $data.Cursor "" }}{{- $query = printf "%s&cursor=%s" $query $data.Cursor }}{{- end }}
+                                        {{- if ne $params "" }}{{- $query = printf "%s&%s" $query $params }}{{- end }}
+                                        {{- if $isExhibition }}{{- $query = printf "%s&exhibition" $query }}{{- end }}
+                                        {{- if $useKI }}{{- $query = printf "%s&ki" $query }}{{- end }}
+                                        {{- $query = trimPrefix "&" $query }}
+                                        <div class="card mb-3">
+                                            <a class="nolink" href="{{ $detailAddr }}/detail/{{ $edge.Edge.Base.Signature }}/{{ $lang }}{{ if ne $query "" }}?{{ $query | toURL }}{{ end }}">
+                                            <div class="row g-0">
+                                                <div class="col-md-2">
+                                                    {{- if $edge.Edge.Base.Poster }}
+                                                        {{- if ($edge.Edge.Base.MediaVisible) }}
+                                                    <img src="{{ medialink $edge.Edge.Base.Poster.URI "resize" "size160x160/formatPNG/autorotate" (and $edge.Edge.Base.MediaVisible $edge.ProtectedContent) }}" class="img-fluid rounded-start" alt="">
+                                                        {{- end }}
+                                                    {{- end }}
+                                                </div>
+                                                <div class="col-md-10">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title"><small class="">{{ $edge.Edge.Base.Signature }}</small><br/>{{$edge.Title.String}}{{ if ne $edge.Date "" }} ({{ $edge.Date }}){{ end }}</h5>
+                                                        <p class="card-text">
+                                                            <div class="p-0 m-0">
+                                                            {{- range $role, $persons := $edge.PersonRole }}
+                                                                {{- if has $role $roles }}
+                                                                <div class="p-0 m-0" style="text-indent: 2em hanging;">
+                                                                    <span class="fw-semibold">{{ localize $role $lang }}</span>: {{ range $k, $name := $persons }}{{ if ne $k 0 }}; {{ end }}{{ $name }}{{ end }}
+                                                                </div>
+                                                                {{- else }}
+                                                                    <!-- span class="fw-semibold text-bg-success">{{ $role }}</span>: {{ range $k, $name := $persons }}{{ if ne $k 0 }}; {{ end }}{{ $name }}{{ end }} -->
+                                                                {{- end }}
+                                                            {{- end }}
+                                                            </div>
+                                                        </p>
+                                                        <!--p class="card-text"><small class="text-body-secondary">Last updated 3 mins ago</small></p-->
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            </a>
+                                        </div>
+                                    {{- end }}
+                                </div>
+                                {{- end }}
+                                {{- if eq $page "grid"}}
+                                {{- range $edge := .Edges }}
+                                    <!-- div class="col p-0" style='max-width: 320px; background-image: url("../static/img/frame0.png"); background-size: 100% 100%;' -->
+                                    <div class="col p-0" style='max-width: 320px;'>
+                                        {{- $query := printf "source=%s" $page }}
+                                        {{- if ne $data.Cursor "" }}{{- $query = printf "%s&cursor=%s" $query $data.Cursor }}{{- end }}
+                                        {{- if ne $params "" }}{{- $query = printf "%s&%s" $query $params }}{{- end }}
+                                        {{- if $isExhibition }}{{- $query = printf "%s&exhibition" $query }}{{- end }}
+                                        {{- if $useKI }}{{- $query = printf "%s&ki" $query }}{{- end }}
+                                        {{- $query = trimPrefix "&" $query }}
+                                        <a style="color: inherit; text-decoration: inherit;" href="{{ $detailAddr }}/detail/{{ $edge.Edge.Base.Signature }}/{{ $lang }}{{ if ne $query "" }}?{{ $query | toURL }}{{ end }}">
+                                            <div class="m-2 p-2" style="transform: rotate({{randInt -5 5}}deg)">
+                                                <div style="align-content: center; text-align: center">
+                                                    {{- if $edge.Edge.Base.Poster }}
+                                                        {{- if ($edge.Edge.Base.MediaVisible) }}
+                                                            {{- $size := calcAspectSize $edge.Edge.Base.Poster.Width $edge.Edge.Base.Poster.Height 200 200 }}
+                                                            <img class="bd-placeholder-img card-img-top" style="width: {{$size.Width}}px; height: {{$size.Height}}px" src="{{ medialink $edge.Edge.Base.Poster.URI "resize" "size200x200/formatPNG/autorotate" (and ($edge.Edge.Base.MediaVisible) $edge.ProtectedContent) }}" />
+                                                        {{- else }}
+                                                            <svg
+                                                                    class="bd-placeholder-img card-img-top" style="width: 200px; height: 200px;"
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    version="1.1"
+                                                                    viewBox="0 0 705 705">
+                                                                <title>media access denied</title>
+                                                                <g>
+                                                                    <circle id="circle1"
+                                                                            cx="352.5"
+                                                                            cy="352.5"
+                                                                            r="350"
+                                                                            style="fill:none;stroke:none;stroke-width:2.5px"/>
+                                                                </g>
+                                                                <g>
+                                                                    <circle id="circle2"
+                                                                            cx="352.5"
+                                                                            cy="352.5"
+                                                                            r="290"
+                                                                            style="fill:none;stroke:#212529;stroke-width:90"/>
+                                                                </g>
+                                                                <g transform="rotate(40 352.5 352.5) ">
+                                                                    <rect
+                                                                            x="62.5"
+                                                                            y="307.5"
+                                                                            width="580"
+                                                                            height="90"
+                                                                            fill="#212529" stroke="none" stroke-width="0"/>
+                                                                </g>
+                                                            </svg>
+                                                        {{- end }}
+                                                    {{- else }}
+                                                        <svg class="bd-placeholder-img card-img-top" style="width: 200px; height: 200px;" width="100px" height="200px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em"></text></svg>
+                                                    {{- end }}
+                                                </div>
+                                                <div class="card-body pb-2">
+                                                    <p class="card-title">
+                                                        <b>{{$edge.Title.String}}</b>{{ if ne $edge.Date "" }} ({{ $edge.Date }}){{ end }}<br />
+                                                        {{- if ne $edge.Persons "" }}{{ $edge.Persons }}<br />{{ end }}
+                                                        {{- range $mc := $edge.Edge.Base.MediaCount }}
+                                                            {{ if eq $mc.Type "video" }}<i class="bi bi-camera-video"></i>{{ end }}
+                                                            {{ if eq $mc.Type "audio" }}<i class="bi bi-soundwave"></i>{{ end }}
+                                                            {{ if eq $mc.Type "image" }}<i class="bi bi-card-image"></i>{{ end }}
+                                                            {{ if eq $mc.Type "pdf" }}<i class="bi bi-file-pdf"></i>{{ end }}
+                                                            {{ $mc.Count }}
+                                                        {{- end }}
+                                                    </p>
+                                                    <!--
+                                                    <p class="card-text"></p>
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div class="btn-group">
+                                                            <button type="button" class="btn btn-sm btn-outline-secondary">Suche</button>
+                                                            <button type="button" class="btn btn-sm btn-outline-secondary">Sammlungsseite</button>
+                                                        </div>
+                                                    </div>
+                                                    -->
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                {{- end }}
+                                {{- end }}
+                            </div>
+                        </div>
+                        <nav class="navbar">
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.StartCursor }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn noborder">
+                                <img class="ki" src="{{ $root }}static/img/prev2.png" width="36">
+                            </a>
+                            <span>{{ if $useKI }}<img alt="KI search" class="ki" width=28 src="{{ $root }}static/img/ki2.png">&nbsp;{{ end }}{{ localize "founditems" $lang }}: {{ .TotalCount }}{{ if $useKI }}&nbsp;<img alt="KI search" class="ki" width=28 src="{{ $root }}static/img/ki2.png">{{ end }}</span>
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.EndCursor }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn noborder">
+                                <img class="ki flipvertical" src="{{ $root }}static/img/prev2.png" width="36">
+                            </a>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div style="overflow: auto; width:500px;" id="facetBar"
+         class="d-flex flex-column flex-shrink-0
+					p-3 offcanvas-lg offcanvas-end">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasRightLabel">Offcanvas right</h5>
+            <button type="button" class="btn-close" data-bs-toggle="offcanvas" data-bs-target="#facetBar" aria-controls="facetBar" aria-label="Close"></button>
+        </div>
+        <ul class="mynav nav nav-pills flex-column mb-auto">
+            <li class="nav-item mb-1">
+                <div class="d-block gap-2">
+                    {{- range $collFacet := .CollectionFacets }}
+                        {{- if $collFacet.Checked }}
+                        <button
+                                style="margin: 1px; padding: 1px 4px 1px 4px;"
+                                onclick="{{ if $collFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}', '', {{ if $isExhibition }}true{{ else }}false{{ end }}, {{ if $useKI }}true{{ else }}false{{ end }})"
+                                type="button"
+                                class="noborder btn btn-csp collectionButton{{ if $collFacet.Checked }} btn-csp-hover{{ end }}"
+                                value="{{ $collFacet.ID }}"
+                                selected="{{ if $collFacet.Checked }}true{{ else }}false{{ end }}">
+                            {{ if $collFacet.Checked }}<img class="number" style="height: 20px;" src="{{ $root }}static/img/hook.png">&nbsp;{{ end }}<span class="fw-medium">{{ abbrev 50 $collFacet.Name }}</span>
+                            {{- $ds := digits $collFacet.Count }}
+                        </button>
+                        {{- end }}
+                    {{- end }}
+                    {{- range $parent, $vocabFacets := .VocabularyFacets }}
+                        {{- range $vocabFacet := $vocabFacets }}
+                            {{- if $vocabFacet.Checked }}
+                                <button style="margin: 1px; padding: 1px 4px 1px 4px;" onclick="{{ if $vocabFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}', '', {{ if $isExhibition }}true{{ else }}false{{ end }}, {{ if $useKI }}true{{ else }}false{{ end }})" type="button" class="noborder btn btn-csp vocButton{{ if $vocabFacet.Checked }} btn-csp-hover{{ end }}" value="voc:{{ $parent }}:{{ $vocabFacet.Name }}" selected="{{ if $vocabFacet.Checked }}true{{ else }}false{{ end }}">
+                                    {{ if $vocabFacet.Checked }}<img class="number" style="height: 20px;" src="{{ $root }}static/img/hook.png">&nbsp;{{ end }}{{ abbrev 32 (localize $vocabFacet.Name $lang) }}
+                                </button>
+                            {{- end }}
+                        {{- end }}
+                    {{ end }}
+                </div>
+            </li>
+            <li class="nav-item mb-1">
+                <img class="number" style="width: 376px; height:15px;" src="{{ $root }}static/img/line_short.png" /><br />
+                {{/* localize "Sammlung" $lang */}}
+                <div class="d-block gap-2">
+                    {{ range $collFacet := .CollectionFacets }}
+                        {{ if not $collFacet.Checked }}
+                        <button style="margin: 1px; padding: 1px 4px 1px 4px;" onclick="{{ if $collFacet.Checked }}this.removeAttribute('selected');{{ else }}this.setAttribute('selected', 'true');{{ end }}search('{{ $searchBase }}', '', {{ if $isExhibition }}true{{ else }}false{{ end }}, {{ if $useKI }}true{{ else }}false{{ end }})" type="button" class="noborder btn btn-csp collectionButton{{ if $collFacet.Checked }} btn-csp-hover{{ end }}" value="{{ $collFacet.ID }}" selected="{{ if $collFacet.Checked }}true{{ else }}false{{ end }}">
+                            {{ if $collFacet.Checked }}<img class="number" style="height: 20px;" src="{{ $root }}static/img/hook.png">&nbsp;{{ end }}<span class="fw-medium">{{ abbrev 50 $collFacet.Name }}</span>
+                            {{- $ds := digits $collFacet.Count }}
+                            {{- range $digit := $ds }}
+                                <img class="number" style="height:25px;" src="{{ printf "%sstatic/img/%s.png" $root (runeString $digit) }}"/>
+                            {{- end }}
+                        </button>
+                        {{ end }}
+                    {{ end }}
+                </div>
+            </li>
+            {{ range $parent, $vocabFacets := .VocabularyFacets }}
+                {{- $num := 0 }}
+                {{ range $vocabFacet := $vocabFacets }}
+                    {{ if not $vocabFacet.Checked }}
+                         {{ $num = add $num 1 }}
+                    {{ end }}
+                {{ end }}
+                {{ if gt $num 0 }}
+                <li class="nav-item mb-1">
+                    <img class="number" style="width: 376px; height:15px;" src="{{ $root }}static/img/line_short.png" /><br />
+                    <span class="fw-semibold">{{ localize $parent $lang }}</span>
+                    <div class="d-block gap-2">
+                    {{ range $vocabFacet := $vocabFacets }}
+                        {{ if not $vocabFacet.Checked }}
+                        <button style="margin: 1px; padding: 1px 4px 1px 4px;" onclick="{{ if $vocabFacet.Checked }}this.removeAttribute('selected'){{ else }}this.setAttribute('selected', 'true'){{ end }};search('{{ $searchBase }}', '', {{ if $isExhibition }}true{{ else }}false{{ end }}, {{ if $useKI }}true{{ else }}false{{ end }})" type="button" class="noborder btn btn-csp vocButton{{ if $vocabFacet.Checked }} btn-csp-hover{{ end }}" value="voc:{{ $parent }}:{{ $vocabFacet.Name }}" selected="{{ if $vocabFacet.Checked }}true{{ else }}false{{ end }}">
+                            {{ if $vocabFacet.Checked }}<img class="number" style="height: 20px;" src="{{ $root }}static/img/hook.png">&nbsp;{{ end }}{{ abbrev 32 (localize $vocabFacet.Name $lang) }}
+                            {{- $ds := digits $vocabFacet.Count }}
+                            {{- range $digit := $ds }}
+                            <img class="number" style="height:25px;" src="{{ printf "%sstatic/img/%s.png" $root (runeString $digit) }}"/>
+                            {{- end }}
+                        </button>
+                        {{ end }}
+                   {{ end }}
+                    </div>
+                </li>
+                {{ end }}
+            {{ end }}
+    </ul>
+    </div>
+</div>
+
+{{ template "footer.gohtml" . }}
+
+
+<script src="../../static/bootstrap/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script src="../../static/js/search.js"></script>
+</body>
+</html>
+

@@ -65,10 +65,12 @@ type Login struct {
 }
 
 type RevCatFrontConfig struct {
+	Name                string                  `toml:"name"`
 	LocalAddr           string                  `toml:"localaddr"`
 	ExternalAddr        string                  `toml:"externaladdr"`
 	SearchAddr          string                  `toml:"searchaddr"`
 	DetailAddr          string                  `toml:"detailaddr"`
+	NoTemplateCache     bool                    `toml:"notemplatecache"`
 	TLSCert             string                  `toml:"tlscert"`
 	TLSKey              string                  `toml:"tlskey"`
 	ProtoHTTP           bool                    `toml:"protohttp"`

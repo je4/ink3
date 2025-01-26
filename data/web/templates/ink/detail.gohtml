@@ -1,0 +1,335 @@
+<!doctype html>
+{{- $lang := .Lang}}
+{{- $root := .RootPath }}
+{{- $source := .Source }}
+{{- $showContent := $source.Base.MediaVisible }}
+{{- $mediaserverBase := .MediaserverBase }}
+{{- $extraIgnore := list "jahrgang" "remark" "performers" "camera" "sprache" "function" "references" }}
+{{- $isExhibition := .Exhibition }}
+{{- $isIFrame := .IFrame }}
+{{- $searchSource := .SearchSource }}
+{{- if (eq $searchSource "") }}{{- $searchSource = "grid" }}{{- end }}
+{{- $searchAddr := .SearchAddr }}
+{{- $searchBase := printf "%s/%s/%s?" .SearchAddr $searchSource .Lang }}
+{{- $detailAddr := .DetailAddr }}
+{{- if $isExhibition }}{{ $searchBase = printf "%sexhibition&" $searchBase }}{{ end }}
+{{- $search := $searchBase }}
+{{- if ne .Params "" }}{{ $search = printf "%s%s" $search .Params }}{{ end }}
+<html lang="{{ $lang }}">
+<head>
+    {{ template "head.gohtml" . }}
+    <link href="{{ .RootPath }}static/videojs/video-js.min.css" rel="stylesheet" />
+    <link href="{{ .RootPath }}static/dflip/css/dflip.min.css" rel="stylesheet" type="text/css">
+    <link href="{{ .RootPath }}static/dflip/css/themify-icons.min.css" rel="stylesheet" type="text/css">
+    <style>
+        [data-bs-theme=dark] img.qr {
+            filter: invert(1);
+        }
+
+    </style>
+</head>
+
+<body class="w-100 bg">
+{{ if not $isIFrame }}
+{{ template "nav.gohtml" . }}
+
+<div class="m-2">
+<a href="{{ $search }}" class="btn btn-outline-secondary pborder">
+    <span class="bi-chevron-left"></span>&nbsp;{{ localize "backtosearch" $lang }}
+</a>
+</div>
+{{ end }}
+
+<div class="container-fluid p-0 d-flex h-100">
+    <div class="flex-fill">
+        <div class="p-4">
+            <div class="row">
+                <div class="col col-lg-7" style="text-align: center;">
+                    {{- if $source.Base.Poster }}
+                        {{- if $showContent }}
+                            {{ template "detail_image.gohtml" . }}
+                            {{ template "detail_video.gohtml" . }}
+                            {{ template "detail_audio.gohtml" . }}
+                            {{/* template "detail_pdf_pdfjsexpress.gohtml" . */}}
+                            {{/* template "detail_pdf_viewerjs.gohtml" . */}}
+                            {{/* template "detail_pdf_pdfjs.gohtml" . */}}
+                            {{/* template "detail_pdf_3dflipbook.gohtml" . */}}
+                            {{ template "detail_pdf_dflip.gohtml" . }}
+                        {{- else }}
+                            <svg
+                                    class="bd-placeholder-img card-img-top" style="width: 100%;"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    version="1.1"
+                                    viewBox="0 0 705 705">
+                                <title>media access denied</title>
+                                <g>
+                                    <circle id="circle1"
+                                            cx="352.5"
+                                            cy="352.5"
+                                            r="350"
+                                            style="fill:none;stroke:none;stroke-width:2.5px"/>
+                                </g>
+                                <g>
+                                    <circle id="circle2"
+                                            cx="352.5"
+                                            cy="352.5"
+                                            r="290"
+                                            style="fill:none;stroke:#212529;stroke-width:90"/>
+                                </g>
+                                <g transform="rotate(40 352.5 352.5) ">
+                                    <rect
+                                            x="62.5"
+                                            y="307.5"
+                                            width="580"
+                                            height="90"
+                                            fill="#212529" stroke="none" stroke-width="0"/>
+                                </g>
+                            </svg>
+
+                        {{- end }}
+                    {{- end }}
+                </div>
+                <div class="col col-lg-5">
+                    {{ if ne (ptrString $source.Base.CollectionTitle) "" }}{{ $source.Base.CollectionTitle }} (#{{ $source.Base.Signature }}){{ else }}#{{ $source.Base.Signature }}{{ end }}
+                    {{- $title := multiLang $source.Base.Title }}
+                    <h1>
+                        {{ $title.String }}
+                        {{ if $source.Base.Date }}<br /><span style="font-weight: normal;">{{ if ne ( ptrString $source.Base.Date) "" }}({{ $source.Base.Date }}){{ end }}</span>{{ end }}
+                    </h1>
+                    {{ if $source.Base.URL }}<span style="font-weight: normal;"><a target="_blank"{{ if not $isExhibition }} href="{{ $source.Base.URL }}"{{ end }}>{{ $source.Base.URL }}</a></span><br />{{ end }}
+                    <div class="p-2 borderedge">
+                    <span style="font-weight: bold;">
+                    {{- range $key, $p := $source.Base.Person}}
+                        {{- if hasPrefix "artist" $p.Role}}
+                            {{- if gt $key 0}}; {{end}}<a class="link-underline link-underline-opacity-10" href="{{ printf "%s/%s/%s?search=author:\"%s\"" $searchAddr $searchSource $lang $p.Name }}">{{$p.Name}}</a>
+                        {{- end}}
+                    {{- end}}
+                    </span>
+                    {{- range $p := $source.Base.Person}}
+                        {{- if not (hasPrefix "artist" $p.Role)}}
+                            <a class="link-underline link-underline-opacity-10" href="{{ printf "%s/%s/%s?search=author:\"%s\"" $searchAddr $searchSource $lang $p.Name }}">{{$p.Name}}</a> ({{camelcase (trimPrefix "performer:" $p.Role)}})<br />
+                        {{- end}}
+                    {{- end}}
+                    </div>
+                    <hr />
+                    {{ if $source.Base.Tags }}
+                        {{- $num := 0 }}
+                        {{- $num2 := 0 }}
+                        {{- range $voc := $source.Base.Tags }}
+                            {{- $parts := vocTag $voc }}
+                            {{- if eq (len $parts) 2 }}
+                                {{- $num = add $num 1 }}
+                            {{- else }}
+                                {{- $num2 = add $num2 1 }}
+                            {{- end }}
+                        {{- end }}
+                        {{- if or (gt $num 0) (gt $num2 0) }}
+                            <div class="p-2">
+                                <div style="font-weight: bold; margin-top: 10px;">Tags</div>
+                                {{- $extraIgnore = append $extraIgnore "schlagwort"}}
+                                {{- range $voc := $source.Base.Tags }}
+                                    {{- $parts := vocTag $voc }}
+                                    {{- if eq (len $parts) 2 }}
+                                        {{ $base := index $parts 0 }}
+                                        {{ $base = (localize $base $lang) }}
+                                        {{ $tag := index $parts 1 }}
+                                        {{ $tag = (localize $tag $lang) }}
+                                        <a class="btn btn-csp vocButton m-1 btn-outline-secondary" href="{{ if or $isExhibition $isIFrame }}#{{ else }}{{ printf "%svocabulary=%s" $searchBase $voc }}{{ end }}" role="button">{{ localize $tag $lang }}</a>
+                                    {{- else }}
+                                        {{ if ne $voc "vwg:declare" }}<a class="btn btn-csp vocButton m-1 btn-outline-secondary" role="button">{{ $voc }}</a>{{ end }}
+                                    {{ end }}
+
+                                {{- end }}
+                            </div>
+                            <hr /><br />
+                        {{- end }}
+                    {{- end }}
+                    {{- $abstract := multiLang $source.Abstract }}
+                    {{- $abstractStr := $abstract.GetStr $lang }}
+                    {{- $abstractOriginalLang := $abstract.GetNativeLanguage  }}
+                    {{- if ne $abstractStr "" }}
+                    <div class="mt-4 p-2 borderedge" style="text-align: left;">
+                        {{ toHTML (nl2br $abstractStr) }}
+                        {{- if ne $abstractOriginalLang.String $lang }}
+                            <div class="alert alert-secondary p-1 mt-1" role="alert" style="font-size: smaller;">
+                                {{ localize "autotranslatefrom" $lang }} {{ localize (printf "%sen" $abstractOriginalLang.String) $lang }}
+                            </div>
+                        {{- end }}
+                    </div>
+                    <hr />
+
+                    {{- end }}
+
+                    {{- if gt (len $source.Notes) 0 }}
+                        {{range $note := $source.Notes}}
+                            <div class="p-2 borderedge">
+                                <div style="font-weight: bold;">{{ $note.Title }}</div>
+                                <div style="text-align: left;">{{ toHTMLif $note.Text }}</div>
+                            </div>
+                            <hr />
+                        {{end}}
+                    {{- end }}
+
+                    {{/* Event */}}
+                    <div class="p-2" style="margin-top: 20px;">
+                        {{- $festival := map $source.Extra "festival" }}
+                        {{- $extraIgnore = append $extraIgnore "festival"}}
+                        {{ if ne $festival ""}}<div style="font-weight: bold;">{{ $festival }}</div>{{ end }}
+                        <p class="card-text mb-auto">
+                            {{ if ne (ptrString $source.Base.Place) "" }}{{ localize "place" $lang }}: {{ $source.Base.Place }}<br />{{ end }}
+                            {{- $extraIgnore = append $extraIgnore "eventplace"}}
+                            {{- $eventcurator := map $source.Extra "eventcurator" }}
+                            {{- $extraIgnore = append $extraIgnore "eventcurator"}}
+                            {{if ne $eventcurator ""}}KuratorIn: {{ $eventcurator }}<br />{{ end }}
+                            {{- $doctype := map $source.Extra "doctype" }}
+                            {{- $extraIgnore = append $extraIgnore "doctype"}}
+                            {{if ne $doctype ""}}Dokumentationstyp: {{ $doctype }}<br />{{ end }}
+                        </p>
+                    </div>
+
+                    {{- $anderesformat := map $source.Extra "anderesformat" }}
+                    {{- $extraIgnore = append $extraIgnore "anderesformat"}}
+                    {{- if ne $anderesformat "" }}
+                        <div class="p-2 borderedge">
+                            <div style="font-weight: bold;">Alternative</div>
+                            <div style="text-align: left;">{{ $anderesformat }}</div>
+                        </div>
+                        <hr />
+                    {{- end }}
+
+                    {{/* Medium */}}
+                    {{- if (ne $source.Base.Source "zotero2-1624911")}}
+                        {{- $medium := map $source.Extra "medium" }}
+                        {{- $extraIgnore = append $extraIgnore "medium"}}
+                        {{- if ne $medium "" }}
+                            <div class="p-2 borderedge">
+                            <div style="font-weight: bold; margin-top: 10px;">Medium</div>
+                            <p class="card-text mb-auto">
+                                    {{ $medium }}<br />
+                                {{- $dauer := map $source.Extra "dauer" }}
+                                {{- $extraIgnore = append $extraIgnore "dauer"}}
+                                {{- if ne $dauer "" }}
+                                    Dauer: {{ $dauer }}<br />
+                                {{- end }}
+                            </p>
+                        </div>
+                        <hr />
+                        {{- end }}
+                    {{- end }}
+                    <div class="p-2 borderedge">
+                        <a href="{{ printf "%s/detail/%s/%s" $detailAddr $source.Base.Signature $lang }}"><img class="qr" src="{{ qrCode (printf "performance.sammlung.cc/detail/%s" $source.Base.Signature) }}" style="width: 100px; height: 100px; margin-top: 10px;" /></a><br />
+                    </div>
+                    <hr /><br />
+                    {{- $references := $source.GetReferencesFull }}
+                    {{- if gt (len $references) 0 }}
+                    <div class="p-2 borderedge">
+                        <div style="font-weight: bold;margin-bottom: 10px;">Relation</div>
+                        <table>
+                        {{ range $ref := $references }}
+                            <tr>
+                                <td style="vertical-align: top;" class="pe-2">
+                                    {{ if ne $ref.Poster.URI "" }}
+                                        <a href="{{ printf "%s/detail/%s/%s" $detailAddr $ref.Signature $lang }}"><img src="{{ medialink $ref.Poster.URI "resize" "size100x100/formatJPEG/autorotate" true }}"  /></a>
+                                    {{ end }}
+                                </td>
+                                <td>
+                            {{- $title := multiLang $ref.Title }}
+                                    <a href="{{ printf "%s/detail/%s/%s" $detailAddr $ref.Signature $lang }}"><span style="font-weight: bold;">{{ $title.String }}</span>
+                            {{ if $source.Base.Date }}<span style="font-weight: normal;">{{ if ne ( ptrString $source.Base.Date) "" }}({{ $source.Base.Date }}){{ end }}</span>{{ end }}
+                                    </a>
+                            <br />
+                            {{- range $key, $p := $ref.Person}}
+                                {{- if hasPrefix "artist" $p.Role}}
+                                    {{- if gt $key 0}}; {{end}}<a class="link-underline link-underline-opacity-10" href="{{ printf "%s/%s/%s?search=author:\"%s\"" $searchAddr $searchSource $lang $p.Name }}">{{$p.Name}}</a>
+                                {{- end}}
+                            {{- end}}<br />
+                            {{- range $p := $source.Base.Person}}
+                                {{- if not (hasPrefix "artist" $p.Role)}}
+                                    <a class="link-underline link-underline-opacity-10" href="{{ printf "%s/%s/%s?search=author:\"%s\"" $searchAddr $searchSource $lang $p.Name }}">{{$p.Name}}</a> ({{camelcase (trimPrefix "performer:" $p.Role)}})<br />
+                                {{- end}}
+                            {{- end}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>
+                                    <hr /><br />
+                                </td>
+                            </tr>
+                        {{ end }}
+                        </table>
+                    </div>
+                    {{- end  }}
+                    {{- $num := 0 }}
+                    {{- range $extra := $source.Extra }}
+                        {{- if not (has $extra.Key $extraIgnore) }}
+                            {{- $num = add $num 1 }}
+                        {{- end }}
+                    {{- end }}
+                    {{- if gt $num 0 }}
+                    <div class="p-2 borderedge">
+                        <div style="font-weight: bold; margin-top: 10px;">Extra</div>
+                        <table style="table-layout: fixed; width: 100%; border: none;">
+                    {{- range $extra := $source.Extra }}
+                        {{- if not (has $extra.Key $extraIgnore) }}
+                        <tr style="vertical-align: text-top;">
+                            <td style="font-weight: bold; width: 30%; border: none; text-align: right;">
+                                {{ $extra.Key }}:&nbsp;
+                            </td>
+                            <td style="width: 70%; border: none; overflow-wrap: break-word;">
+                                <span style="overflow-wrap: break-word;">{{ $extra.Value }}</span>
+                            </td>
+                        </tr>
+                        {{- end }}
+                    {{- end }}
+                        </table>
+                    </div>
+                    <hr />
+                    {{- end }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ if not .IFrame}}
+{{ template "footer.gohtml" . }}
+{{ end }}
+<script src="{{ .RootPath }}static/bootstrap/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script>
+    window.HELP_IMPROVE_VIDEOJS = false;
+</script>
+<script src="{{ .RootPath }}static/videojs/video.min.js"></script>
+<script>
+    function isInViewport(el) {
+        const rect = el.getBoundingClientRect();
+
+        return (
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+
+        );
+    }
+
+    const carousel = new bootstrap.Carousel('#carouselDetailImage');
+    function carouselTo(index) {
+        const top = document.getElementById('carouselDetailImage');
+        if( !isInViewport(top) ) {
+            top.scrollIntoView();
+        }
+        carousel.to(index);
+    }
+
+        function videoJumpToShot(id, shotNumber) {
+            let player = videojs(id);
+            let shotLength = player.duration()/25;
+            player.play();
+            player.currentTime(shotLength*shotNumber);
+        }
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,48 @@
+{{- $lang := .Lang }}
+{{- $base := .Source.Base }}
+{{- $title := multiLang $base.Title }}
+{{- $abstract := multiLang .Source.Abstract }}
+{{- $titleStr := $title.String }}
+{{ localize "language" $lang }}: {{ langName $lang $lang }}
+{{ localize "document" $lang }}: {{ $base.Signature }}
+
+# {{ $titleStr }}{{ if $base.Date }} ({{ $base.Date }}){{ end }}
+{{- if ne $title.GetNativeLanguage.String $lang }}
+    {{- range $key, $lTag := $title.GetLanguages }}
+        {{- if eq $lTag.String $lang }}
+            {{- $titleStr = $title.Get $lTag }}
+{{ $titleStr }}
+        {{- end }}
+    {{- end }}
+{{- end }}
+
+## {{ localize "autoren" $lang }}
+{{- range $key, $person := $base.Person }}
+- {{ $person.Name }} ({{ localize $person.Role $lang }})
+{{- end }}
+
+---
+
+{{- $abstractStr := $abstract.String }}
+{{- range $key, $lTag := $abstract.GetLanguages }}
+    {{- if eq $lTag.String $lang }}
+        {{- $abstractStr = $abstract.Get $lTag }}
+    {{- end }}
+{{- end }}
+{{ $abstractStr }}
+
+---
+
+## Tags
+    {{- range $tag := $base.Tags }}
+        {{- $parts := splitList ":" $tag }}
+        {{- if eq (index $parts 0) "voc" }}
+            {{- $parent := index $parts 1 }}
+            {{- $child := index $parts 2 }}
+* {{ localize $parent $lang }} - {{ localize $child $lang }}
+        {{- else }}
+          {{- if ne (index $parts 0) "vwg" }}
+* {{ $tag }}
+          {{- end }}
+        {{- end }}
+    {{- end }}
