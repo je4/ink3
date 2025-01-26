@@ -245,6 +245,11 @@ body {
   font-family: "IBM Plex Sans", sans-serif;
 }
 
+.navbar-brand {
+  font-size: 2rem;
+  font-weight: 600;
+}
+
 .masked img {
   height: 100px;
   width: 100px;

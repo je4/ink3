@@ -292,7 +292,7 @@ func (ctrl *Controller) funcMap(name string) template.FuncMap {
 	return fm
 }
 
-func NewController(localAddr, externalAddr, searchAddr, detailAddr string, protoHTTP bool, auth map[string]string, cert *tls.Certificate, templateFS, staticFS, dataFS fs.FS, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, mediaserverBase, mediaserverKey string, mediaserverTokenExp time.Duration, bundle *i18n.Bundle, collections []*CollFacetType, fieldMapping map[string]string, embeddings *openai.ClientV2, templateDebug, zoomOnly bool, loginURL, loginIssuer, loginJWTKey string, loginJWTAlgs []string, locations map[string][]net.IPNet, logger zLogger.ZLogger) (*Controller, error) {
+func NewController(localAddr, externalAddr, searchAddr, detailAddr string, protoHTTP bool, auth map[string]string, cert *tls.Certificate, templateFS, staticFS, dataFS fs.FS, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, mediaserverBase, mediaserverKey string, mediaserverTokenExp time.Duration, bundle *i18n.Bundle, collections []*CollFacetType, fieldMapping map[string]string, embeddings *openai.ClientV2, templateDebug, zoomOnly bool, loginURL, loginIssuer, loginJWTKey string, loginJWTAlgs []string, locations map[string][]net.IPNet, facetInclude, facetExclude []string, logger zLogger.ZLogger) (*Controller, error) {
 
 	ctrl := &Controller{
 		localAddr:           localAddr,
@@ -325,6 +325,8 @@ func NewController(localAddr, externalAddr, searchAddr, detailAddr string, proto
 		loginJWTKey:         loginJWTKey,
 		loginJWTAlgs:        loginJWTAlgs,
 		locations:           locations,
+		facetInclude:        facetInclude,
+		facetExclude:        facetExclude,
 	}
 	ctrl.logger.Info().Msgf("Zoom only: %v", ctrl.zoomOnly)
 	if err := ctrl.init(); err != nil {
@@ -740,6 +742,8 @@ type Controller struct {
 	locations           map[string][]net.IPNet
 	mediaserverKey      string
 	mediaserverTokenExp time.Duration
+	facetInclude        []string
+	facetExclude        []string
 }
 
 func (ctrl *Controller) locationGroups(ctx *gin.Context) []string {
@@ -1290,7 +1294,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 			Field:       "tags.keyword",
 			Size:        1200,
 			MinDocCount: 1,
-			Include:     []string{"voc:.*"},
+			Include:     []string{},
 			Exclude:     []string{},
 		},
 		Query: &client.InFilter{
@@ -1300,6 +1304,12 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 				And:    true,
 			},
 		},
+	}
+	if len(ctrl.facetInclude) > 0 {
+		vocFacet.Term.Include = append(vocFacet.Term.Include, ctrl.facetInclude...)
+	}
+	if len(ctrl.facetExclude) > 0 {
+		vocFacet.Term.Exclude = append(vocFacet.Term.Exclude, ctrl.facetExclude...)
 	}
 	collFacet := &client.InFacet{
 		Term: &client.InFacetTerm{
@@ -1524,21 +1534,28 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 				}
 				facetStr := strVal.GetStrVal()
 				parts := strings.Split(facetStr, ":")
-				if len(parts) != 3 {
-					continue
-				}
-				if val.GetFacetValueInt() == nil || val.GetFacetValueInt().GetIntVal() == 0 {
-					if !strings.HasPrefix(parts[1], "voc_") {
-						continue
+				var name string
+				var parent = "generic"
+				if len(parts) == 1 {
+					name = parts[0]
+				} else if len(parts) == 3 {
+
+					if val.GetFacetValueInt() == nil || val.GetFacetValueInt().GetIntVal() == 0 {
+						if !strings.HasPrefix(parts[1], "voc_") {
+							continue
+						}
 					}
-				}
-				parent := parts[1] // slug.MakeLang(parts[1], "de")
-				if _, ok := data.VocabularyFacets[parent]; !ok {
-					data.VocabularyFacets[parts[1]] = []*vocFacetType{}
+					parent = parts[1] // slug.MakeLang(parts[1], "de")
+					name = parts[2]
+					if _, ok := data.VocabularyFacets[parent]; !ok {
+						data.VocabularyFacets[parts[1]] = []*vocFacetType{}
+					}
+				} else {
+					continue
 				}
 				data.VocabularyFacets[parent] = append(data.VocabularyFacets[parent], &vocFacetType{
 					Count:   int(strVal.GetCount()),
-					Name:    parts[2],
+					Name:    name,
 					Checked: slices.Contains(vocabularyIDs, facetStr),
 				})
 			}
