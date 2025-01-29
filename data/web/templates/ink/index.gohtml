@@ -1,4 +1,4 @@
-<!doctype html>
+	<!doctype html>
 {{- $lang := .Lang}}
 {{- $root := .RootPath }}
 {{- $searchBase := printf "%s/grid/%s" .SearchAddr .Lang }}
@@ -52,31 +52,24 @@
             <div class="col-lg-8 mx-auto">
                 <p class="lead mb-4 fw-medium rounded-2" style="">
                     {{- if eq $lang "en" }}
-                    The web portal <span style="font-variant: small-caps;">Collections Performance Art Switzerland</span> offers a panorama of the performance art scenes in Switzerland. As a catalogue of a public collection, it brings together a number of collections and places the artistic works in relation to one another. It offers the potential to read very different events in various constellations. The connections and diversity of performance histories from its beginnings to the present day become visible. 
+                    The <span style="font-variant: small-caps;">Integrated Catalogue</span> of the media library combines different sources of research and education outcomes at the Academy of Art and Design Basel FHNW and the digital collections. This includes resources from external persons. In addition to the directly public area, it offers at the top right a login for dedicated target groups. Protected content can be accessed in this way.
 					<br />
-					The web portal <span style="font-variant: small-caps;">Collections Performance Art Switzerland</span> provides a basis for historical interpretations, for processing translocal performance histories and gives access to source material. Videos, photos, texts, interviews, scores and concepts can still be contributed, and existing entries corrected. Individual artists can continue to upload their contributions to the Revolving Histories collection using the form at the bottom left of the masthead. Organizers with extensive collections should contact the media library directly for new entries.
-                    <br />
-					As a public collection, the media library of Basel Academy of Art and Design FHNW provides the catalogue and thus makes findability easier.
-                    <br />
-					{{- else if eq $lang "fr" }}
-                    Le portail <span style="font-variant: small-caps;">Collections de l'Art Performance Suisse</span> offre un panorama de l’actualité artistique de la performance en Suisse. En tant que catalogue d'une collection publique, il réunit une série de collections et met les travaux artistiques en relation les uns avec les autres. Il offre le potentiel de lire des événements très différents dans des constellations variées. Les liens et la diversité des histoires de la performance, de ses débuts à aujourd'hui, deviennent ainsi visibles.  
-					<br />
-					Le portail <span style="font-variant: small-caps;">Collections de l'Art Performance Suisse</span> offre une base pour des interprétations historiques, pour l'élaboration d'histoires translocales de la performance et pour la mise à dispositions de matériel source. Il est toujours possible de saisir de nouveaux contenus comme des vidéos, des photos, des textes, des interviews, des scores et des concepts, et de corriger des entrées existantes. Les artistes individuels peuvent continuer à télécharger leurs contributions dans la collection Revolving Histories – via le formulaire en bas à gauche à côté des mentions légales. Les organisateurs disposant de collections importantes sont priés de s'adresser directement à la médiathèque pour des nouvelles inscriptions.
-					<br />
-					La médiathèque de l' Haute École d'Art et de Design Bâle FHNW met ce catalogue à disposition en tant que collection publique et facilite ainsi la recherche.
+			As a public collection, the media library of Basel Academy of Art and Design FHNW provides the catalogue and thus makes findability easier.
+                    			<br />
+			{{- else if eq $lang "fr" }}
+                    	Le <span style="font-variant : small-caps ;">Catalogue intégré</span> de la médiathèque combine différentes sources de résultats de la recherche et de l'enseignement à l'Académie d'art et de design de Bâle FHNW et les collections numériques. Cela inclut des ressources provenant de personnes extérieures. En plus de la zone directement publique, il offre en haut à droite un login pour des groupes cibles spécifiques. Il est ainsi possible d'accéder à des contenus protégés.
+				<br />
+			La médiathèque de l' Haute École d'Art et de Design Bâle FHNW met ce catalogue à disposition en tant que collection publique et facilite ainsi la recherche.
                     <br />
                     {{- else if eq $lang "it" }}
-                    Il portale <span style="font-variant: small-caps;">Collezioni Performance Art Svizzera</span> dalle scene della performance art in Svizzera. In quanto catalogo di una collezione pubblica, riunisce una serie di collezioni e mette le opere artistiche in relazione tra loro. Offre la possibilità di leggere eventi molto diversi in varie costellazioni. Le connessioni e la diversità dalle storie della performance, dagli inizi ai giorni nostri, diventano visibili.  
-					<br />
-					Il portale <span style="font-variant: small-caps;">Collezioni Performance Art Svizzera</span> fornisce una base per le interpretazioni storiche, per l'analisi di storie di performance translocali e rende accessibile il materiale di partenza. È ancora possibile inserire nuovi contenuti - video, foto, testi, interviste, partiture e concetti - e correggere quelli esistenti. I singoli artisti possono continuare a caricare i loro contributi nella collezione Revolving Histories utilizzando il modulo in basso a sinistra della testata. Gli organizzatori con collezioni estese dovrebbero contattare direttamente la mediateca per nuovi inserimenti.
+
+                    Il <span style="font-variant: small-caps;">catalogo integrato</span> della mediateca combina diverse fonti di ricerca e di formazione dell'Accademia di Arte e Design di Basilea FHNW e le collezioni digitali. Questo include risorse provenienti da persone esterne. Oltre all'area direttamente pubblica, offre in alto a destra un login per gruppi target dedicati. In questo modo è possibile accedere a contenuti protetti.
 					<br />
 					Come collezione pubblica, la mediateca dell’Accademia d'Arte e Design di Basilea FHNW mette a disposizione questo catalogo, e quindi la rende più facilmente reperibile.
 					<br />
                     {{- else }}
-                    Das Portal <span style="font-variant: small-caps;">Sammlungen Performance Kunst Schweiz</span> bietet ein Panorama zum Performance Kunstgeschehen in der Schweiz. Als Katalog einer öffentlichen Sammlung vereint es eine Reihe von Beständen zur Performance Kunst und setzt die künstlerischen Arbeiten damit ins Verhältnis zueinander. Es bietet das Potenzial, ganz verschiedene Ereignisse in unterschiedlichen Konstellationen zu lesen. Dabei werden die Zusammenhänge und Diversität der Performance Geschichte:n von ihren Anfängen bis heute sichtbar. 
+                    Der <span style="font-variant: small-caps;">Integrierte Katalog</span> der Mediathek vereint Quellen der Forschung und Lehre der Hochschule für Gestaltung und Kunst sowie der digitalen Sondersammlungen. Er bietet neben dem unmittelbar öffentlichen Bereich oben rechts einen Login für unterschiedliche Zielgruppen. So können geschützte Inhalte zugänglich werden.
 					<br /> 
-					Das Portal <span style="font-variant: small-caps;">Sammlungen Performance Kunst Schweiz</span> bietet eine Grundlage für historische Auslegeordnungen, für das Aufarbeiten translokaler Performance Geschichte:n und macht Quellenmaterial zugänglich. Neue Inhalte wie Videos, Fotos, Texte, Interviews, Scores und Konzepte können weiterhin eingegeben und vorhandene Einträge korrigiert werden. Einzelne Kunstschaffenden können ihre Beiträge weiterhin über das Formular – unten links neben dem Impressum – in der Sammlung Revolving Histories hochladen. Veranstalter:innen mit umfangreichen Sammlungen wenden sich für die Neuaufnahme bitte direkt an die Mediathek.
-					<br />
 					Die Mediathek der HGK Basel der Fachhochschule Nordwestschweiz stellt als öffentliche Sammlung diesen Katalog zur Verfügung und erleichtert damit die Auffindbarkeit.
                     <br />
                     {{- end }}
