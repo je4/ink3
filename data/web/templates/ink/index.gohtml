@@ -37,7 +37,7 @@
                 <div class="container mt-5">
                     {{- range $key, $coll := .Collections }}
                         <span class="me-3">
-                        <button style="" onclick="this.setAttribute('selected', 'true');search('{{ $searchBase }}', '', false, false)" type="button" class="btn btn-primary m-1 collectionButton" value="{{ $coll.Id }}" selected="false">
+                        <button style="" onclick="this.setAttribute('selected', 'true');search('{{ $searchBase }}', '', false, false)" type="button" class="btn btn-secondary m-1 collectionButton" value="{{ $coll.Id }}" selected="false">
                             {{ $coll.Title }} [{{ $coll.Count}}]
                         </button>
                         </span>

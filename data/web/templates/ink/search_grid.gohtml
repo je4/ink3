@@ -48,12 +48,12 @@
                     </nav>
                     <div class="album py-5">
                         <nav class="navbar">
-                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.StartCursor }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn btn-primary">
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.StartCursor }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn btn-secondary">
                                 <i class="bi bi-arrow-left"></i>
                             </a>
                             <span>{{ if $useKI }}<img alt="KI search" class="ki" width=28 src="{{ $root }}static/img/ki2.png">&nbsp;{{ end }}
                                 {{ localize "founditems" $lang }}: {{ .TotalCount }}{{ if $useKI }}&nbsp;<i class="bi bi-stars"></i>{{ end }}</span>
-                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.EndCursor }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn btn-primary">
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.EndCursor }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn btn-secondary">
                                 <i class="bi bi-arrow-right"></i>
                             </a>
                         </nav>
@@ -238,12 +238,12 @@
                             </div>
                         </div>
                         <nav class="navbar">
-                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.StartCursor }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn btn-primary">
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.StartCursor }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn btn-secondary">
                                 <i class="bi bi-arrow-left"></i>
                             </a>
                             <span>{{ if $useKI }}<img alt="KI search" class="ki" width=28 src="{{ $root }}static/img/ki2.png">&nbsp;{{ end }}
                                 {{ localize "founditems" $lang }}: {{ .TotalCount }}{{ if $useKI }}&nbsp;<i class="bi bi-stars"></i>{{ end }}</span>
-                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.EndCursor }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn btn-primary">
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.EndCursor }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn btn-secondary">
                                 <i class="bi bi-arrow-right"></i>
                             </a>
                         </nav>
