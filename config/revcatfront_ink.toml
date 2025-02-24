@@ -11,7 +11,7 @@ zoomonly = false
 
 openaiapikey = "%%OPENAI_API_KEY%%"
 
-#templates = "data/web/templates/ink"
+templates = "data/web/templates/ink"
 #staticfiles = "data/web/static"
 datadir = "c:/temp/performance"
 #mediaserverbase = "https://localhost:8446"
