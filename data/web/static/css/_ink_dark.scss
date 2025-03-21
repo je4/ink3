@@ -6,6 +6,12 @@ body {
 .bg {
 }
 
+.nav-link {
+    --bs-nav-link-color: #ddd;
+    --bs-nav-link-active-color: #fff;
+    --bs-nav-link-hover-color: #fff;
+}
+
 .pagination {
     --bs-focus-ring-color: #fff;
     --bs-pagination-active-bg: #4d5154;

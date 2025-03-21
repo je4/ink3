@@ -47,14 +47,69 @@
                 <div class="col col-lg-7" style="text-align: center;">
                     {{- if $source.Base.Poster }}
                         {{- if $showContent }}
-                            {{ template "detail_image.gohtml" . }}
-                            {{ template "detail_video.gohtml" . }}
-                            {{ template "detail_audio.gohtml" . }}
-                            {{/* template "detail_pdf_pdfjsexpress.gohtml" . */}}
-                            {{/* template "detail_pdf_viewerjs.gohtml" . */}}
-                            {{/* template "detail_pdf_pdfjs.gohtml" . */}}
-                            {{/* template "detail_pdf_3dflipbook.gohtml" . */}}
-                            {{ template "detail_pdf_dflip.gohtml" . }}
+                        <ul class="nav nav-tabs" id="mediaTab">
+                                {{- range $typedMedia := $source.Media }}
+                                    {{- if eq $typedMedia.GetType "image" }}
+                                        {{- if gt (len $typedMedia.GetItems) 0 }}
+                                            <li class="nav-item">
+                                                <button class="nav-link active" id="nav-image-tab" data-bs-toggle="tab" data-bs-target="#nav-image" type="button" role="tab" aria-controls="nav-image" aria-selected="true"><i class="bi bi-card-image"></i> {{ len $typedMedia.GetItems }}</button>
+                                            </li>
+                                        {{- end }}
+                                    {{- end }}
+                                {{- end }}
+                                {{- range $typedMedia := $source.Media }}
+                                    {{- if eq $typedMedia.GetType "video" }}
+                                        {{- if gt (len $typedMedia.GetItems) 0 }}
+                                            <li class="nav-item">
+                                                <button class="nav-link" id="nav-video-tab" data-bs-toggle="tab" data-bs-target="#nav-video" type="button" role="tab" aria-controls="nav-video" aria-selected="true"><i class="bi bi-camera-video"></i> {{ len $typedMedia.GetItems }}</button>
+                                            </li>
+                                        {{- end }}
+                                    {{- end }}
+                                {{- end }}
+                                {{- range $typedMedia := $source.Media }}
+                                    {{- if eq $typedMedia.GetType "audio" }}
+                                        {{- if gt (len $typedMedia.GetItems) 0 }}
+                                            <li class="nav-item">
+                                                <button class="nav-link" id="nav-audio-tab" data-bs-toggle="tab" data-bs-target="#nav-audio" type="button" role="tab" aria-controls="nav-audio" aria-selected="true"><i class="bi bi-soundwave"></i> {{ len $typedMedia.GetItems }}</button>
+                                            </li>
+                                        {{- end }}
+                                    {{- end }}
+                                {{- end }}
+                                {{- range $typedMedia := $source.Media }}
+                                    {{- if eq $typedMedia.GetType "pdf" }}
+                                        {{- if gt (len $typedMedia.GetItems) 0 }}
+                                            <li class="nav-item">
+                                                <button class="nav-link" id="nav-pdf-tab" data-bs-toggle="tab" data-bs-target="#nav-pdf" type="button" role="tab" aria-controls="nav-pdf" aria-selected="true"><i class="bi bi-file-pdf"></i> {{ len $typedMedia.GetItems }}</button>
+                                            </li>
+                                        {{- end }}
+                                    {{- end }}
+                                {{- end }}
+                            </ul>
+                            <div class="tab-content pt-5" id="mediaTabContent">
+                                <div class="tab-pane fade show active" id="nav-image" role="tabpanel" aria-labelledby="nav-image-tab">
+                                    {{ template "detail_image.gohtml" . }}
+                                </div>
+                                <div class="tab-pane fade" id="nav-video" role="tabpanel" aria-labelledby="nav-video-tab">
+                                    {{ template "detail_video.gohtml" . }}
+                                </div>
+                                <div class="tab-pane fade" id="nav-audio" role="tabpanel" aria-labelledby="nav-audio-tab">
+                                    {{ template "detail_audio.gohtml" . }}
+                                </div>
+                                <div class="tab-pane fade" id="nav-pdf" role="tabpanel" aria-labelledby="nav-pdf-tab">
+                                    {{ template "detail_pdf_dflip.gohtml" . }}
+                                </div>
+                            </div>
+                                <script>
+                                    const triggerTabList = document.querySelectorAll('#mediaTab button')
+                                    triggerTabList.forEach(triggerEl => {
+                                        const tabTrigger = new bootstrap.Tab(triggerEl)
+
+                                        triggerEl.addEventListener('click', event => {
+                                            event.preventDefault()
+                                            tabTrigger.show()
+                                        })
+                                    })
+                                </script>
                         {{- else }}
                             <svg
                                     class="bd-placeholder-img card-img-top" style="width: 100%;"
