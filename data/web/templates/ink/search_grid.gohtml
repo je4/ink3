@@ -222,10 +222,14 @@
                                                         <b>{{$edge.Title.String}}</b>{{ if ne $edge.Date "" }} ({{ $edge.Date }}){{ end }}<br />
                                                         {{- if ne $edge.Persons "" }}{{ $edge.Persons }}<br />{{ end }}
                                                         {{- range $mc := $edge.Edge.Base.MediaCount }}
-                                                            {{ if eq $mc.Type "video" }}<i class="bi bi-camera-video"></i>{{ end }}
-                                                            {{ if eq $mc.Type "audio" }}<i class="bi bi-soundwave"></i>{{ end }}
-                                                            {{ if eq $mc.Type "image" }}<i class="bi bi-card-image"></i>{{ end }}
-                                                            {{ if eq $mc.Type "pdf" }}<i class="bi bi-file-pdf"></i>{{ end }}
+                                                            {{- $found := false }}
+                                                            {{ if eq $mc.Type "video" }}{{ $found = true }}<i class="bi bi-camera-video"></i>{{ end }}
+                                                            {{ if eq $mc.Type "audio" }}{{ $found = true }}<i class="bi bi-soundwave"></i>{{ end }}
+                                                            {{ if eq $mc.Type "image" }}{{ $found = true }}<i class="bi bi-card-image"></i>{{ end }}
+                                                            {{ if eq $mc.Type "pdf" }}{{ $found = true }}<i class="bi bi-file-pdf"></i>{{ end }}
+                                                            {{ if eq $mc.Type "default" }}{{ $found = true }}<i class="bi bi-music-note-beamed"></i>{{ end }}
+                                                            {{ if eq $mc.Type "webrecorder" }}{{ $found = true }}<i class="bi bi-filetype-html"></i>{{ end }}
+                                                            {{ if not $found }}{{ $mc.Type }}{{ end }}
                                                             {{ $mc.Count }}
                                                         {{- end }}
                                                     </p>

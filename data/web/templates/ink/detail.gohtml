@@ -53,7 +53,7 @@
     <div class="flex-fill">
         <div class="p-4">
             <div class="row">
-                <div class="col col-lg-7 w-100" style="text-align: center;min-width: 300px;">
+                <div class="col col-lg-7 w-100" style="text-align: center;min-width: 300px;max-width: 800px;">
                     {{- if $source.Base.Poster }}
                         {{- if $showContent }}
                         <ul class="nav nav-tabs" id="mediaTab">
@@ -102,15 +102,24 @@
                                         {{- end }}
                                     {{- end }}
                                 {{- end }}
-                                {{- range $typedMedia := $source.Media }}
-                                    {{- if eq $typedMedia.GetType "pdf" }}
-                                        {{- if gt (len $typedMedia.GetItems) 0 }}
-                                            <li class="nav-item">
-                                                <button class="nav-link{{ if $first }}{{ $first = false}}{{ $active = "pdf" }} active{{ end }}" id="nav-pdf-tab" data-bs-toggle="tab" data-bs-target="#nav-pdf" type="button" role="tab" aria-controls="nav-pdf" aria-selected="true"><i class="bi bi-file-pdf"></i> {{ len $typedMedia.GetItems }} <span class="d-none  d-md-inline-block">PDF</span></button>
-                                            </li>
-                                        {{- end }}
+                            {{- range $typedMedia := $source.Media }}
+                                {{- if eq $typedMedia.GetType "pdf" }}
+                                    {{- if gt (len $typedMedia.GetItems) 0 }}
+                                        <li class="nav-item">
+                                            <button class="nav-link{{ if $first }}{{ $first = false}}{{ $active = "pdf" }} active{{ end }}" id="nav-pdf-tab" data-bs-toggle="tab" data-bs-target="#nav-pdf" type="button" role="tab" aria-controls="nav-pdf" aria-selected="true"><i class="bi bi-file-pdf"></i> {{ len $typedMedia.GetItems }} <span class="d-none  d-md-inline-block">PDF</span></button>
+                                        </li>
                                     {{- end }}
                                 {{- end }}
+                            {{- end }}
+                            {{- range $typedMedia := $source.Media }}
+                                {{- if eq $typedMedia.GetType "webrecorder" }}
+                                    {{- if gt (len $typedMedia.GetItems) 0 }}
+                                        <li class="nav-item">
+                                            <button class="nav-link{{ if $first }}{{ $first = false}}{{ $active = "webrecorder" }} active{{ end }}" id="nav-webrecorder-tab" data-bs-toggle="tab" data-bs-target="#nav-webrecorder" type="button" role="tab" aria-controls="nav-webrecorder" aria-selected="true"><i class="bi bi-filetype-html"></i> {{ len $typedMedia.GetItems }} <span class="d-none  d-md-inline-block">Webrecorder</span></button>
+                                        </li>
+                                    {{- end }}
+                                {{- end }}
+                            {{- end }}
                             </ul>
                             <div class="tab-content pt-5" id="mediaTabContent">
                                 {{- $first = true }}
@@ -128,6 +137,9 @@
                                 </div>
                                 <div class="tab-pane fade{{ if eq $active "pdf" }} show active{{ end }}" id="nav-pdf" role="tabpanel" aria-labelledby="nav-pdf-tab">
                                     {{ template "detail_pdf_dflip.gohtml" . }}
+                                </div>
+                                <div class="tab-pane fade{{ if eq $active "webrecorder" }} show active{{ end }}" id="nav-webrecorder" role="tabpanel" aria-labelledby="nav-webrecorder-tab">
+                                    {{ template "detail_webrecorder.gohtml" . }}
                                 </div>
                             </div>
                                 <script type="module">
