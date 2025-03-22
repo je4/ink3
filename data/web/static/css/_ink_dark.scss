@@ -3,6 +3,11 @@
 body {
   }
 
+  .carousel-inner {
+    background-color: lightgray;
+  }
+
+
 .bg {
 }
 
@@ -56,6 +61,7 @@ body {
     --bs-dropdown-link-hover-bg: #7a8085;
   }
 
+  /*
   .carousel-control-prev-icon {
     background-image: url("../img/prev.png");
   }
@@ -63,6 +69,8 @@ body {
   .carousel-control-next-icon {
     background-image: url("../img/next.png");
   }
+
+   */
 
   img.number {
     filter: invert(1);

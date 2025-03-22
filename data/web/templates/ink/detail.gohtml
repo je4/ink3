@@ -27,6 +27,15 @@
         }
 
     </style>
+    <!--
+    <script type="importmap">
+        {
+          "imports": {
+            "bootstrap": "{{ .RootPath }}static/bootstrap/js/bootstrap.bundle.min.js"
+          }
+        }
+    </script>
+    -->
 </head>
 
 <body class="w-100 bg">
@@ -34,7 +43,7 @@
 {{ template "nav.gohtml" . }}
 
 <div class="m-2">
-<a href="{{ $search }}" class="btn btn-outline-secondary pborder">
+<a href="{{ $search }}" class="btn btn-outline-secondary">
     <span class="bi-chevron-left"></span>&nbsp;{{ localize "backtosearch" $lang }}
 </a>
 </div>
@@ -44,24 +53,42 @@
     <div class="flex-fill">
         <div class="p-4">
             <div class="row">
-                <div class="col col-lg-7" style="text-align: center;">
+                <div class="col col-lg-7 w-100" style="text-align: center;min-width: 300px;">
                     {{- if $source.Base.Poster }}
                         {{- if $showContent }}
                         <ul class="nav nav-tabs" id="mediaTab">
-                                {{- range $typedMedia := $source.Media }}
-                                    {{- if eq $typedMedia.GetType "image" }}
-                                        {{- if gt (len $typedMedia.GetItems) 0 }}
-                                            <li class="nav-item">
-                                                <button class="nav-link active" id="nav-image-tab" data-bs-toggle="tab" data-bs-target="#nav-image" type="button" role="tab" aria-controls="nav-image" aria-selected="true"><i class="bi bi-card-image"></i> {{ len $typedMedia.GetItems }}</button>
-                                            </li>
+                            {{- $first := true }}
+                            {{- $active := "" }}
+                            {{- range $typedMedia := $source.Media }}
+                                {{- if eq $typedMedia.GetType "default" }}
+                                    {{- $meiCount := 0}}
+                                    {{- range $m := $typedMedia.GetItems }}
+                                        {{- if and (contains "mei" (lower $m.URI)) (eq $m.Mimetype "application/xml") }}
+                                            {{- $meiCount = add $meiCount 1}}
                                         {{- end }}
                                     {{- end }}
+                                    {{- if gt $meiCount 0 }}
+                                        <li class="nav-item">
+                                            <button class="nav-link{{ if $first }}{{ $first = false}}{{ $active = "mei" }} active{{ end }}" id="nav-mei-tab" data-bs-toggle="tab" data-bs-target="#nav-mei" type="button" role="tab" aria-controls="nav-mei" aria-selected="true"><i class="bi bi-music-note-beamed"></i> {{ $meiCount }} <span class="d-none  d-md-inline-block">MEI</span></button>
+                                        </li>
+
+                                    {{- end }}
                                 {{- end }}
+                            {{- end }}
+                            {{- range $typedMedia := $source.Media }}
+                                {{- if eq $typedMedia.GetType "image" }}
+                                    {{- if gt (len $typedMedia.GetItems) 0 }}
+                                        <li class="nav-item">
+                                            <button class="nav-link{{ if $first }}{{ $first = false}}{{ $active = "image" }} active{{ end }}" id="nav-image-tab" data-bs-toggle="tab" data-bs-target="#nav-image" type="button" role="tab" aria-controls="nav-image" aria-selected="true"><i class="bi bi-card-image"></i> {{ len $typedMedia.GetItems }} <span class="d-none  d-md-inline-block">Image</span></button>
+                                        </li>
+                                    {{- end }}
+                                {{- end }}
+                            {{- end }}
                                 {{- range $typedMedia := $source.Media }}
                                     {{- if eq $typedMedia.GetType "video" }}
                                         {{- if gt (len $typedMedia.GetItems) 0 }}
                                             <li class="nav-item">
-                                                <button class="nav-link" id="nav-video-tab" data-bs-toggle="tab" data-bs-target="#nav-video" type="button" role="tab" aria-controls="nav-video" aria-selected="true"><i class="bi bi-camera-video"></i> {{ len $typedMedia.GetItems }}</button>
+                                                <button class="nav-link{{ if $first }}{{ $first = false}}{{ $active = "video" }} active{{ end }}" id="nav-video-tab" data-bs-toggle="tab" data-bs-target="#nav-video" type="button" role="tab" aria-controls="nav-video" aria-selected="true"><i class="bi bi-camera-video"></i> {{ len $typedMedia.GetItems }} <span class="d-none  d-md-inline-block">Video</span></button>
                                             </li>
                                         {{- end }}
                                     {{- end }}
@@ -70,7 +97,7 @@
                                     {{- if eq $typedMedia.GetType "audio" }}
                                         {{- if gt (len $typedMedia.GetItems) 0 }}
                                             <li class="nav-item">
-                                                <button class="nav-link" id="nav-audio-tab" data-bs-toggle="tab" data-bs-target="#nav-audio" type="button" role="tab" aria-controls="nav-audio" aria-selected="true"><i class="bi bi-soundwave"></i> {{ len $typedMedia.GetItems }}</button>
+                                                <button class="nav-link{{ if $first }}{{ $first = false}}{{ $active = "audio" }} active{{ end }}" id="nav-audio-tab" data-bs-toggle="tab" data-bs-target="#nav-audio" type="button" role="tab" aria-controls="nav-audio" aria-selected="true"><i class="bi bi-soundwave"></i> {{ len $typedMedia.GetItems }} <span class="d-none  d-md-inline-block">Audio</span></button>
                                             </li>
                                         {{- end }}
                                     {{- end }}
@@ -79,27 +106,31 @@
                                     {{- if eq $typedMedia.GetType "pdf" }}
                                         {{- if gt (len $typedMedia.GetItems) 0 }}
                                             <li class="nav-item">
-                                                <button class="nav-link" id="nav-pdf-tab" data-bs-toggle="tab" data-bs-target="#nav-pdf" type="button" role="tab" aria-controls="nav-pdf" aria-selected="true"><i class="bi bi-file-pdf"></i> {{ len $typedMedia.GetItems }}</button>
+                                                <button class="nav-link{{ if $first }}{{ $first = false}}{{ $active = "pdf" }} active{{ end }}" id="nav-pdf-tab" data-bs-toggle="tab" data-bs-target="#nav-pdf" type="button" role="tab" aria-controls="nav-pdf" aria-selected="true"><i class="bi bi-file-pdf"></i> {{ len $typedMedia.GetItems }} <span class="d-none  d-md-inline-block">PDF</span></button>
                                             </li>
                                         {{- end }}
                                     {{- end }}
                                 {{- end }}
                             </ul>
                             <div class="tab-content pt-5" id="mediaTabContent">
-                                <div class="tab-pane fade show active" id="nav-image" role="tabpanel" aria-labelledby="nav-image-tab">
+                                {{- $first = true }}
+                                <div class="tab-pane fade{{ if eq $active "mei" }} show active{{ end }}" id="nav-mei" role="tabpanel" aria-labelledby="nav-mei-tab">
+                                    {{ template "detail_verovio.gohtml" . }}
+                                </div>
+                                <div class="tab-pane fade{{ if eq $active "image" }} show active{{ end }}" id="nav-image" role="tabpanel" aria-labelledby="nav-image-tab">
                                     {{ template "detail_image.gohtml" . }}
                                 </div>
-                                <div class="tab-pane fade" id="nav-video" role="tabpanel" aria-labelledby="nav-video-tab">
+                                <div class="tab-pane fade{{ if eq $active "video" }} show active{{ end }}" id="nav-video" role="tabpanel" aria-labelledby="nav-video-tab">
                                     {{ template "detail_video.gohtml" . }}
                                 </div>
-                                <div class="tab-pane fade" id="nav-audio" role="tabpanel" aria-labelledby="nav-audio-tab">
+                                <div class="tab-pane fade{{ if eq $active "audio" }} show active{{ end }}" id="nav-audio" role="tabpanel" aria-labelledby="nav-audio-tab">
                                     {{ template "detail_audio.gohtml" . }}
                                 </div>
-                                <div class="tab-pane fade" id="nav-pdf" role="tabpanel" aria-labelledby="nav-pdf-tab">
+                                <div class="tab-pane fade{{ if eq $active "pdf" }} show active{{ end }}" id="nav-pdf" role="tabpanel" aria-labelledby="nav-pdf-tab">
                                     {{ template "detail_pdf_dflip.gohtml" . }}
                                 </div>
                             </div>
-                                <script>
+                                <script type="module">
                                     const triggerTabList = document.querySelectorAll('#mediaTab button')
                                     triggerTabList.forEach(triggerEl => {
                                         const tabTrigger = new bootstrap.Tab(triggerEl)

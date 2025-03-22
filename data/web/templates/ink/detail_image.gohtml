@@ -15,10 +15,11 @@
                     {{- $width = $media.Height }}
                     {{- $height = $media.Width }}
                 {{- end }}
-                    <div style="text-align: center;" class="start-50 carousel-item{{ if eq $key 0 }} active{{ end }}">
+                    <div style="text-align: center;" class="_start-50 carousel-item{{ if eq $key 0 }} active{{ end }}">
                         {{- $size := calcAspectSize $width $height 800 400 }}
                         <!-- <img style="transform: translate(-50%,0)!important;" width="{{ $size.Width }}" height="{{ $size.Height }}" src="{{ $mediaserverBase }}/{{ trimPrefix "mediaserver:" $media.URI }}/resize/size800x400/formatJPEG/autorotate" class="d-block" loading="lazy"> -->
-                        <img style="transform: translate(-50%,0)!important;" width="{{ $size.Width }}" height="{{ $size.Height }}" src="{{ medialink $media.URI "resize" "size800x400/formatJPEG/autorotate" (and $source.Base.MediaVisible $source.Base.MediaProtected) }}" class="d-block" loading="lazy">
+                        <!-- <img style="transform: translate(-50%,0)!important;" width="{{ $size.Width }}" height="{{ $size.Height }}" src="{{ medialink $media.URI "resize" "size800x400/formatJPEG/autorotate" (and $source.Base.MediaVisible $source.Base.MediaProtected) }}" class="d-block" loading="lazy"> -->
+                        <img class="d-block w-100" src="{{ medialink $media.URI "resize" "size800x400/formatJPEG/autorotate" (and $source.Base.MediaVisible $source.Base.MediaProtected) }}" loading="lazy">
                     </div>
             {{- end }}
                 </div>

@@ -11,6 +11,7 @@
   --bs-secondary-color: black;
 }
 
+
 .accordion {
   --bs-accordion-bg: transparent !important;
   --bs-accordion-active-bg: transparent !important;
@@ -51,7 +52,7 @@ img.flipvertical {
 .modal {
   --bs-modal-width: 80%;
 }
-
+/*
 .carousel-control-prev-icon {
   background-image: url("../img/prev.png");
 }
@@ -59,6 +60,8 @@ img.flipvertical {
 .carousel-control-next-icon {
   background-image: url("../img/next.png");
 }
+
+ */
 
 .noborder {
   border: none !important;

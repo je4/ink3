@@ -1728,6 +1728,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 		"detail_video.gohtml",
 		"detail_audio.gohtml",
 		"detail_pdf_dflip.gohtml",
+		"detail_verovio.gohtml",
 		//"detail_pdf_pdfjs.gohtml",
 		//"detail_pdf_3dflipbook.gohtml",
 		templateName})

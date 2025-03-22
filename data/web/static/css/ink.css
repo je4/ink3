@@ -1,4 +1,19 @@
 /* @media (prefers-color-scheme: dark) { */
+[data-bs-theme=dark] {
+  /*
+  .carousel-control-prev-icon {
+    background-image: url("../img/prev.png");
+  }
+
+  .carousel-control-next-icon {
+    background-image: url("../img/next.png");
+  }
+
+   */
+}
+[data-bs-theme=dark] .carousel-inner {
+  background-color: lightgray;
+}
 [data-bs-theme=dark] .nav-link {
   --bs-nav-link-color: #ddd;
   --bs-nav-link-active-color: #fff;
@@ -42,12 +57,6 @@
 [data-bs-theme=dark] .dropdown-item {
   --bs-dropdown-link-active-bg: #888d91;
   --bs-dropdown-link-hover-bg: #7a8085;
-}
-[data-bs-theme=dark] .carousel-control-prev-icon {
-  background-image: url("../img/prev.png");
-}
-[data-bs-theme=dark] .carousel-control-next-icon {
-  background-image: url("../img/next.png");
 }
 [data-bs-theme=dark] img.number {
   filter: invert(1);
@@ -101,6 +110,9 @@
 }
 
 /* @media not (prefers-color-scheme: dark) { */
+[data-bs-theme=light] .carousel-inner {
+  background-color: darkgray;
+}
 [data-bs-theme=light] .nav-link {
   --bs-nav-link-color: #333;
   --bs-nav-link-active-color: #000;
@@ -231,6 +243,7 @@ img.flipvertical {
   --bs-modal-width: 80%;
 }
 
+/*
 .carousel-control-prev-icon {
   background-image: url("../img/prev.png");
 }
@@ -239,6 +252,7 @@ img.flipvertical {
   background-image: url("../img/next.png");
 }
 
+ */
 .noborder {
   border: none !important;
 }
