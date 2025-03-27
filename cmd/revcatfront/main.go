@@ -13,6 +13,7 @@ import (
 	"github.com/je4/revcat/v2/tools/client"
 	"github.com/je4/revcatfront/v2/config"
 	"github.com/je4/revcatfront/v2/data/certs"
+	"github.com/je4/revcatfront/v2/data/web/static"
 	"github.com/je4/revcatfront/v2/data/web/templates/ink"
 	performance "github.com/je4/revcatfront/v2/data/web/templates/perfomance"
 	"github.com/je4/revcatfront/v2/pkg/server"
@@ -69,6 +70,7 @@ func main() {
 		LogLevel:     "DEBUG",
 		LocalAddr:    "localhost:81",
 		ExternalAddr: "http://localhost:81",
+		FacetInclude: []string{"voc:.*"},
 	}
 
 	if err := LoadRevCatFrontConfig(cfgFS, cfgFile, conf); err != nil {
@@ -164,6 +166,8 @@ func main() {
 	var staticFS fs.FS
 	if conf.StaticFiles != "" {
 		staticFS = os.DirFS(conf.StaticFiles)
+	} else {
+		staticFS = static.FS
 	}
 
 	var embeddings *openai.ClientV2
@@ -262,6 +266,8 @@ func main() {
 		string(conf.Login.JWTKey),
 		conf.Login.JWTAlg,
 		locations,
+		conf.FacetInclude,
+		conf.FacetExclude,
 		logger)
 	if err != nil {
 		logger.Fatal().Msgf("cannot create controller: %v", err)

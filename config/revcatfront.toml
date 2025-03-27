@@ -11,8 +11,8 @@ zoomonly = false
 
 openaiapikey = "%%OPENAI_API_KEY%%"
 
-templates = "data/web/templates/perfomance"
-staticfiles = "data/web/static"
+#templates = "data/web/templates/perfomance"
+#staticfiles = "data/web/static"
 datadir = "c:/temp/performance"
 #mediaserverbase = "https://localhost:8446"
 mediaserverbase = "https://ba14ns21403-sec1.fhnw.ch/mediasrv"
@@ -24,6 +24,7 @@ jwtalg = "HS512"
 
 
 fieldmapping.author = "[persons].name.keyword"
+fieldmapping.category = "category.keyword"
 
 [login]
 jwtkey = "%%LOGIN_JWTKEY%%" # ":Xf/#|IKYrDsNi4]LN*o(W7;:"

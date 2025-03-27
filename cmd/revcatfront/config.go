@@ -70,7 +70,8 @@ type RevCatFrontConfig struct {
 	ExternalAddr        string                  `toml:"externaladdr"`
 	SearchAddr          string                  `toml:"searchaddr"`
 	DetailAddr          string                  `toml:"detailaddr"`
-	NoTemplateCache     bool                    `toml:"notemplatecache"`
+	FacetInclude        []string                `toml:"facetinclude"`
+	FacetExclude        []string                `toml:"facetexclude"`
 	TLSCert             string                  `toml:"tlscert"`
 	TLSKey              string                  `toml:"tlskey"`
 	ProtoHTTP           bool                    `toml:"protohttp"`

@@ -1,0 +1,16 @@
+{{- $mediaserverBase := .MediaserverBase }}
+{{- $source := .Source }}
+{{- $data := . }}
+{{- range $typedMedia := $source.Media }}
+    {{- if eq $typedMedia.GetType "webrecorder" }}
+        {{- range $key, $media := $typedMedia.GetItems }}
+            {{- $url := trimSuffix "/" (medialink $media.URI "webrecorder" "" (and $source.Base.MediaVisible $source.Base.MediaProtected)) }}
+            {{ if and ($source.Base.URL) (hasPrefix $url $source.Base.URL ) }}
+                {{- $url = $source.Base.URL }}
+            {{- end }}
+        <div class="borderedge mt-2">
+            <a href="{{ $url }}" target="_blank">{{ $media.Name }}</a> <i class="bi bi-box-arrow-up-right"></i>
+        </div>
+        {{- end }}
+   {{- end }}
+{{- end }}

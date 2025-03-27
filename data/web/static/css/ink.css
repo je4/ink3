@@ -1,4 +1,28 @@
 /* @media (prefers-color-scheme: dark) { */
+[data-bs-theme=dark] {
+  /*
+  .carousel-control-prev-icon {
+    background-image: url("../img/prev.png");
+  }
+
+  .carousel-control-next-icon {
+    background-image: url("../img/next.png");
+  }
+
+   */
+}
+[data-bs-theme=dark] .carousel-inner {
+  background-color: lightgray;
+}
+[data-bs-theme=dark] .breadcrumb {
+  --bs-breadcrumb-divider-color: #dee2e6;
+  --bs-breadcrumb-divider: ">";
+}
+[data-bs-theme=dark] .nav-link {
+  --bs-nav-link-color: #ddd;
+  --bs-nav-link-active-color: #fff;
+  --bs-nav-link-hover-color: #fff;
+}
 [data-bs-theme=dark] .pagination {
   --bs-focus-ring-color: #fff;
   --bs-pagination-active-bg: #4d5154;
@@ -37,12 +61,6 @@
 [data-bs-theme=dark] .dropdown-item {
   --bs-dropdown-link-active-bg: #888d91;
   --bs-dropdown-link-hover-bg: #7a8085;
-}
-[data-bs-theme=dark] .carousel-control-prev-icon {
-  background-image: url("../img/prev.png");
-}
-[data-bs-theme=dark] .carousel-control-next-icon {
-  background-image: url("../img/next.png");
 }
 [data-bs-theme=dark] img.number {
   filter: invert(1);
@@ -96,6 +114,18 @@
 }
 
 /* @media not (prefers-color-scheme: dark) { */
+[data-bs-theme=light] .carousel-inner {
+  background-color: darkgray;
+}
+[data-bs-theme=light] .breadcrumb {
+  --bs-breadcrumb-divider-color: #212529;
+  --bs-breadcrumb-divider: ">";
+}
+[data-bs-theme=light] .nav-link {
+  --bs-nav-link-color: #333;
+  --bs-nav-link-active-color: #000;
+  --bs-nav-link-hover-color: #000;
+}
 [data-bs-theme=light] .btn-csp {
   --bs-btn-color: #000;
   --bs-btn-bg: rgba(255, 255, 255, 0);
@@ -181,6 +211,14 @@
   --bs-secondary-color: black;
 }
 
+.breadcrumb {
+  --bs-breadcrumb-margin-bottom: 0;
+}
+
+.breadcrumb-item > a {
+  text-decoration: none;
+}
+
 .accordion {
   --bs-accordion-bg: transparent !important;
   --bs-accordion-active-bg: transparent !important;
@@ -221,6 +259,7 @@ img.flipvertical {
   --bs-modal-width: 80%;
 }
 
+/*
 .carousel-control-prev-icon {
   background-image: url("../img/prev.png");
 }
@@ -229,6 +268,7 @@ img.flipvertical {
   background-image: url("../img/next.png");
 }
 
+ */
 .noborder {
   border: none !important;
 }
@@ -243,6 +283,11 @@ img.flipvertical {
 
 body {
   font-family: "IBM Plex Sans", sans-serif;
+}
+
+.navbar-brand {
+  font-size: 2rem;
+  font-weight: 600;
 }
 
 .masked img {

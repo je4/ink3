@@ -11,6 +11,13 @@
   --bs-secondary-color: black;
 }
 
+.breadcrumb {
+  --bs-breadcrumb-margin-bottom: 0;
+}
+
+.breadcrumb-item > a {
+  text-decoration: none;
+}
 .accordion {
   --bs-accordion-bg: transparent !important;
   --bs-accordion-active-bg: transparent !important;
@@ -51,7 +58,7 @@ img.flipvertical {
 .modal {
   --bs-modal-width: 80%;
 }
-
+/*
 .carousel-control-prev-icon {
   background-image: url("../img/prev.png");
 }
@@ -59,6 +66,8 @@ img.flipvertical {
 .carousel-control-next-icon {
   background-image: url("../img/next.png");
 }
+
+ */
 
 .noborder {
   border: none !important;
@@ -74,6 +83,11 @@ img.flipvertical {
 
 body {
   font-family: "IBM Plex Sans", sans-serif;
+}
+
+.navbar-brand {
+  font-size: 2rem;
+  font-weight: 600;
 }
 
 .masked img {

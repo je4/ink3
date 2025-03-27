@@ -12,7 +12,7 @@ zoomonly = false
 openaiapikey = "%%OPENAI_API_KEY%%"
 
 templates = "data/web/templates/ink"
-staticfiles = "data/web/static"
+#staticfiles = "data/web/static"
 datadir = "c:/temp/performance"
 #mediaserverbase = "https://localhost:8446"
 mediaserverbase = "https://ba14ns21403-sec1.fhnw.ch/mediasrv"
@@ -22,8 +22,13 @@ mediaservertokenexp = "6h"
 jwtkey = "%%JWTKEY%%" # ":Xf/#|IKYrDsNi4]LN*o(W7;:"
 jwtalg = "HS512"
 
-
 fieldmapping.author = "[persons].name.keyword"
+fieldmapping.category = "category.keyword"
+
+facetinclude = []
+facetexclude = ["vww:*"]
+
+[[clients]]
 
 [login]
 jwtkey = "%%LOGIN_JWTKEY%%" # ":Xf/#|IKYrDsNi4]LN*o(W7;:"
@@ -228,3 +233,20 @@ title = "IID Module"
 url = ""
 image = ""
 contact = "Tabea Lurk"
+
+[[collections]]
+id = 21
+identifier = "cat:\"zotero2!!Werke!!Hochschule für Musik\""
+title = "Hochschule für Musik"
+url = ""
+image = ""
+contact = "Tabea Lurk"
+
+[[collections]]
+id = 22
+identifier = "cat:\"zotero2!!Videonetzwerke\""
+title = "Videonetzwerke"
+url = ""
+image = ""
+contact = "Tabea Lurk"
+

@@ -1,3 +1,6 @@
+const removePrefix = (value, prefix) =>
+    value.startsWith(prefix) ? value.slice(prefix.length) : value;
+
 function search(url, cursor, exhibition, ki, sortField, sortOrder) {
     let search = document.getElementById("search").value;
 
@@ -41,7 +44,9 @@ function search(url, cursor, exhibition, ki, sortField, sortOrder) {
     let vocParam = "";
     for (let i = 0; i < vocs.length; i++) {
         if (vocs[i].getAttribute("selected") === "true") {
-            vocParam += vocs[i].getAttribute("value") + ",";
+            let value = vocs[i].getAttribute("value");
+            value = removePrefix(value, "voc:generic:");
+            vocParam += value + ",";
         }
     }
     if ( vocs.length > 0 ){

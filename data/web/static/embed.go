@@ -13,7 +13,7 @@ import "embed"
 //go:embed bootstrap/js/bootstrap.bundle.min.js bootstrap/js/bootstrap.bundle.min.js.map
 //go:embed bootstrap-icons/font/bootstrap-icons.min.css bootstrap-icons/font/fonts/bootstrap-icons.woff2
 //go:embed bootstrap-icons/font/fonts/bootstrap-icons.woff
-//go:embed css/csp.css css/ibm-plex-mono.css css/ibm-plex-sans-condensed.css css/ibm-plex-sans.css css/ibm-plex-serif.css
+//go:embed css/ibm-plex-mono.css css/ibm-plex-sans-condensed.css css/ibm-plex-sans.css css/ibm-plex-serif.css
 //go:embed fonts/ibm-plex-sans-v19-latin_latin-ext-regular.woff2 fonts/ibm-plex-sans-v19-latin_latin-ext-italic.woff2 fonts/FontAwesome.otf fonts/fontawesome*
 //go:embed fonts/ibm-plex-sans-v19-latin_latin-ext-500.woff2 fonts/ibm-plex-sans-v19-latin_latin-ext-700.woff2
 //go:embed fonts/ibm-plex-sans-v19-latin_latin-ext-600.woff2 fonts/ibm-plex-sans-v19-latin_latin-ext-600.ttf
@@ -28,6 +28,7 @@ import "embed"
 //go:embed pdf.js/web/viewer.css pdf.js/web/viewer.html pdf.js/web/viewer.mjs pdf.js/web/images/* pdf.js/web/locale/*
 //go:embed pdf.js/build/pdf.mjs pdf.js/web/cmaps/* pdf.js/build/pdf.worker.mjs
 //go:embed openseadragon/images/* openseadragon/openseadragon.min.js openseadragon/openseadragon.min.js.map
-//go:embed css/_csp_dark.scss css/_csp_light.scss css/ibm-plex*.css
+//go:embed css/_csp_dark.scss css/_csp_light.scss css/csp.css css/ibm-plex*.css
+//go:embed css/_ink_dark.scss css/_csp_light.scss css/ink.css
 //go:embed dflip/css/* dflip/js/* dflip/fonts/* dflip/images/* dflip/sound/*
 var FS embed.FS

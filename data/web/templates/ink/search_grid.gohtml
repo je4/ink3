@@ -27,7 +27,15 @@
                     <nav class="navbar navbar-expand-lg">
                         <div class="container-fluid">
                             <div class="d-flex w-100" role="search">
-                                <input onkeyup="if (event.keyCode === 13) search('{{ $searchBase }}') " id="search" class="form-control me-2" type="search" placeholder="{{ localize "search" $lang }}" aria-label="{{ localize "search" $lang }}" value="{{.RequestQuery.Search}}"/>
+                                <input
+                                        onkeyup="if (event.keyCode === 13) search('{{ $searchBase }}') "
+                                        id="search"
+                                        class="form-control me-2"
+                                        type="search"
+                                        placeholder="{{ localize "search" $lang }}"
+                                        aria-label="{{ localize "search" $lang }}"
+                                        value="{{.RequestQuery.Search}}"
+                                />
                                 <button onclick="search('{{ $searchBase }}')" class="btn noborder" type="submit"><i class="bi bi-search"></i></button>
                                 <button onclick="search('{{ $searchBase }}', '', false, true)" class="btn noborder" type="submit"><i class="bi bi-stars"></i></button>
                                 <div class="ms-2 d-lg-none d-flex">
@@ -40,12 +48,12 @@
                     </nav>
                     <div class="album py-5">
                         <nav class="navbar">
-                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.StartCursor }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn btn-primary">
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.StartCursor }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn btn-secondary">
                                 <i class="bi bi-arrow-left"></i>
                             </a>
                             <span>{{ if $useKI }}<img alt="KI search" class="ki" width=28 src="{{ $root }}static/img/ki2.png">&nbsp;{{ end }}
                                 {{ localize "founditems" $lang }}: {{ .TotalCount }}{{ if $useKI }}&nbsp;<i class="bi bi-stars"></i>{{ end }}</span>
-                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.EndCursor }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn btn-primary">
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.EndCursor }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn btn-secondary">
                                 <i class="bi bi-arrow-right"></i>
                             </a>
                         </nav>
@@ -214,10 +222,15 @@
                                                         <b>{{$edge.Title.String}}</b>{{ if ne $edge.Date "" }} ({{ $edge.Date }}){{ end }}<br />
                                                         {{- if ne $edge.Persons "" }}{{ $edge.Persons }}<br />{{ end }}
                                                         {{- range $mc := $edge.Edge.Base.MediaCount }}
-                                                            {{ if eq $mc.Type "video" }}<i class="bi bi-camera-video"></i>{{ end }}
-                                                            {{ if eq $mc.Type "audio" }}<i class="bi bi-soundwave"></i>{{ end }}
-                                                            {{ if eq $mc.Type "image" }}<i class="bi bi-card-image"></i>{{ end }}
-                                                            {{ if eq $mc.Type "pdf" }}<i class="bi bi-file-pdf"></i>{{ end }}
+                                                            {{- $found := false }}
+                                                            {{ if eq $mc.Type "video" }}{{ $found = true }}<i class="bi bi-camera-video"></i>{{ end }}
+                                                            {{ if eq $mc.Type "audio" }}{{ $found = true }}<i class="bi bi-soundwave"></i>{{ end }}
+                                                            {{ if eq $mc.Type "image" }}{{ $found = true }}<i class="bi bi-card-image"></i>{{ end }}
+                                                            {{ if eq $mc.Type "pdf" }}{{ $found = true }}<i class="bi bi-file-pdf"></i>{{ end }}
+                                                            {{ if eq $mc.Type "default" }}{{ $found = true }}<i class="bi bi-music-note-beamed"></i>{{ end }}
+                                                            {{ if eq $mc.Type "webrecorder" }}{{ $found = true }}<i class="bi bi-filetype-html"></i>{{ end }}
+                                                            {{ if eq $mc.Type "webrecorder" }}{{ $found = true }}<i class="bi bi-filetype-html"></i>{{ end }}
+                                                            {{ if not $found }}{{ $mc.Type }}{{ end }}
                                                             {{ $mc.Count }}
                                                         {{- end }}
                                                     </p>
@@ -230,12 +243,12 @@
                             </div>
                         </div>
                         <nav class="navbar">
-                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.StartCursor }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn btn-primary">
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.StartCursor }}" class="{{ if not .PageInfo.HasPreviousPage }}disabled {{ end }}btn btn-secondary">
                                 <i class="bi bi-arrow-left"></i>
                             </a>
                             <span>{{ if $useKI }}<img alt="KI search" class="ki" width=28 src="{{ $root }}static/img/ki2.png">&nbsp;{{ end }}
                                 {{ localize "founditems" $lang }}: {{ .TotalCount }}{{ if $useKI }}&nbsp;<i class="bi bi-stars"></i>{{ end }}</span>
-                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.EndCursor }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn btn-primary">
+                            <a href="?{{ if ne $params "" }}{{ $params }}&{{ end }}{{ if $useKI }}ki&{{ end }}{{ if $isExhibition }}exhibition&{{ end }}cursor={{ toURL .PageInfo.EndCursor }}" class="{{ if not .PageInfo.HasNextPage }}disabled {{ end }}btn btn-secondary">
                                 <i class="bi bi-arrow-right"></i>
                             </a>
                         </nav>
