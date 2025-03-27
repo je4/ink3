@@ -1534,6 +1534,10 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 				}
 				facetStr := strVal.GetStrVal()
 				parts := strings.Split(facetStr, ":")
+				// 16:9  4:3
+				if len(parts) == 2 && len(parts[1]) < 3 {
+					parts = []string{facetStr}
+				}
 				var name string
 				var parent = "generic"
 				if len(parts) == 1 {
@@ -1600,6 +1604,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		str += fmt.Sprintf("\"%s\" = \"%s\"\n", v, strings.TrimPrefix(v, "voc_"))
 
 	}
+
 	if err := gridTemplate.Execute(c.Writer, data); err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
@@ -1777,6 +1782,25 @@ func (ctrl *Controller) detail(c *gin.Context) {
 	if user.IsLoggedIn() {
 		detailAddr = ctrl.searchAddr
 	}
+	me := source.MediathekEntries[0]
+	categories := me.GetBase().GetCategory()
+	slices.SortFunc(categories, func(a, b string) int {
+		return len(b) - len(a)
+	})
+	var newCategories = []string{}
+	for _, cat := range categories {
+		isPrefix := false
+		for _, newCat := range newCategories {
+			if strings.HasPrefix(newCat, cat) {
+				isPrefix = true
+				break
+			}
+		}
+		if !isPrefix {
+			newCategories = append(newCategories, cat)
+		}
+	}
+	me.Base.Category = newCategories
 	var data = &tplData{
 		Source:       source.MediathekEntries[0],
 		IFrame:       isIFrame,

@@ -23,6 +23,7 @@ jwtkey = "%%JWTKEY%%" # ":Xf/#|IKYrDsNi4]LN*o(W7;:"
 jwtalg = "HS512"
 
 fieldmapping.author = "[persons].name.keyword"
+fieldmapping.category = "category.keyword"
 
 facetinclude = []
 facetexclude = ["vww:*"]

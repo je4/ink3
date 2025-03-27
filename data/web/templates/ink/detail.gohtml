@@ -221,8 +221,11 @@
                                 {{- $num2 = add $num2 1 }}
                             {{- end }}
                         {{- end }}
-                        {{- if or (gt $num 0) (gt $num2 0) }}
+                            {{- $hasTags := or (gt $num 0) (gt $num2 0) }}
+                            {{- $hasCategories := gt (len $source.Base.Category) 0 }}
+                            {{- if or $hasTags $hasCategories }}
                             <div class="p-2">
+                            {{- if $hasTags }}
                                 <div style="font-weight: bold; margin-top: 10px;">Tags</div>
                                 {{- $extraIgnore = append $extraIgnore "schlagwort"}}
                                 {{- range $voc := $source.Base.Tags }}
@@ -234,13 +237,34 @@
                                         {{ $tag = (localize $tag $lang) }}
                                         <a class="btn btn-csp vocButton m-1 btn-outline-secondary" href="{{ if or $isExhibition $isIFrame }}#{{ else }}{{ printf "%svocabulary=%s" $searchBase $voc }}{{ end }}" role="button">{{ localize $tag $lang }}</a>
                                     {{- else }}
-                                        {{ if ne $voc "vwg:declare" }}<a class="btn btn-csp vocButton m-1 btn-outline-secondary" role="button">{{ $voc }}</a>{{ end }}
+                                        {{ if ne $voc "vwg:declare" }}<a class="btn btn-csp vocButton m-1 btn-outline-secondary" role="button" href="{{ if or $isExhibition $isIFrame }}#{{ else }}{{ printf "%svocabulary=%s" $searchBase $voc }}{{ end }}">{{ $voc }}</a>{{ end }}
                                     {{ end }}
 
                                 {{- end }}
+                            {{- end }}
+                           {{- if $hasCategories }}
+                                <div style="font-weight: bold; margin-top: 10px;">Categories</div>
+                                {{- range $cat := $source.Base.Category }}
+                                    {{- $catParts := splitList "!!" $cat }}
+                                    <ol class="breadcrumb ps-3">
+                                        {{- $first := true }}
+                                        {{- $catString := "" }}
+                                        {{- range $key, $catPart := $catParts }}
+                                            {{- if not $first }}
+                                                {{- $catString = printf "%s!!%s" $catString $catPart }}
+                                                <li class="breadcrumb-item"><a href="{{ if or $isExhibition $isIFrame }}#{{ else }}{{ printf "%ssearch=category:\"%s\"" $searchBase $catString }}{{ end }}">{{ $catPart }}</a></li>
+                                            {{- else }}
+                                                {{- $catString = $catPart }}
+                                                {{- $first = false }}
+                                            {{- end }}
+                                        {{- end }}
+                                    </ol>
+                                {{- end }}
+                           {{- end }}
                             </div>
                             <hr /><br />
-                        {{- end }}
+                            {{- end }}
+
                     {{- end }}
                     {{- $abstract := multiLang $source.Abstract }}
                     {{- $abstractStr := $abstract.GetStr $lang }}

@@ -9,6 +9,12 @@ body {
 
 .bg {
 }
+
+  .breadcrumb {
+    --bs-breadcrumb-divider-color: #212529;
+    --bs-breadcrumb-divider: ">";
+  }
+
   .nav-link {
     --bs-nav-link-color: #333;
     --bs-nav-link-active-color: #000;

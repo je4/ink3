@@ -11,6 +11,11 @@ body {
 .bg {
 }
 
+  .breadcrumb {
+    --bs-breadcrumb-divider-color: #dee2e6;
+    --bs-breadcrumb-divider: ">";
+  }
+
 .nav-link {
     --bs-nav-link-color: #ddd;
     --bs-nav-link-active-color: #fff;
