@@ -464,6 +464,11 @@ func (ctrl *Controller) init() error {
 	router.StaticFS("/static", NewDefaultIndexFS(http.FS(ctrl.staticFS), "index.html"))
 	router.StaticFS("/data", NewDefaultIndexFS(http.FS(ctrl.dataFS), "index.html"))
 
+	router.GET("/version", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"version": Version,
+		})
+	})
 	router.GET("/", func(c *gin.Context) {
 		cookieLang, _ := c.Request.Cookie("lang")
 		accept := c.Request.Header.Get("Accept-Language")
