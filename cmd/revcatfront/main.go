@@ -71,6 +71,7 @@ func main() {
 		LocalAddr:    "localhost:81",
 		ExternalAddr: "http://localhost:81",
 		FacetInclude: []string{"voc:.*"},
+		Name:         "performance",
 	}
 
 	if err := LoadRevCatFrontConfig(cfgFS, cfgFile, conf); err != nil {
