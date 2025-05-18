@@ -157,3 +157,19 @@ title = "Kasko"
 url = "https://www.kasko.ch/"
 image = "kasko_klein.png"
 contact = "Pascale Grau, Chris Regn"
+
+[[collections]]
+id = 61
+identifier = "cat:\"zotero2!!Performance Art!!Must or Not\""
+title = "Must or Not"
+url = ""
+image = "must_or_not_klein.png"
+contact = "Andrea Saemann"
+
+[[collections]]
+id = 62
+identifier = "cat:\"zotero2!!Performance Art!!Partout\""
+title = "Partout"
+url = ""
+image = "partout_klein.png"
+contact = "Andrea Saemann"
