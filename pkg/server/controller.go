@@ -691,6 +691,10 @@ func (ctrl *Controller) init() error {
 		c.Redirect(http.StatusTemporaryRedirect, newURL)
 	})
 
+	router.GET("/foliateviewer", func(c *gin.Context) {
+		ctrl.foliateViewer(c)
+	})
+
 	var tlsConfig *tls.Config
 	if ctrl.cert != nil && ctrl.protoHTTP == false {
 		tlsConfig = &tls.Config{
@@ -1701,6 +1705,36 @@ func (ctrl *Controller) detailText(c *gin.Context) {
 	}
 }
 
+func (ctrl *Controller) foliateViewer(c *gin.Context) {
+	media := strings.TrimPrefix(c.Query("epub"), "mediaserver:")
+	if media == "" {
+		ctrl.logger.Error().Msgf("epub parameter missing")
+		c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("epub parameter missing"))
+		return
+	}
+	type tplData struct {
+		RootPath string `json:"rootPath"`
+		Media    string `json:"media"`
+	}
+	mediaUrl, _ := url.JoinPath(ctrl.mediaserverBase, media, "master")
+	var data = &tplData{
+		RootPath: "../",
+		Media:    mediaUrl,
+	}
+	templateName := "foliatejsviewer.gohtml"
+	tpl, err := ctrl.loadHTMLTemplate(templateName, []string{"foliatejsviewer.gohtml"})
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
+		return
+	}
+	if err := tpl.Execute(c.Writer, data); err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
+		return
+	}
+}
+
 func (ctrl *Controller) detail(c *gin.Context) {
 	var lang = c.Param("lang")
 	if !ctrl.langAvailable(lang) {
@@ -1740,6 +1774,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 		"detail_pdf_dflip.gohtml",
 		"detail_verovio.gohtml",
 		"detail_webrecorder.gohtml",
+		"detail_epub_foliate.gohtml",
 		//"detail_pdf_pdfjs.gohtml",
 		//"detail_pdf_3dflipbook.gohtml",
 		templateName})

@@ -243,9 +243,33 @@ image = ""
 contact = "Tabea Lurk"
 
 [[collections]]
-id = 22
-identifier = "cat:\"zotero2!!Videonetzwerke\""
-title = "Videonetzwerke"
+id = 23
+identifier = "cat:\"zotero2!!e-Publications\""
+title = "e-Publications"
+url = ""
+image = ""
+contact = "Tabea Lurk"
+
+[[collections]]
+id = 24
+identifier = "cat:\"zotero2!!Erinnerungsraum\""
+title = "Erinnerungsraum"
+url = ""
+image = ""
+contact = "Tabea Lurk"
+
+[[collections]]
+id = 25
+identifier = "cat:\"zotero2!!HyperWerk\""
+title = "Hyperwerk"
+url = ""
+image = ""
+contact = "Tabea Lurk"
+
+[[collections]]
+id = 26
+identifier = "cat:\"zotero2!!Werke\""
+title = "Werke"
 url = ""
 image = ""
 contact = "Tabea Lurk"

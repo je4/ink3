@@ -31,4 +31,5 @@ import "embed"
 //go:embed css/_csp_dark.scss css/_csp_light.scss css/csp.css css/ibm-plex*.css
 //go:embed css/_ink_dark.scss css/_csp_light.scss css/ink.css
 //go:embed dflip/css/* dflip/js/* dflip/fonts/* dflip/images/* dflip/sound/*
+//go:embed foliatereader/reader.js foliate-js/*.js foliate-js/ui/* foliate-js/vendor/*
 var FS embed.FS

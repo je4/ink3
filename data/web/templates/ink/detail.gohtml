@@ -120,6 +120,25 @@
                                     {{- end }}
                                 {{- end }}
                             {{- end }}
+                            {{- range $typedMedia := $source.Media }}
+                                {{- if eq $typedMedia.GetType "default" }}
+                                    {{ $hasEpub := false}}
+                                    {{ if eq $typedMedia.GetType "default" }}
+                                        {{ range $id, $media := $typedMedia.GetItems }}
+                                            {{ if eq $media.GetMimetype "application/epub+zip" }}
+                                                {{ $hasEpub = true }}
+                                            {{ end }}
+                                        {{ end }}
+                                    {{ end }}
+                                    {{ if $hasEpub }}
+                                        {{- if gt (len $typedMedia.GetItems) 0 }}
+                                            <li class="nav-item">
+                                                <button class="nav-link{{ if $first }}{{ $first = false}}{{ $active = "epub" }} active{{ end }}" id="nav-epub-tab" data-bs-toggle="tab" data-bs-target="#nav-epub" type="button" role="tab" aria-controls="nav-epub" aria-selected="true"><i class="bi bi-filetype-html"></i> {{ len $typedMedia.GetItems }} <span class="d-none  d-md-inline-block">EPub</span></button>
+                                            </li>
+                                        {{- end }}
+                                    {{- end }}
+                                {{- end }}
+                            {{- end }}
                             </ul>
                             <div class="tab-content pt-5 pb-5" id="mediaTabContent">
                                 {{- $first = true }}
@@ -140,6 +159,9 @@
                                 </div>
                                 <div class="tab-pane fade{{ if eq $active "webrecorder" }} show active{{ end }}" id="nav-webrecorder" role="tabpanel" aria-labelledby="nav-webrecorder-tab">
                                     {{ template "detail_webrecorder.gohtml" . }}
+                                </div>
+                                <div class="tab-pane fade{{ if eq $active "epub" }} show active{{ end }}" id="nav-epub" role="tabpanel" aria-labelledby="nav-epub-tab">
+                                    {{ template "detail_epub_foliate.gohtml" . }}
                                 </div>
                             </div>
                                 <script type="module">
