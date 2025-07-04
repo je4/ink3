@@ -65,7 +65,7 @@ externaladdr = "https://localhost:8446"
 basedir = "performance/mediaserver"
 
 [revcat]
-endpoint = "https://localhost:8443/graphql"
+endpoint = "https://localhost:8441/graphql"
 insecure = true
 #apikey = "%%REVCAT_APIKEY%%"
 apikey = "%%REVCAT_APIKEY_INK%%"
@@ -274,3 +274,10 @@ url = ""
 image = ""
 contact = "Tabea Lurk"
 
+[[collections]]
+id = 27
+identifier = "cat:\"researchdata!!motetcycles\""
+title = "Motet Cycles"
+url = ""
+image = ""
+contact = "Tabea Lurk"

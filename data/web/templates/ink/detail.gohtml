@@ -54,13 +54,13 @@
         <div class="p-4">
             <div class="row">
                 <div class="col col-lg-7 w-100" style="text-align: center;min-width: 300px;max-width: 800px;">
-                    {{- if $source.Base.Poster }}
+                    {{- if $source.Media }}
                         {{- if $showContent }}
                         <ul class="nav nav-tabs" id="mediaTab">
                             {{- $first := true }}
                             {{- $active := "" }}
                             {{- range $typedMedia := $source.Media }}
-                                {{- if eq $typedMedia.GetType "default" }}
+                                {{- if or (eq $typedMedia.GetType "default") (eq $typedMedia.GetType "mei") }}
                                     {{- $meiCount := 0}}
                                     {{- range $m := $typedMedia.GetItems }}
                                         {{- if and (contains "mei" (lower $m.URI)) (eq $m.Mimetype "application/xml") }}
@@ -71,7 +71,23 @@
                                         <li class="nav-item">
                                             <button class="nav-link{{ if $first }}{{ $first = false}}{{ $active = "mei" }} active{{ end }}" id="nav-mei-tab" data-bs-toggle="tab" data-bs-target="#nav-mei" type="button" role="tab" aria-controls="nav-mei" aria-selected="true"><i class="bi bi-music-note-beamed"></i> {{ $meiCount }} <span class="d-none  d-md-inline-block">MEI</span></button>
                                         </li>
-
+                                    {{- end }}
+                                {{- end }}
+                            {{- end }}
+                            {{- range $typedMedia := $source.Media }}
+                                {{- if eq $typedMedia.GetType "default" }}
+                                    {{- $epubCount := 0}}
+                                    {{ range $id, $media := $typedMedia.GetItems }}
+                                        {{ if eq $media.GetMimetype "application/epub+zip" }}
+                                            {{ $epubCount = add $epubCount 1 }}
+                                        {{ end }}
+                                    {{ end }}
+                                    {{ if gt $epubCount 0 }}
+                                        {{- if gt (len $typedMedia.GetItems) 0 }}
+                                            <li class="nav-item">
+                                                <button class="nav-link{{ if $first }}{{ $first = false}}{{ $active = "epub" }} active{{ end }}" id="nav-epub-tab" data-bs-toggle="tab" data-bs-target="#nav-epub" type="button" role="tab" aria-controls="nav-epub" aria-selected="true"><i class="bi bi-book"></i> {{ $epubCount }} <span class="d-none  d-md-inline-block">EPub</span></button>
+                                            </li>
+                                        {{- end }}
                                     {{- end }}
                                 {{- end }}
                             {{- end }}
@@ -120,25 +136,6 @@
                                     {{- end }}
                                 {{- end }}
                             {{- end }}
-                            {{- range $typedMedia := $source.Media }}
-                                {{- if eq $typedMedia.GetType "default" }}
-                                    {{ $hasEpub := false}}
-                                    {{ if eq $typedMedia.GetType "default" }}
-                                        {{ range $id, $media := $typedMedia.GetItems }}
-                                            {{ if eq $media.GetMimetype "application/epub+zip" }}
-                                                {{ $hasEpub = true }}
-                                            {{ end }}
-                                        {{ end }}
-                                    {{ end }}
-                                    {{ if $hasEpub }}
-                                        {{- if gt (len $typedMedia.GetItems) 0 }}
-                                            <li class="nav-item">
-                                                <button class="nav-link{{ if $first }}{{ $first = false}}{{ $active = "epub" }} active{{ end }}" id="nav-epub-tab" data-bs-toggle="tab" data-bs-target="#nav-epub" type="button" role="tab" aria-controls="nav-epub" aria-selected="true"><i class="bi bi-book"></i> {{ len $typedMedia.GetItems }} <span class="d-none  d-md-inline-block">EPub</span></button>
-                                            </li>
-                                        {{- end }}
-                                    {{- end }}
-                                {{- end }}
-                            {{- end }}
                             </ul>
                             <div class="tab-content pt-5 pb-5" id="mediaTabContent">
                                 {{- $first = true }}
@@ -162,6 +159,9 @@
                                 </div>
                                 <div class="tab-pane fade{{ if eq $active "epub" }} show active{{ end }}" id="nav-epub" role="tabpanel" aria-labelledby="nav-epub-tab">
                                     {{ template "detail_epub_foliate.gohtml" . }}
+                                </div>
+                                <div class="tab-pane fade{{ if eq $active "mei" }} show active{{ end }}" id="nav-mei" role="tabpanel" aria-labelledby="nav-mei-tab">
+                                    {{ template "detail_verovio.gohtml" . }}
                                 </div>
                             </div>
                                 <script type="module">
@@ -372,7 +372,7 @@
                         {{ range $ref := $references }}
                             <tr>
                                 <td style="vertical-align: top;" class="pe-2">
-                                    {{ if ne $ref.Poster.URI "" }}
+                                    {{ if and $ref.Poster (ne $ref.Poster.URI "") }}
                                         <a href="{{ printf "%s/detail/%s/%s" $detailAddr $ref.Signature $lang }}"><img src="{{ medialink $ref.Poster.URI "resize" "size100x100/formatJPEG/autorotate" true }}"  /></a>
                                     {{ end }}
                                 </td>
@@ -421,7 +421,13 @@
                                 {{ $extra.Key }}:&nbsp;
                             </td>
                             <td style="width: 70%; border: none; overflow-wrap: break-word;">
-                                <span style="overflow-wrap: break-word;">{{ $extra.Value }}</span>
+                                {{- if eq $extra.Key "ark" }}
+                                    <span style="overflow-wrap: break-word;"><a href="https://n2t.net/{{ $extra.Value }}">{{ $extra.Value }}</a></span>
+                                {{ else if eq $extra.Key "handle" }}
+                                    <span style="overflow-wrap: break-word;"><a href="https://hdl.handle.net/{{ $extra.Value }}">{{ $extra.Value }}</a></span>
+                                {{ else }}
+                                    <span style="overflow-wrap: break-word;">{{ $extra.Value }}</span>
+                                {{ end }}
                             </td>
                         </tr>
                         {{- end }}

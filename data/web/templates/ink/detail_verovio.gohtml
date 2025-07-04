@@ -2,14 +2,14 @@
 {{- $source := .Source }}
 {{- $data := . }}
 {{- range $typedMedia := $source.Media }}
-    {{- if eq $typedMedia.GetType "default" }}
+    {{- if or (eq $typedMedia.GetType "default") (eq $typedMedia.GetType "mei") }}
         {{- range $key, $media := $typedMedia.GetItems }}
             {{- if and (contains "mei" (lower $media.URI)) (eq $media.Mimetype "application/xml") }}
                 <div class="borderedge mt-2">
                     <table style="max-height: 480px; width: 100%; border: none; margin-left:auto;margin-right:auto;">
                         <tr>
                             <td style="background-color: whitesmoke;" colspan="1">
-                                <div id="verovio-{{ $key }}" class="panel" style="border: 1px solid lightgray; min-height: 800px;">Loading Verovio...</div>
+                                <div id="verovio-{{ $key }}" class="panel verovio-{{ $key }}" style="border: 1px solid lightgray; min-height: 800px;">Loading Verovio...</div>
                                 <script type="module">
                                     import 'https://editor.verovio.org/javascript/app/verovio-app.js';
 
@@ -23,6 +23,11 @@
                                         })
                                         .then(function(text) {
                                             app.loadData(text);
+                                        })
+                                        .then(function() {
+                                            let elem = document.getElementsByClassName("verovio-{{ $key }}")[1];
+                                            elem.style.display = "none";
+                                            elem.style.visibility = "hidden";
                                         });
                                 </script>
                             </td>

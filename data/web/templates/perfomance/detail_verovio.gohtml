@@ -1,8 +1,8 @@
 {{- $mediaserverBase := .MediaserverBase }}
 {{- $source := .Source }}
-{{- $data := . }}
+{{- $data := .}}
 {{- range $typedMedia := $source.Media }}
-    {{- if eq $typedMedia.GetType "default" }}
+    {{- if or (eq $typedMedia.GetType "default") (eq $typedMedia.GetType "mei") }}
         {{- range $key, $media := $typedMedia.GetItems }}
             {{- if and (contains "mei" (lower $media.URI)) (eq $media.Mimetype "application/xml") }}
                 <div class="borderedge mt-2">
