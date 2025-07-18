@@ -101,8 +101,10 @@
     <title>{{ localize "title" $lang }}</title>
 
     <link rel="manifest" href="{{ $root }}static/performance_manifest.json">
-    <link rel="icon" type="image/png" sizes="48x48" href="{{ $root }}static/performance_48.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="{{ $root }}static/performance_192.png">
+<link rel="icon" type="image/png" sizes="48x48" href="{{ $root }}static/performance_48.png" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/png" sizes="192x192" href="{{ $root }}static/performance_192.png" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/png" sizes="48x48" href="{{ $root }}static/performance_48_dark.png" media="(prefers-color-scheme: dark)">
+<link rel="icon" type="image/png" sizes="192x192" href="{{ $root }}static/performance_192_dark.png" media="(prefers-color-scheme: dark)">
 
     <link href="{{ $root }}static/bootstrap/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <link href="{{ $root }}static/bootstrap-icons/font/bootstrap-icons.min.css" rel="stylesheet" crossorigin="anonymous">
