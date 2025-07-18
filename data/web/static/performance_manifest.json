@@ -1,0 +1,30 @@
+{
+  "name": "Sammlungen Performance Kunst Schweiz",
+  "short_name": "Performance CH",
+  "description": "Das Portal Sammlungen Performance Kunst Schweiz bietet ein Panorama zum Performance Kunstgeschehen in der Schweiz.",
+  "lang": "de-DE",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#D2D4D5",
+  "background_color": "#D2D4D5",
+  "icons": [
+    {
+      "src": "/static/performance_192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/static/performance_512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "prefer_related_applications": true,
+  "related_applications": [
+    {
+      "platform": "web",
+      "url": "https://performance.sammlung.cc"
+    }
+  ]
+}
