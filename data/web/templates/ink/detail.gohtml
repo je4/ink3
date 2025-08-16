@@ -219,14 +219,15 @@
                     {{ if $source.Base.URL }}<span style="font-weight: normal;"><a target="_blank"{{ if not $isExhibition }} href="{{ $source.Base.URL }}"{{ end }}>{{ $source.Base.URL }}</a></span><br />{{ end }}
                     <div class="p-2 borderedge">
                     <span style="font-weight: bold;">
-                    {{- range $key, $p := $source.Base.Person}}
-                        {{- if hasPrefix "artist" $p.Role}}
-                            {{- if gt $key 0}}; {{end}}<a class="link-underline link-underline-opacity-10" href="{{ printf "%s/%s/%s?search=author:\"%s\"" $searchAddr $searchSource $lang $p.Name }}">{{$p.Name}}</a>
-                        {{- end}}
-                    {{- end}}
-                    </span>
+                        {{- $firstPerson := true}}
+                    {{- range $key, $p := $source.Base.Person}}{{/*
+                        */}}{{- if hasPrefix "artist" $p.Role}}{{ if not $firstPerson }}; {{ end }}<a class="link-underline link-underline-opacity-10" href="{{ printf "%s/%s/%s?search=author:\"%s\"" $searchAddr $searchSource $lang $p.Name }}">{{$p.Name}}</a>{{/* if $p.Year }} (*{{ $p.Year }}){{ end }}{{ range $key, $id := $p.Identifier }}{{ if eq $id.Name "viaf" }}<img src="{{ $root }}static/img/viaf.png" alt="VIAF" width="18">{{ end }}{{ end */}}{{/*
+                               */}}{{- $firstPerson = false }}{{/*
+                            */}}{{- end}}{{/*
+                        */}}{{- end}}</span>
                     {{- range $p := $source.Base.Person}}
                         {{- if not (hasPrefix "artist" $p.Role)}}
+                            {{ if not $firstPerson }}<br />{{ $firstPerson = true }}{{ end }}
                             <a class="link-underline link-underline-opacity-10" href="{{ printf "%s/%s/%s?search=author:\"%s\"" $searchAddr $searchSource $lang $p.Name }}">{{$p.Name}}</a> ({{camelcase (trimPrefix "performer:" $p.Role)}})<br />
                         {{- end}}
                     {{- end}}

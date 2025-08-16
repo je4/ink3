@@ -4,27 +4,8 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
-	"emperror.dev/errors"
 	"encoding/base64"
 	"fmt"
-	"github.com/Masterminds/sprig/v3"
-	"github.com/docker/docker/pkg/ioutils"
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/gosimple/slug"
-	"github.com/je4/basel-collections/v2/directus"
-	"github.com/je4/revcat/v2/tools/client"
-	"github.com/je4/utils/v2/pkg/openai"
-	"github.com/je4/utils/v2/pkg/zLogger"
-	"github.com/je4/zsearch/v2/pkg/translate"
-	"github.com/nicksnyder/go-i18n/v2/i18n"
-	oai "github.com/sashabaranov/go-openai"
-	"github.com/yeqown/go-qrcode/v2"
-	"github.com/yeqown/go-qrcode/writer/standard"
-	"golang.org/x/net/html"
-	"golang.org/x/text/language"
-	"golang.org/x/text/language/display"
 	"html/template"
 	"image"
 	"io/fs"
@@ -40,6 +21,26 @@ import (
 	"sync"
 	tmpl "text/template"
 	"time"
+
+	"emperror.dev/errors"
+	"github.com/Masterminds/sprig/v3"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"github.com/go-git/go-git/v5/utils/ioutil"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/gosimple/slug"
+	"github.com/je4/basel-collections/v2/directus"
+	"github.com/je4/revcat/v2/tools/client"
+	"github.com/je4/utils/v2/pkg/openai"
+	"github.com/je4/utils/v2/pkg/zLogger"
+	"github.com/je4/zsearch/v2/pkg/translate"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+	oai "github.com/sashabaranov/go-openai"
+	"github.com/yeqown/go-qrcode/v2"
+	"github.com/yeqown/go-qrcode/writer/standard"
+	"golang.org/x/net/html"
+	"golang.org/x/text/language"
+	"golang.org/x/text/language/display"
 )
 
 var languageNamer = map[string]display.Namer{
@@ -145,7 +146,7 @@ func (ctrl *Controller) funcMap(name string) template.FuncMap {
 			return template.URL(fmt.Sprintf("cannot create qr code for %s: %v", s, err))
 		}
 		buf := bytes.NewBuffer(nil)
-		wr := ioutils.NopWriteCloser(buf)
+		wr := ioutil.WriteNopCloser(buf)
 		w2 := standard.NewWithWriter(wr, standard.WithQRWidth(40), standard.WithBgTransparent(), standard.WithBuiltinImageEncoder(standard.PNG_FORMAT))
 		if err = qrc.Save(w2); err != nil {
 			fmt.Printf("cannot save qr code for %s: %v", s, err)
@@ -1875,7 +1876,7 @@ func (ctrl *Controller) qr(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot create qrcode for '%s': %v", url, err))
 		return
 	}
-	w := standard.NewWithWriter(ioutils.NopWriteCloser(c.Writer), standard.WithBgTransparent())
+	w := standard.NewWithWriter(ioutil.WriteNopCloser(c.Writer), standard.WithBgTransparent())
 	if err := qrc.Save(w); err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot save qrcode for '%s'", url)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot save qrcode for '%s': %v", url, err))
