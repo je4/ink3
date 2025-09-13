@@ -173,3 +173,19 @@ title = "Partout"
 url = ""
 image = "partout_klein.png"
 contact = "Andrea Saemann"
+
+[[collections]]
+id = 63
+identifier = "cat:\"zotero2!!Albena Mihaylova\""
+title = "Monos"
+url = "https://mediathek.hgk.fhnw.ch/front/#/static/impressum-and-kontakt"
+image = "monos_klein.png"
+contact = "Albena Mihaylova, Tabea Lurk"
+
+[[collections]]
+id = 64
+identifier = "cat:\"zotero2!!Performance Art!!6x2 Performance-Duos\""
+title = "Konvolute"
+url = "https://mediathek.hgk.fhnw.ch/front/#/static/impressum-and-kontakt"
+image = "konvolute_klein.png"
+contact = "Tabea Lurk"
