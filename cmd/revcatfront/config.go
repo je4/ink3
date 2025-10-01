@@ -4,7 +4,7 @@ import (
 	"emperror.dev/errors"
 	"fmt"
 	"github.com/BurntSushi/toml"
-	"github.com/je4/revcatfront/v2/pkg/server"
+	"github.com/je4/ink3/v2/pkg/server"
 	configutil "github.com/je4/utils/v2/pkg/config"
 	"io/fs"
 	"net"
