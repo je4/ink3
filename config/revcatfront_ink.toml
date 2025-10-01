@@ -6,7 +6,7 @@ localaddr = ":8445"
 externaladdr = "https://localhost:8445"
 searchaddr = "https://localhost:8445"
 detailaddr = "https://localhost:8445"
-
+mode = "auto" # auto, dark, light
 zoomonly = false
 
 openaiapikey = "%%OPENAI_API_KEY%%"

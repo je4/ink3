@@ -64,6 +64,7 @@ type baseData struct {
 	LoginURL   string
 	Self       string
 	User       *User
+	Mode       string
 }
 
 type CollFacetType struct {
@@ -293,7 +294,7 @@ func (ctrl *Controller) funcMap(name string) template.FuncMap {
 	return fm
 }
 
-func NewController(localAddr, externalAddr, searchAddr, detailAddr string, protoHTTP bool, auth map[string]string, cert *tls.Certificate, templateFS, staticFS, dataFS fs.FS, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, mediaserverBase, mediaserverKey string, mediaserverTokenExp time.Duration, bundle *i18n.Bundle, collections []*CollFacetType, fieldMapping map[string]string, embeddings *openai.ClientV2, templateDebug, zoomOnly bool, loginURL, loginIssuer, loginJWTKey string, loginJWTAlgs []string, locations map[string][]net.IPNet, facetInclude, facetExclude []string, logger zLogger.ZLogger) (*Controller, error) {
+func NewController(localAddr, externalAddr, searchAddr, detailAddr string, protoHTTP bool, auth map[string]string, cert *tls.Certificate, templateFS, staticFS, dataFS fs.FS, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, mediaserverBase, mediaserverKey string, mediaserverTokenExp time.Duration, bundle *i18n.Bundle, collections []*CollFacetType, fieldMapping map[string]string, embeddings *openai.ClientV2, templateDebug, zoomOnly bool, loginURL, loginIssuer, loginJWTKey string, loginJWTAlgs []string, locations map[string][]net.IPNet, facetInclude, facetExclude []string, mode string, logger zLogger.ZLogger) (*Controller, error) {
 
 	ctrl := &Controller{
 		localAddr:           localAddr,
@@ -328,6 +329,7 @@ func NewController(localAddr, externalAddr, searchAddr, detailAddr string, proto
 		locations:           locations,
 		facetInclude:        facetInclude,
 		facetExclude:        facetExclude,
+		mode:                mode,
 	}
 	ctrl.logger.Info().Msgf("Zoom only: %v", ctrl.zoomOnly)
 	if err := ctrl.init(); err != nil {
@@ -754,6 +756,7 @@ type Controller struct {
 	mediaserverTokenExp time.Duration
 	facetInclude        []string
 	facetExclude        []string
+	mode                string
 }
 
 func (ctrl *Controller) locationGroups(ctx *gin.Context) []string {
@@ -828,6 +831,7 @@ func (ctrl *Controller) impressumPage(c *gin.Context) {
 			LoginURL:   ctrl.loginURL,
 			Self:       c.Request.URL.String(),
 			User:       GetUser(c),
+			Mode:       ctrl.mode,
 		},
 	}
 	collFacet := &client.InFacet{
@@ -945,6 +949,7 @@ func (ctrl *Controller) kontaktPage(c *gin.Context) {
 			LoginURL:   ctrl.loginURL,
 			Self:       c.Request.URL.String(),
 			User:       GetUser(c),
+			Mode:       ctrl.mode,
 		},
 	}
 	collFacet := &client.InFacet{
@@ -1063,6 +1068,7 @@ func (ctrl *Controller) indexPage(ctx *gin.Context) {
 			LoginURL:   ctrl.loginURL,
 			Self:       fmt.Sprintf("%s%s", ctrl.externalAddr, ctx.Request.URL.Path),
 			User:       GetUser(ctx),
+			Mode:       ctrl.mode,
 		},
 	}
 
@@ -1472,6 +1478,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		MediaserverBase: ctrl.mediaserverBase,
 		PageInfo:        result.GetSearch().GetPageInfo(),
 		baseData: baseData{
+			Mode:       ctrl.mode,
 			Lang:       lang,
 			Exhibition: isExhibition,
 			KI:         ki,
@@ -1687,6 +1694,7 @@ func (ctrl *Controller) detailText(c *gin.Context) {
 			LoginURL:   ctrl.loginURL,
 			Self:       fmt.Sprintf("%s%s", ctrl.externalAddr, c.Request.URL.Path),
 			User:       GetUser(c),
+			Mode:       ctrl.mode,
 		},
 		MediaserverBase: ctrl.mediaserverBase,
 	}
@@ -1857,6 +1865,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 			LoginURL: ctrl.loginURL,
 			Self:     fmt.Sprintf("%s%s", ctrl.externalAddr, c.Request.URL.Path),
 			User:     user,
+			Mode:     ctrl.mode,
 		},
 		MediaserverBase: ctrl.mediaserverBase,
 	}
@@ -1999,6 +2008,7 @@ func (ctrl *Controller) zoomPage(c *gin.Context) {
 			LoginURL:   ctrl.loginURL,
 			Self:       fmt.Sprintf("%s%s", ctrl.externalAddr, c.Request.URL.Path),
 			User:       GetUser(c),
+			Mode:       ctrl.mode,
 		},
 	}
 	if err := zoomTemplate.Execute(c.Writer, data); err != nil {

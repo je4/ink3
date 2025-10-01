@@ -1,14 +1,15 @@
 package main
 
 import (
-	"emperror.dev/errors"
 	"fmt"
-	"github.com/BurntSushi/toml"
-	"github.com/je4/ink3/v2/pkg/server"
-	configutil "github.com/je4/utils/v2/pkg/config"
 	"io/fs"
 	"net"
 	"os"
+
+	"emperror.dev/errors"
+	"github.com/BurntSushi/toml"
+	"github.com/je4/ink3/v2/pkg/server"
+	configutil "github.com/je4/utils/v2/pkg/config"
 )
 
 type network struct {
@@ -95,6 +96,7 @@ type RevCatFrontConfig struct {
 	JWTAlg              string                  `toml:"jwtalg"`
 	Login               Login                   `toml:"login"`
 	Locations           []Network               `toml:"locations"`
+	Mode                string                  `toml:"mode"`
 }
 
 func LoadRevCatFrontConfig(fSys fs.FS, fp string, conf *RevCatFrontConfig) error {

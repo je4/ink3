@@ -6,6 +6,20 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"image"
+	"io"
+	"io/fs"
+	"log"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"path/filepath"
+	"reflect"
+	"strings"
+	"syscall"
+	"time"
+
 	"github.com/BurntSushi/toml"
 	"github.com/Yamashou/gqlgenc/clientv2"
 	"github.com/bluele/gcache"
@@ -22,19 +36,6 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/rs/zerolog"
 	"golang.org/x/text/language"
-	"image"
-	"io"
-	"io/fs"
-	"log"
-	"net"
-	"net/http"
-	"os"
-	"os/signal"
-	"path/filepath"
-	"reflect"
-	"strings"
-	"syscall"
-	"time"
 )
 
 var configfile = flag.String("config", "", "location of toml configuration file")
@@ -72,6 +73,7 @@ func main() {
 		ExternalAddr: "http://localhost:81",
 		FacetInclude: []string{"voc:.*"},
 		Name:         "performance",
+		Mode:         "auto",
 	}
 
 	if err := LoadRevCatFrontConfig(cfgFS, cfgFile, conf); err != nil {
@@ -269,6 +271,7 @@ func main() {
 		locations,
 		conf.FacetInclude,
 		conf.FacetExclude,
+		conf.Mode,
 		logger)
 	if err != nil {
 		logger.Fatal().Msgf("cannot create controller: %v", err)
