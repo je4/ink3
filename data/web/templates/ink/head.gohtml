@@ -12,6 +12,13 @@
     (() => {
         'use strict'
 
+        const setTheme = theme => {
+            if (theme === 'auto') {
+                theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+            }
+            document.documentElement.setAttribute('data-bs-theme', theme)
+        }
+        {{if eq $mode "auto" }}
         const getStoredTheme = () => localStorage.getItem('theme')
         const setStoredTheme = theme => localStorage.setItem('theme', theme)
 
@@ -22,14 +29,6 @@
             }
 
             return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-        }
-
-        const setTheme = theme => {
-            if (theme === 'auto') {
-                theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-            }
-            document.documentElement.setAttribute('data-bs-theme', theme)
-
         }
 
         setTheme(getPreferredTheme())
@@ -82,6 +81,9 @@
                     })
                 })
         })
+        {{- else }}
+            setTheme({{ $mode }})
+        {{- end }}
     })();
     {{- end }}
 </script>
