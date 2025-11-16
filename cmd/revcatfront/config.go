@@ -73,6 +73,7 @@ type RevCatFrontConfig struct {
 	DetailAddr          string                  `toml:"detailaddr"`
 	FacetInclude        []string                `toml:"facetinclude"`
 	FacetExclude        []string                `toml:"facetexclude"`
+	BaseFilter          string                  `toml:"basefilter"`
 	TLSCert             string                  `toml:"tlscert"`
 	TLSKey              string                  `toml:"tlskey"`
 	ProtoHTTP           bool                    `toml:"protohttp"`
