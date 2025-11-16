@@ -90,8 +90,12 @@
                                                 {{- if $useKI }}{{- $query = printf "%s&ki" $query }}{{- end }}
                                                 {{- $query = trimPrefix "&" $query }}
                                                 <tr onclick="window.location='{{ $detailAddr }}/detail/{{ $edge.Edge.Base.Signature }}/{{ $lang }}{{ if ne $query "" }}?{{ $query | toURL }}{{ end }}';">
-                                                    <td>{{- if and $edge.Edge.Base.Poster ($edge.Edge.Base.MediaVisible) }}
-                                                            <img src="{{ medialink $edge.Edge.Base.Poster.URI "resize" "size100x100/formatPNG/autorotate" (and ($edge.Edge.Base.MediaVisible) $edge.ProtectedContent) }}" class="img-fluid rounded" alt="">
+                                                    <td>{{- if $edge.Edge.Base.Poster }}
+                                                            {{- if $edge.Edge.Base.MediaVisible }}
+                                                                <img src="{{ medialink $edge.Edge.Base.Poster.URI "resize" "size100x100/formatPNG/autorotate" (and ($edge.Edge.Base.MediaVisible) $edge.ProtectedContent) }}" class="img-fluid rounded" alt="">
+                                                            {{- else  }}
+                                                                <img alt="media access denied" src="{{ $root }}static/img/access_denied_dark.png" width=100 height=100 class="img-fluid rounded">
+                                                            {{- end }}
                                                         {{- end }}
                                                     </td>
                                                     <td>{{ $edge.Edge.Base.Signature }}</td>
@@ -183,6 +187,8 @@
                                                             {{- $size := calcAspectSize $edge.Edge.Base.Poster.Width $edge.Edge.Base.Poster.Height 200 200 }}
                                                             <img class="bd-placeholder-img card-img-top" style="width: {{$size.Width}}px; height: {{$size.Height}}px" src="{{ medialink $edge.Edge.Base.Poster.URI "resize" "size200x200/formatPNG/autorotate" (and ($edge.Edge.Base.MediaVisible) $edge.ProtectedContent) }}" />
                                                         {{- else }}
+                                                            <img style="width: 200px; height: 200px;" alt="media access denied" src="{{ $root }}static/img/access_denied_dark.png" class="bd-placeholder-img card-img-top">
+                                                            <!--
                                                             <svg
                                                                     class="bd-placeholder-img card-img-top" style="width: 200px; height: 200px;"
                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -212,9 +218,10 @@
                                                                             fill="#212529" stroke="none" stroke-width="0"/>
                                                                 </g>
                                                             </svg>
+                                                            -->
                                                         {{- end }}
                                                     {{- else }}
-                                                        <svg class="bd-placeholder-img card-img-top" style="width: 200px; height: 200px;" width="100px" height="200px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em"></text></svg>
+                                                        <svg class="bd-placeholder-img card-img-top" style="width: 200px; height: 200px;" width="100px" height="200px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c" fill-opacity="0%"/><text x="50%" y="50%" fill="#eceeef" dy=".3em"></text></svg>
                                                     {{- end }}
                                                 </div>
                                                 <div class="card-body pb-2">
