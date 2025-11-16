@@ -26,6 +26,25 @@ jwtalg = "HS512"
 fieldmapping.author = "[persons].name.keyword"
 fieldmapping.category = "category.keyword"
 
+basefilter = """
+[
+  {
+    "existsTerm": {
+      "field": "poster"
+    }
+  },
+  {
+    "boolTerm": {
+      "field": "acl.content.keyword",
+      "and": false,
+      "values": [
+        "global/guest"
+      ]
+    }
+  }
+]
+"""
+
 [login]
 jwtkey = "%%LOGIN_JWTKEY%%" # ":Xf/#|IKYrDsNi4]LN*o(W7;:"
 jwtalg = ["HS256","HS384","HS512"]

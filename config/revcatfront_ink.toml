@@ -28,6 +28,11 @@ fieldmapping.category = "category.keyword"
 facetinclude = []
 facetexclude = ["vww:*"]
 
+basefilter = """
+[]
+"""
+
+
 [[clients]]
 
 [login]
