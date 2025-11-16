@@ -11,7 +11,7 @@ zoomonly = false
 
 openaiapikey = "%%OPENAI_API_KEY%%"
 
-#templates = "data/web/templates/perfomance"
+templates = "data/web/templates/perfomance"
 #staticfiles = "data/web/static"
 datadir = "c:/temp/performance"
 #mediaserverbase = "https://localhost:8446"
