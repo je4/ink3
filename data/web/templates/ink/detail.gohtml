@@ -386,7 +386,7 @@
                                 <td>
                             {{- $title := multiLang $ref.Title }}
                                     <a href="{{ printf "%s/detail/%s/%s" $detailAddr $ref.Signature $lang }}"><span style="font-weight: bold;">{{ $title.String }}</span>
-                            {{ if $source.Base.Date }}<span style="font-weight: normal;">{{ if ne ( ptrString $source.Base.Date) "" }}({{ $source.Base.Date }}){{ end }}</span>{{ end }}
+                            {{ if $ref.Date }}<span style="font-weight: normal;">{{ if ne ( ptrString $ref.Date) "" }}({{ $ref.Date }}){{ end }}</span>{{ end }}
                                     </a>
                             <br />
                             {{- range $key, $p := $ref.Person}}
@@ -394,7 +394,7 @@
                                     {{- if gt $key 0}}; {{end}}<a class="link-underline link-underline-opacity-10" href="{{ printf "%s/%s/%s?search=author:\"%s\"" $searchAddr $searchSource $lang $p.Name }}">{{$p.Name}}</a>
                                 {{- end}}
                             {{- end}}<br />
-                            {{- range $p := $source.Base.Person}}
+                            {{- range $p := $ref.Person}}
                                 {{- if not (hasPrefix "artist" $p.Role)}}
                                     <a class="link-underline link-underline-opacity-10" href="{{ printf "%s/%s/%s?search=author:\"%s\"" $searchAddr $searchSource $lang $p.Name }}">{{$p.Name}}</a> ({{camelcase (trimPrefix "performer:" $p.Role)}})<br />
                                 {{- end}}
