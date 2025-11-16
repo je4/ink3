@@ -176,6 +176,12 @@
                                     })
                                 </script>
                         {{- else }}
+                        <img style="width: 200px; height: 200px;" alt="media access denied" src="{{ $root }}static/img/access_denied_dark.png" class="bd-placeholder-img"><br>
+                            Höhere Mächte verbieten die Ansicht von <br>
+                                {{- range $mc := $source.Base.MediaCount }}
+                                    {{ $mc.Count }} {{ $mc.Type }}<br />
+                                {{- end }}
+                            <!--
                             <svg
                                     class="bd-placeholder-img card-img-top" style="width: 100%;"
                                     xmlns="http://www.w3.org/2000/svg"
@@ -205,7 +211,7 @@
                                             fill="#212529" stroke="none" stroke-width="0"/>
                                 </g>
                             </svg>
-
+                            -->
                         {{- end }}
                     {{- end }}
                 </div>
