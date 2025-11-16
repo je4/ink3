@@ -74,6 +74,24 @@ func main() {
 		FacetInclude: []string{"voc:.*"},
 		Name:         "performance",
 		Mode:         "auto",
+		BaseFilter: `
+						[
+						  {
+							"existsTerm": {
+							  "field": "poster"
+							}
+						  },
+						  {
+							"boolTerm": {
+							  "field": "acl.content.keyword",
+							  "and": false,
+							  "values": [
+								"global/guest"
+							  ]
+							}
+						  }
+						]
+						`,
 	}
 
 	if err := LoadRevCatFrontConfig(cfgFS, cfgFile, conf); err != nil {
@@ -242,6 +260,10 @@ func main() {
 		}
 	}
 
+	var baseFilter = []*client.InFilter{}
+	if json.Unmarshal([]byte(conf.BaseFilter), &baseFilter) != nil {
+		logger.Fatal().Err(err).Msgf("cannot unmarshal base filter '%s'", conf.BaseFilter)
+	}
 	ctrl, err := server.NewController(
 		conf.LocalAddr,
 		conf.ExternalAddr,
@@ -271,6 +293,7 @@ func main() {
 		locations,
 		conf.FacetInclude,
 		conf.FacetExclude,
+		baseFilter,
 		conf.Mode,
 		logger)
 	if err != nil {
