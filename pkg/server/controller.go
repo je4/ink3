@@ -294,7 +294,7 @@ func (ctrl *Controller) funcMap(name string) template.FuncMap {
 	return fm
 }
 
-func NewController(localAddr, externalAddr, searchAddr, detailAddr string, protoHTTP bool, auth map[string]string, cert *tls.Certificate, templateFS, staticFS, dataFS fs.FS, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, mediaserverBase, mediaserverKey string, mediaserverTokenExp time.Duration, bundle *i18n.Bundle, collections []*CollFacetType, fieldMapping map[string]string, embeddings *openai.ClientV2, templateDebug, zoomOnly bool, loginURL, loginIssuer, loginJWTKey string, loginJWTAlgs []string, locations map[string][]net.IPNet, facetInclude, facetExclude []string, mode string, logger zLogger.ZLogger) (*Controller, error) {
+func NewController(localAddr, externalAddr, searchAddr, detailAddr string, protoHTTP bool, auth map[string]string, cert *tls.Certificate, templateFS, staticFS, dataFS fs.FS, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, mediaserverBase, mediaserverKey string, mediaserverTokenExp time.Duration, bundle *i18n.Bundle, collections []*CollFacetType, fieldMapping map[string]string, embeddings *openai.ClientV2, templateDebug, zoomOnly bool, loginURL, loginIssuer, loginJWTKey string, loginJWTAlgs []string, locations map[string][]net.IPNet, facetInclude, facetExclude []string, baseFilter []*client.InFilter, mode string, logger zLogger.ZLogger) (*Controller, error) {
 
 	ctrl := &Controller{
 		localAddr:           localAddr,
@@ -329,6 +329,7 @@ func NewController(localAddr, externalAddr, searchAddr, detailAddr string, proto
 		locations:           locations,
 		facetInclude:        facetInclude,
 		facetExclude:        facetExclude,
+		baseFilter:          baseFilter,
 		mode:                mode,
 	}
 	ctrl.logger.Info().Msgf("Zoom only: %v", ctrl.zoomOnly)
@@ -757,6 +758,7 @@ type Controller struct {
 	facetInclude        []string
 	facetExclude        []string
 	mode                string
+	baseFilter          []*client.InFilter
 }
 
 func (ctrl *Controller) locationGroups(ctx *gin.Context) []string {
@@ -1388,18 +1390,13 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		})
 	}
 	user := GetUser(c)
-	filter := []*client.InFilter{
-		{
-			ExistsTerm: &client.InFilterExistsTerm{
-				Field: "poster",
-			},
-		},
-		{
-			BoolTerm: &client.InFilterBoolTerm{
-				Field:  "acl.content.keyword",
-				Values: user.Groups,
-			},
-		},
+	filter := append([]*client.InFilter{}, ctrl.baseFilter...)
+	for _, f := range filter {
+		if f.BoolTerm != nil {
+			if f.BoolTerm.Field == "acl.content.keyword" {
+				f.BoolTerm.Values = user.Groups
+			}
+		}
 	}
 	if len(filterStrings) > 0 {
 		for field, value := range filterStrings {
