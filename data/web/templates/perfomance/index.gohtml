@@ -160,7 +160,7 @@
             .data(nodes)
             .join('a')
             .attr("xlink:href", d => d.link)
-            .attr("target", "_blank")
+            .attr("target", "_self")
 
         leaf.append("clipPath")
             .attr("id", d => `clip-${d.id}`)
