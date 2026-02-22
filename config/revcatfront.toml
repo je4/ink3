@@ -146,6 +146,14 @@ image = "revolving_histories_klein.png"
 contact = "Sabine Gebhardt Fink, Muda Mathis, Chris Regn, Andrea Saemann, Margarit von Büren"
 
 [[collections]]
+id = 51
+identifier = "cat:\"zotero2!!MIGMA\""
+title = "MIGMA"
+url = "https://www.migma.ch/ueber_migma.html"
+image = "migma_klein.png"
+contact = "Judith Huber"
+
+[[collections]]
 id = 55
 identifier = "cat:\"zotero2!!Performance Art!!Doce en Diciembre\""
 title = "Doce en Diciembre"
