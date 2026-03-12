@@ -225,7 +225,7 @@
                         {{ range $ref := $references }}
                             <tr>
                                 <td style="vertical-align: top;" class="pe-2">
-                                    {{ if (and $ref.Poster (ne $ref.Poster.URI "")) }}
+                                    {{ if (and $ref.Poster $ref.Poster.URI (ne $ref.Poster.URI "")) }}
                                         <a href="{{ printf "%s/detail/%s/%s" $detailAddr $ref.Signature $lang }}"><img src="{{ medialink $ref.Poster.URI "resize" "size100x100/formatJPEG/autorotate" true }}"  /></a>
                                     {{ end }}
                                 </td>
