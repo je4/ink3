@@ -12,8 +12,6 @@ github.com/Masterminds/semver/v3 v3.4.0 h1:Zog+i5UMtVoCU8oKka5P7i9q9HgrJeGzI9SA1
 github.com/Masterminds/semver/v3 v3.4.0/go.mod h1:4V+yj/TJE1HU9XfppCwVMZq3I84lprf4nC11bSS5beM=
 github.com/Masterminds/sprig/v3 v3.3.0 h1:mQh0Yrg1XPo6vjYXgtf5OtijNAKJRNcTdOOGZe3tPhs=
 github.com/Masterminds/sprig/v3 v3.3.0/go.mod h1:Zy1iXRYNqNLUolqCpL4uhk6SHUMAOSCzdgBfDb35Lz0=
-github.com/Yamashou/gqlgenc v0.33.0 h1:0fxTnNE8/JVmFpfo7reA5pEgOcr7VjNc+/nEpVhNjfc=
-github.com/Yamashou/gqlgenc v0.33.0/go.mod h1:MZGXx/nALyxcehcFeLGmYiNsJ+hQTOGJzNYCGNX4rL0=
 github.com/agnivade/levenshtein v1.2.1 h1:EHBY3UOn1gwdy/VbFwgo4cxecRznFk7fKWN1KOX7eoM=
 github.com/agnivade/levenshtein v1.2.1/go.mod h1:QVVI16kDrtSuwcpd0p1+xMC6Z/VfhtCyDIjcwga4/DU=
 github.com/alecthomas/assert/v2 v2.11.0 h1:2Q9r3ki8+JYXvGsDyBXwH3LcJ+WK5D0gc5E8vS6K3D0=
@@ -105,8 +103,8 @@ github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOl
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/je4/basel-collections/v2 v2.0.2 h1:TlDDwwML7dRt3NTFEhdRY7R9zNoNkHcMqCo0kmf76Z4=
 github.com/je4/basel-collections/v2 v2.0.2/go.mod h1:w5ZpB04cTI6JNr1pNe2QbgRzOkSwmGRJcr115q5ZQGQ=
-github.com/je4/revcat/v2 v2.0.17 h1:paTMKxijP7sHMPWMkyYWAOW7FPgXdQJC37Z8K05Y4qU=
-github.com/je4/revcat/v2 v2.0.17/go.mod h1:rHcqDnS+WNEJsTsvpdH4UJkdoPipGGyE4YGjv2j9hTo=
+github.com/je4/revcat/v2 v2.0.18 h1:vB66Pz1L2l8ryniRYevV8mDk5hSKQ1BktBpdam4evCQ=
+github.com/je4/revcat/v2 v2.0.18/go.mod h1:s6liIbTWCKBpKzMv/040v7XdXQynxwc97qLiCFqL6/s=
 github.com/je4/utils/v2 v2.0.64 h1:T+GSKRwPP8r13A47einp9w+jlTx7j7J0uB1TAhkmmyc=
 github.com/je4/utils/v2 v2.0.64/go.mod h1:Pfugh7LsGvAMqmYAgBKF7mJxt8Hr5YHOLBS7TQv1N0w=
 github.com/je4/zsearch/v2 v2.0.11 h1:YV5rNgEFwkZtee0/pYHWdL+ZyS5GwgeOhIiVUtAC3XQ=
