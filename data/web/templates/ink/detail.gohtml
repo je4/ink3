@@ -298,10 +298,11 @@
                     {{- $abstract := multiLang $source.Abstract }}
                     {{- $abstractStr := $abstract.GetStr $lang }}
                     {{- $abstractOriginalLang := $abstract.GetNativeLanguage  }}
+                    {{- if eq $abstractStr "" }}{{ $abstractStr = $abstract.String }}{{ end }}
                     {{- if ne $abstractStr "" }}
                     <div class="mt-4 p-2 borderedge" style="text-align: left;">
                         {{ toHTML (nl2br $abstractStr) }}
-                        {{- if ne $abstractOriginalLang.String $lang }}
+                        {{- if and (ne $abstractOriginalLang.String $lang) (ne $abstractOriginalLang.String "und") }}
                             <div class="alert alert-secondary p-1 mt-1" role="alert" style="font-size: smaller;">
                                 {{ localize "autotranslatefrom" $lang }} {{ localize (printf "%sen" $abstractOriginalLang.String) $lang }}
                             </div>
