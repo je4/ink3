@@ -21,9 +21,9 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
-	"github.com/Yamashou/gqlgenc/clientv2"
 	"github.com/bluele/gcache"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/gqlgo/gqlgenc/clientv2"
 	"github.com/je4/ink3/v2/config"
 	"github.com/je4/ink3/v2/data/certs"
 	"github.com/je4/ink3/v2/data/web/static"
