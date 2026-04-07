@@ -14,9 +14,9 @@ require (
 	github.com/go-git/go-git/v5 v5.17.2
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/gosimple/slug v1.15.0
-	github.com/gqlgo/gqlgenc v0.33.1
+	github.com/gqlgo/gqlgenc v0.35.1
 	github.com/je4/basel-collections/v2 v2.0.2
-	github.com/je4/revcat/v2 v2.0.18
+	github.com/je4/revcat/v2 v2.0.19
 	github.com/je4/utils/v2 v2.0.64
 	github.com/je4/zsearch/v2 v2.0.11
 	github.com/nicksnyder/go-i18n/v2 v2.6.1
@@ -82,9 +82,9 @@ require (
 	github.com/yeqown/reedsolomon v1.0.0 // indirect
 	go.mongodb.org/mongo-driver/v2 v2.5.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
-	go.opentelemetry.io/otel v1.42.0 // indirect
-	go.opentelemetry.io/otel/metric v1.42.0 // indirect
-	go.opentelemetry.io/otel/trace v1.42.0 // indirect
+	go.opentelemetry.io/otel v1.43.0 // indirect
+	go.opentelemetry.io/otel/metric v1.43.0 // indirect
+	go.opentelemetry.io/otel/trace v1.43.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.25.0 // indirect
 	golang.org/x/crypto v0.49.0 // indirect
