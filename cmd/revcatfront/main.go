@@ -28,6 +28,7 @@ import (
 	"github.com/je4/ink3/v2/data/certs"
 	"github.com/je4/ink3/v2/data/web/static"
 	"github.com/je4/ink3/v2/data/web/templates/ink"
+	"github.com/je4/ink3/v2/data/web/templates/ink3"
 	performance "github.com/je4/ink3/v2/data/web/templates/perfomance"
 	"github.com/je4/ink3/v2/pkg/server"
 	"github.com/je4/revcat/v2/tools/client"
@@ -179,6 +180,8 @@ func main() {
 			templateFS = performance.FS
 		case "ink":
 			templateFS = ink.FS
+		case "ink3":
+			templateFS = ink3.FS
 		default:
 			logger.Fatal().Msgf("no template folder specified")
 		}

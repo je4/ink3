@@ -1,0 +1,39 @@
+{{- $mediaserverBase := .MediaserverBase }}
+{{- $source := .Source }}
+{{- $root := .RootPath }}
+{{- $lang := .Lang }}
+{{- $isExhibition := .Exhibition }}
+{{- $data := . }}
+
+{{ range $typedMedia := $source.Media }}
+    {{ $hasEpub := false}}
+    {{ if eq $typedMedia.GetType "default" }}
+        {{ range $id, $media := $typedMedia.GetItems }}
+            {{ if eq $media.GetMimetype "application/epub+zip" }}
+                {{ $hasEpub = true }}
+            {{ end }}
+        {{ end }}
+    {{ end }}
+    {{ if $hasEpub }}
+        <div class="accordion" id="accordionEPUB">
+            {{ range $id, $media := $typedMedia.GetItems }}
+                <div class="accordion-item borderedge">
+                    <h2 class="accordion-header"    >
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEPUB{{ $id }}" aria-expanded="{{ if eq $id 0 }}true{{ else }}false{{ end }}" aria-controls="collapseEPUB{{ $id }}">
+                            EPUB #{{ add $id 1 }}{{ if ne $media.Name "" }} - {{ $media.Name }}{{ end }}
+                        </button>
+                    </h2>
+                    <div id="collapseEPUB{{ $id }}" class="accordion-collapse collapse{{ if eq $id 0 }} show{{ end }}" data-bs-parent="#accordionEPUB">
+                        <div class="accordion-body">
+                            <div class="viewer-{{ $id }}" style="width:100%; height:800px;">
+                                <iframe src="{{ $root }}foliateviewer?epub={{ $media.URI }}" style="width: 100%;height: 100%;"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {{ end }}
+        </div>
+    {{ end }}
+{{ end }}
+
+

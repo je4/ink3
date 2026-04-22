@@ -1,0 +1,98 @@
+<!doctype html>
+{{- $lang := .Lang}}
+{{- $root := .RootPath }}
+{{- $searchBase := printf "%s/search/%s?" .SearchAddr .Lang }}
+<html lang="{{ $lang }}">
+<head>
+    {{ template "head.gohtml" . }}
+</head>
+
+<body class="w-100 bg">
+    {{ template "nav.gohtml" . }}
+
+<div class="container-fluid p-0 d-flex h-100">
+    <div class="px-4 py-1">
+        <div class="col-lg-8 mx-auto">
+        {{- if eq $lang "en" }}
+            <h1 class="pt-3">Contact</h1>
+
+            <h3 class="pt-3" style="font-variant: small-caps;">Collections of Swiss Performance Art</h3>
+            is a collaborative project. As a public collection, the HGK Basel FHNW media library makes this catalogue of the contents of its holdings freely available online.  The responsibility for the content of the website lies with the respective owners of the copyrights. For questions regarding the content of the portal and the selection, please contact persons of the collections and/or the Media Library of the Academy of Art and Design Basel FHNW. Technical support is provided by the Media Library.
+
+            <table class="mt-4">
+                <tbody>
+            {{- range $key, $coll := .Collections }}
+                <tr>
+                    <td><img style="width:60px;" class="any" src="{{ $root }}static/img/wesen_behaelter/{{ $coll.Image }}" /></td>
+                    <td class="px-2 align-text-top"><a href="{{ $coll.Url }}" target="_blank">{{ $coll.Title }}</a></td>
+                    <td class="px-2 align-text-top">{{ $coll.Contact }} </td>
+                </tr>
+            {{- end}}
+                </tbody>
+            </table>
+
+            <h6 class="pt-4">(c) 2024 Katalog für Sammlungen Performance Kunst Schweiz</h6>
+        {{- else if eq $lang "fr" }}
+            <h1 class="pt-3">Contact</h1>
+
+            <h3 class="pt-3" style="font-variant: small-caps;">Collections de l'Art Performance Suisse</h3>
+            est un projet de collaboration. En tant que collection publique, la médiathèque de la HGK Basel FHNW met librement à disposition en ligne ce catalogue sur les contenus des fonds qu'elle gère. La responsabilité du contenu du site web incombe aux titulaires respectifs des droits d'auteur. Pour des questions de contenu concernant le portail et la sélection, veuillez contacter directement la personne de contact de la collection et/ou la Médiathèque de la Haute école d'art et de design de Bâle FHNW. Le support technique est assuré par la Médiathèque.
+
+            <table class="mt-4">
+                <tbody>
+                {{- range $key, $coll := .Collections }}
+                    <tr>
+                        <td><img style="width:60px;" class="any" src="{{ $root }}static/img/wesen_behaelter/{{ $coll.Image }}" /></td>
+                        <td class="px-2 align-text-top"><a href="{{ $coll.Url }}" target="_blank">{{ $coll.Title }}</a></td>
+                        <td class="px-2 align-text-top">{{ $coll.Contact }} </td>
+                    </tr>
+                {{- end}}
+                </tbody>
+            </table>
+
+            <h6 class="pt-4">(c) 2024 Katalog für Sammlungen Performance Kunst Schweiz</h6>
+        {{- else if eq $lang "it" }}
+            <h1 class="pt-3">Contatto</h1>
+
+            <h3 class="pt-3" style="font-variant: small-caps;">Collezioni Performance Art Svizzera</h3>
+           è un progetto di collaborazione. In quanto collezione pubblica, la mediateca HGK Basel FHNW mette a disposizione gratuitamente online il catalogo dei contenuti del suo patrimonio. La responsabilità dei contenuti del sito web è dei rispettivi proprietari dei diritti d'autore. Per domande di contenuto riguardanti il portale e la selezione, si prega di contattare direttamente il referente della raccolta e/o la Mediateca della Scuola di Design e Arte di Basilea FHNW. Il supporto tecnico è fornito dalla Mediateca.
+
+            <table class="mt-4">
+                <tbody>
+                {{- range $key, $coll := .Collections }}
+                    <tr>
+                        <td><img style="width:60px;" class="any" src="{{ $root }}static/img/wesen_behaelter/{{ $coll.Image }}" /></td>
+                        <td class="px-2 align-text-top"><a href="{{ $coll.Url }}" target="_blank">{{ $coll.Title }}</a></td>
+                        <td class="px-2 align-text-top">{{ $coll.Contact }} </td>
+                    </tr>
+                {{- end}}
+                </tbody>
+            </table>
+
+            <h6 class="pt-4">(c) 2024 Katalog für Sammlungen Performance Kunst Schweiz</h6>
+        {{ else }}
+        <h1 class="pt-3">Kontakt</h1>
+
+        <h3 class="pt-3" style="font-variant: small-caps;">Sammlungen Performance Kunst Schweiz</h3>
+		ist ein Kooperationsprojekt. Die Mediathek der HGK Basel der Fachhochschule Nordwestschweiz stellt als öffentliche Sammlung diesen Katalog zu Inhalten der von ihr verwalteten Bestände frei online zur Verfügung. Die Verantwortung für die Inhalte der Website liegt bei den jeweiligen Inhaber:innen der Urheberrechte. Bei inhaltlichen Fragen zum Portal und der Auswahl wenden Sie sich bitte direkt an die Sammlungsverantwortlichen und/oder die Mediathek der Hochschule für Gestaltung und Kunst Basel FHNW. Die technische Betreuung erfolgt durch die Mediathek.
+        <table class="mt-4">
+            <tbody>
+            {{- range $key, $coll := .Collections }}
+                <tr>
+                    <td><img style="width:60px;" class="any" src="{{ $root }}static/img/wesen_behaelter/{{ $coll.Image }}" /></td>
+                    <td class="px-2 align-text-top"><a href="{{ $coll.Url }}" target="_blank">{{ $coll.Title }}</a></td>
+                    <td class="px-2 align-text-top">{{ $coll.Contact }} </td>
+                </tr>
+            {{- end}}
+            </tbody>
+        </table>
+
+        <h6 class="pt-4">(c) 2024 Katalog für Sammlungen Performance Kunst Schweiz</h6>
+        {{ end }}
+        </div>
+    </div>
+</div>
+    {{ template "footer.gohtml" . }}
+<script src="{{ .RootPath }}static/bootstrap/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+</body>
+</html>
