@@ -473,9 +473,12 @@ func (ctrl *Controller) refreshTemplateFiles() error {
 	})
 }
 
-func (ctrl *Controller) getTemplatesByPrefix(prefix string) []string {
+func (ctrl *Controller) getTemplatesByPrefix(prefix string, exclude ...string) []string {
 	var files []string
 	for _, file := range ctrl.templateFiles {
+		if slices.Contains(exclude, file) {
+			continue
+		}
 		// Regel: Dateien, die mit dem Präfix beginnen ODER keinen Unterstrich enthalten
 		// (Kein Unterstrich schließt head.gohtml, nav.gohtml, footer.gohtml etc. ein)
 		if strings.HasPrefix(file, prefix) || !strings.Contains(file, "_") {
@@ -845,7 +848,7 @@ func (ctrl *Controller) impressumPage(c *gin.Context) {
 	}
 
 	templateName := "impressum.gohtml"
-	files := ctrl.getTemplatesByPrefix("impressum_")
+	files := ctrl.getTemplatesByPrefix("impressum_", "index.gohtml", "kontakt.gohtml", "search_grid.gohtml", "detail.gohtml", "zoom.gohtml")
 	impressumTemplate, err := ctrl.loadHTMLTemplate(templateName, files)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
@@ -964,7 +967,7 @@ func (ctrl *Controller) kontaktPage(c *gin.Context) {
 	}
 
 	templateName := "kontakt.gohtml"
-	files := ctrl.getTemplatesByPrefix("kontakt_")
+	files := ctrl.getTemplatesByPrefix("kontakt_", "index.gohtml", "impressum.gohtml", "search_grid.gohtml", "detail.gohtml", "zoom.gohtml")
 	impressumTemplate, err := ctrl.loadHTMLTemplate(templateName, files)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
@@ -1083,7 +1086,7 @@ func (ctrl *Controller) indexPage(ctx *gin.Context) {
 	}
 
 	templateName := "index.gohtml"
-	files := ctrl.getTemplatesByPrefix("index_")
+	files := ctrl.getTemplatesByPrefix("index_", "impressum.gohtml", "kontakt.gohtml", "search_grid.gohtml", "detail.gohtml", "zoom.gohtml")
 	indexTemplate, err := ctrl.loadHTMLTemplate(templateName, files)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
@@ -1305,7 +1308,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		lang = "de"
 	}
 	templateName := "search_grid.gohtml"
-	files := ctrl.getTemplatesByPrefix("search_")
+	files := ctrl.getTemplatesByPrefix("search_", "index.gohtml", "impressum.gohtml", "kontakt.gohtml", "detail.gohtml", "zoom.gohtml")
 	gridTemplate, err := ctrl.loadHTMLTemplate(templateName, files)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
@@ -1732,7 +1735,7 @@ func (ctrl *Controller) detailText(c *gin.Context) {
 		MediaserverBase: ctrl.mediaserverBase,
 	}
 
-	files := ctrl.getTemplatesByPrefix("detail_")
+	files := ctrl.getTemplatesByPrefix("detail_", "index.gohtml", "impressum.gohtml", "kontakt.gohtml", "search_grid.gohtml", "zoom.gohtml")
 	tpl, err := ctrl.loadTextTemplate(templateName, files)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
@@ -1765,7 +1768,7 @@ func (ctrl *Controller) foliateViewer(c *gin.Context) {
 		Media:    mediaUrl,
 	}
 	templateName := "foliatejsviewer.gohtml"
-	files := ctrl.getTemplatesByPrefix("foliatejs")
+	files := ctrl.getTemplatesByPrefix("foliatejs", "index.gohtml", "impressum.gohtml", "kontakt.gohtml", "search_grid.gohtml", "detail.gohtml", "zoom.gohtml")
 	tpl, err := ctrl.loadHTMLTemplate(templateName, files)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
@@ -1808,7 +1811,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 
 	}
 	templateName := "detail.gohtml"
-	files := ctrl.getTemplatesByPrefix("detail_")
+	files := ctrl.getTemplatesByPrefix("detail_", "index.gohtml", "impressum.gohtml", "kontakt.gohtml", "search_grid.gohtml", "zoom.gohtml")
 	textTemplate, err := ctrl.loadHTMLTemplate(templateName, files)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
@@ -2010,7 +2013,7 @@ func (ctrl *Controller) zoomPage(c *gin.Context) {
 		lang = "de"
 	}
 	templateName := "zoom.gohtml"
-	files := ctrl.getTemplatesByPrefix("zoom_")
+	files := ctrl.getTemplatesByPrefix("zoom_", "index.gohtml", "impressum.gohtml", "kontakt.gohtml", "search_grid.gohtml", "detail.gohtml")
 	zoomTemplate, err := ctrl.loadHTMLTemplate(templateName, files)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
