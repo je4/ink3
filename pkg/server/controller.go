@@ -457,7 +457,38 @@ func GetUser(ctx *gin.Context) *User {
 	return user
 }
 
+func (ctrl *Controller) refreshTemplateFiles() error {
+	ctrl.templateFiles = []string{}
+	return fs.WalkDir(ctrl.templateFS, ".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !d.IsDir() {
+			ext := strings.ToLower(filepath.Ext(path))
+			if ext == ".gohtml" || ext == ".gotmpl" {
+				ctrl.templateFiles = append(ctrl.templateFiles, path)
+			}
+		}
+		return nil
+	})
+}
+
+func (ctrl *Controller) getTemplatesByPrefix(prefix string) []string {
+	var files []string
+	for _, file := range ctrl.templateFiles {
+		// Regel: Dateien, die mit dem Präfix beginnen ODER keinen Unterstrich enthalten
+		// (Kein Unterstrich schließt head.gohtml, nav.gohtml, footer.gohtml etc. ein)
+		if strings.HasPrefix(file, prefix) || !strings.Contains(file, "_") {
+			files = append(files, file)
+		}
+	}
+	return files
+}
+
 func (ctrl *Controller) init() error {
+	if err := ctrl.refreshTemplateFiles(); err != nil {
+		return errors.Wrapf(err, "cannot refresh template files")
+	}
 	router := gin.Default()
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
@@ -729,6 +760,7 @@ type Controller struct {
 	cert                *tls.Certificate
 	logger              zLogger.ZLogger
 	templateFS          fs.FS
+	templateFiles       []string // Liste aller .gohtml und .gotmpl Dateien
 	staticFS            fs.FS
 	dataFS              fs.FS
 	dir                 *directus.Directus
@@ -813,7 +845,8 @@ func (ctrl *Controller) impressumPage(c *gin.Context) {
 	}
 
 	templateName := "impressum.gohtml"
-	impressumTemplate, err := ctrl.loadHTMLTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
+	files := ctrl.getTemplatesByPrefix("impressum_")
+	impressumTemplate, err := ctrl.loadHTMLTemplate(templateName, files)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
@@ -931,7 +964,8 @@ func (ctrl *Controller) kontaktPage(c *gin.Context) {
 	}
 
 	templateName := "kontakt.gohtml"
-	impressumTemplate, err := ctrl.loadHTMLTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
+	files := ctrl.getTemplatesByPrefix("kontakt_")
+	impressumTemplate, err := ctrl.loadHTMLTemplate(templateName, files)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
@@ -1049,7 +1083,8 @@ func (ctrl *Controller) indexPage(ctx *gin.Context) {
 	}
 
 	templateName := "index.gohtml"
-	indexTemplate, err := ctrl.loadHTMLTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
+	files := ctrl.getTemplatesByPrefix("index_")
+	indexTemplate, err := ctrl.loadHTMLTemplate(templateName, files)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
@@ -1270,7 +1305,8 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		lang = "de"
 	}
 	templateName := "search_grid.gohtml"
-	gridTemplate, err := ctrl.loadHTMLTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
+	files := ctrl.getTemplatesByPrefix("search_")
+	gridTemplate, err := ctrl.loadHTMLTemplate(templateName, files)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
@@ -1696,7 +1732,8 @@ func (ctrl *Controller) detailText(c *gin.Context) {
 		MediaserverBase: ctrl.mediaserverBase,
 	}
 
-	tpl, err := ctrl.loadTextTemplate(templateName, []string{templateName})
+	files := ctrl.getTemplatesByPrefix("detail_")
+	tpl, err := ctrl.loadTextTemplate(templateName, files)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
@@ -1728,7 +1765,8 @@ func (ctrl *Controller) foliateViewer(c *gin.Context) {
 		Media:    mediaUrl,
 	}
 	templateName := "foliatejsviewer.gohtml"
-	tpl, err := ctrl.loadHTMLTemplate(templateName, []string{"foliatejsviewer.gohtml"})
+	files := ctrl.getTemplatesByPrefix("foliatejs")
+	tpl, err := ctrl.loadHTMLTemplate(templateName, files)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
@@ -1770,20 +1808,8 @@ func (ctrl *Controller) detail(c *gin.Context) {
 
 	}
 	templateName := "detail.gohtml"
-	textTemplate, err := ctrl.loadHTMLTemplate(templateName, []string{
-		"head.gohtml",
-		"footer.gohtml",
-		"nav.gohtml",
-		"detail_image.gohtml",
-		"detail_video.gohtml",
-		"detail_audio.gohtml",
-		"detail_pdf_dflip.gohtml",
-		"detail_verovio.gohtml",
-		"detail_webrecorder.gohtml",
-		"detail_epub_foliate.gohtml",
-		//"detail_pdf_pdfjs.gohtml",
-		//"detail_pdf_3dflipbook.gohtml",
-		templateName})
+	files := ctrl.getTemplatesByPrefix("detail_")
+	textTemplate, err := ctrl.loadHTMLTemplate(templateName, files)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
@@ -1984,7 +2010,8 @@ func (ctrl *Controller) zoomPage(c *gin.Context) {
 		lang = "de"
 	}
 	templateName := "zoom.gohtml"
-	zoomTemplate, err := ctrl.loadHTMLTemplate(templateName, []string{"head.gohtml", "footer.gohtml", "nav.gohtml", templateName})
+	files := ctrl.getTemplatesByPrefix("zoom_")
+	zoomTemplate, err := ctrl.loadHTMLTemplate(templateName, files)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
