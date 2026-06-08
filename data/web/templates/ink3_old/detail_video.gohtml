@@ -1,0 +1,46 @@
+{{- $mediaserverBase := .MediaserverBase }}
+{{- $source := .Source }}
+{{- $data := . }}
+{{ range $typedMedia := $source.Media }}
+    {{ if eq $typedMedia.GetType "video" }}
+        {{ range $key, $media := $typedMedia.GetItems }}
+            {{- $size := calcAspectSize $media.Width $media.Height 600 480 }}
+        <div class="borderedge mt-2">
+            <table style="border: none; margin-left:auto;margin-right:auto;">
+                <tr>
+                    <td colspan="5" style="height: 480px;">
+                        <video
+                                id="video-{{ $key }}"
+                                class="video-js vjs-fill"
+                                controls
+                                preload="auto"
+                                width="{{ $size.Width }}"
+                                height="{{ $size.Height }}"
+                                poster="{{ medialink (printf "%s%s" $media.URI "$$timeshot$$3") "resize" (printf "size%vx%v/formatPNG/autorotate" $size.Width $size.Height) (and $source.Base.MediaVisible $source.Base.MediaProtected) }}"
+                                data-setup="{}"
+                        >
+                            <source src="{{ medialink (printf "%s%s" $media.URI "$$web") "master" "" (and $source.Base.MediaVisible $source.Base.MediaProtected) }}" type="video/mp4" />
+                            <p class="vjs-no-js">
+                                To view this video please enable JavaScript, and consider upgrading to a
+                                web browser that
+                                <a href="https://videojs.com/html5-video-support/" target="_blank"
+                                >supports HTML5 video</a
+                                >
+                            </p>
+                        </video>
+                    </td>
+                </tr>
+                <tr>
+                    {{ range $num := list 3 8 12 17 22 }}
+                        <td>
+                            <a onclick="videoJumpToShot('video-{{ $key }}', {{ $num }})">
+                                <img width="100%" xwidth="{{ div $size.Width 5 }}" xheight="{{ div $size.Height 5 }}" class="bd-placeholder-img" src="{{ medialink (printf "%s%s%v" $media.URI "$$timeshot$$" $num) "resize" (printf "size%vx%v/formatPNG/autorotate" (div $size.Width 5) (div $size.Height 5)) (and $source.Base.MediaVisible $source.Base.MediaProtected) }}" />
+                            </a>
+                        </td>
+                    {{ end }}
+                </tr>
+            </table>
+        </div>
+        {{ end }}
+    {{ end }}
+{{ end }}

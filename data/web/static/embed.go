@@ -8,7 +8,7 @@ import "embed"
 // go:embed sounds/*
 // go:embed images/dark-loader.gif images/light-loader.gif
 //
-//go:embed js/search.js js/d3.js js/d3bubble.js
+//go:embed js/search.js js/d3.js js/d3bubble.js js/script.js
 //go:embed bootstrap/css/bootstrap.min.css bootstrap/css/bootstrap.min.css.map
 //go:embed bootstrap/js/bootstrap.bundle.min.js bootstrap/js/bootstrap.bundle.min.js.map
 //go:embed bootstrap-icons/font/bootstrap-icons.min.css bootstrap-icons/font/fonts/bootstrap-icons.woff2
@@ -22,7 +22,7 @@ import "embed"
 //go:embed img/prev*.png img/next*.png img/?.png img/??.png img/hook.png img/line_medium.png img/line_short.png
 //go:embed img/ki.png img/ki2.png img/lupe.png img/prev2.png img/index_bg2.jpg img/index_bg_dark.jpg img/index_bg_light.jpg
 //go:embed img/lupe_black.png img/ki2_black.png img/coll_act.png img/wesen_behaelter/*_klein.png img/sdmllogo.png
-//go:embed img/viaf.png
+//go:embed img/viaf.png img/fhnw-logo.svg
 //go:embed img/access_denied_dark.png img/access_denied_light.png
 //go:embed flag-icons/css/flag-icons.min.css flag-icons/flags/4x3/de.svg flag-icons/flags/4x3/gb-eng.svg
 //go:embed flag-icons/flags/4x3/fr.svg flag-icons/flags/4x3/it.svg
@@ -31,7 +31,7 @@ import "embed"
 //go:embed pdf.js/build/pdf.mjs pdf.js/web/cmaps/* pdf.js/build/pdf.worker.mjs
 //go:embed openseadragon/images/* openseadragon/openseadragon.min.js openseadragon/openseadragon.min.js.map
 //go:embed css/_csp_dark.scss css/_csp_light.scss css/csp.css css/ibm-plex*.css
-//go:embed css/_ink_dark.scss css/_csp_light.scss css/ink.css
+//go:embed css/_ink_dark.scss css/_csp_light.scss css/ink.css css/reset_mukesh.css
 //go:embed dflip/css/* dflip/js/* dflip/fonts/* dflip/images/* dflip/sound/*
 //go:embed foliatereader/reader.js foliate-js/*.js foliate-js/ui/* foliate-js/vendor/*
 //go:embed performance_manifest.json performance_*.png

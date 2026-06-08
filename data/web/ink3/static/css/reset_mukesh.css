@@ -1,0 +1,151 @@
+/* ============================================
+   reset.css — Global CSS Reset
+   Include this FIRST before any other styles
+   ============================================ */
+
+/* ── Box model ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* ── Remove default margins & padding ── */
+* {
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Document ── */
+html {
+  /*
+    Prevent font size inflation on mobile after orientation change.
+    Note: -moz-text-size-adjust is NOT a real Firefox property (Firefox
+    never implemented it). Only -webkit- and unprefixed are needed.
+  */
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+
+  /* Smooth scrolling for anchor links. Overridden by prefers-reduced-motion below. */
+  scroll-behavior: smooth;
+}
+
+/* ── Body ── */
+body {
+  /* WCAG recommended minimum line height for readability */
+  line-height: 1.5;
+
+  /*
+    Improves text rendering on macOS/iOS (subpixel → antialiased).
+    No effect on Windows or Linux. Progressive enhancement only.
+  */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Typography ── */
+h1, h2, h3, h4, h5, h6 {
+  /*
+    Balances heading line breaks to avoid single orphaned words.
+    Progressive enhancement: Chrome 114+, Firefox 121+.
+    Older browsers silently ignore it — safe to use.
+  */
+  text-wrap: balance;
+}
+
+p, li, figcaption {
+  /*
+    Prevents orphaned words at end of paragraphs.
+    Progressive enhancement: Chrome 117+, Firefox 121+.
+    text-wrap: pretty;
+  */
+}
+
+/* ── Media ── */
+img, video, canvas, svg, picture {
+  /* Prevent overflow outside container */
+  max-width: 100%;
+
+  /*
+    Images are inline by default, which creates a gap below them
+    caused by the text baseline. display:block removes it.
+  */
+  display: block;
+  
+  
+}
+
+img, video {
+  /* Maintain aspect ratio when width is constrained */
+  height: auto;
+}
+
+/* ── Forms ── */
+input, button, textarea, select {
+  /* Form elements use a different font than body by default */
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+  /*
+    Strips default browser button border and background.
+    Note: you must restyle every button intentionally after this.
+    Remove these two lines if your team prefers to style buttons explicitly.
+  */
+  border: none;
+  background: none;
+}
+
+/* ── Lists ── */
+ul[role], ol[role] {
+  /*
+    Scoped to lists with an explicit role attribute only.
+    Reason: VoiceOver on Safari stops announcing <ul> as a list
+    when list-style:none is applied without role="list".
+    Add role="list" to any <ul>/<ol> that is semantically a list.
+  */
+  list-style: none;
+}
+
+/* ── Links ── */
+a {
+  color: inherit;
+  /*
+    Removes underline. WCAG 1.4.1 requires links to be distinguishable
+    from surrounding text by more than color alone.
+    Ensure your links have sufficient color contrast OR restore underlines
+    where links appear inline within body text.
+  */
+  text-decoration: none;
+}
+
+/* ── Tables ── */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* ── Accessibility: Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  /*
+    Disables animations/transitions for users with vestibular disorders.
+    WCAG 2.1 Success Criterion 2.3.3 (AAA) requires this.
+    Uses 0.01ms instead of 0 so JS animationend/transitionend events still fire.
+  */
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Accessibility: Focus Ring ── */
+:focus-visible {
+  /*
+    Shows focus ring only for keyboard navigation, not mouse clicks.
+    Never use outline:none without :focus-visible — it breaks keyboard nav.
+    currentColor adapts to any text color automatically.
+  */
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
