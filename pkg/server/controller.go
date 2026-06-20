@@ -861,9 +861,11 @@ func (ctrl *Controller) impressumPage(c *gin.Context) {
 	type tplData struct {
 		baseData
 		Collections map[int64]*CollFacetType `json:"collections"`
+		Catalogs    map[int64]*CollFacetType `json:"catalogs"`
 	}
 	var data = &tplData{
 		Collections: map[int64]*CollFacetType{},
+		Catalogs:    map[int64]*CollFacetType{},
 		baseData: baseData{
 			Lang:       lang,
 			RootPath:   "../../",
@@ -907,6 +909,39 @@ func (ctrl *Controller) impressumPage(c *gin.Context) {
 			return
 		}
 	}
+	catFacet := &client.InFacet{
+		Term: &client.InFacetTerm{
+			Name:        "catalogs",
+			Field:       "catalog.keyword",
+			Size:        200,
+			MinDocCount: 0,
+			Include:     []string{},
+			Exclude:     []string{},
+		},
+		Query: &client.InFilter{
+			BoolTerm: &client.InFilterBoolTerm{
+				Field:  "tags.keyword",
+				Values: []string{},
+				And:    false,
+			},
+		},
+	}
+	for _, cat := range ctrl.catalogs {
+		parts := strings.SplitN(cat.Identifier, ":", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		val := strings.Trim(parts[1], "\" ")
+		catFacet.Term.Include = append(catFacet.Term.Include, val)
+		switch parts[0] {
+		case "catalog":
+			catFacet.Query.BoolTerm.Values = append(catFacet.Query.BoolTerm.Values, val)
+		default:
+			ctrl.logger.Error().Err(err).Msgf("unknown catalog identifier '%s'", cat.Identifier)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("unknown catalog identifier '%s'", cat.Identifier))
+			return
+		}
+	}
 	var size int64 = 1
 	var sortField = c.Query("sortField")
 	var sortOrder = c.Query("sortOrder")
@@ -917,7 +952,11 @@ func (ctrl *Controller) impressumPage(c *gin.Context) {
 			Order: sortOrder,
 		})
 	}
-	result, err := ctrl.client.Search(c, "", []*client.InFacet{collFacet}, nil, nil, nil, &size, nil, sort)
+	facets := []*client.InFacet{collFacet}
+	if len(catFacet.Query.BoolTerm.Values) > 0 {
+		facets = append(facets, catFacet)
+	}
+	result, err := ctrl.client.Search(c, "", facets, nil, nil, nil, &size, nil, sort)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", "")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", "", err))
@@ -926,6 +965,9 @@ func (ctrl *Controller) impressumPage(c *gin.Context) {
 
 	for _, coll := range ctrl.collections {
 		data.Collections[coll.Id] = coll
+	}
+	for _, cat := range ctrl.catalogs {
+		data.Catalogs[cat.Id] = cat
 	}
 
 	for _, facet := range result.GetSearch().GetFacets() {
@@ -946,6 +988,25 @@ func (ctrl *Controller) impressumPage(c *gin.Context) {
 					cVal := strings.Trim(parts[1], "\" ")
 					if cVal == facetStr {
 						coll.Count = int(strVal.GetCount())
+					}
+				}
+			}
+		case "catalogs":
+			for _, val := range facet.GetValues() {
+				strVal := val.GetFacetValueString()
+				if strVal == nil {
+					continue
+				}
+				facetStr := strVal.GetStrVal()
+				cats := data.Catalogs
+				for _, cat := range cats {
+					parts := strings.SplitN(cat.Identifier, ":", 2)
+					if len(parts) != 2 {
+						continue
+					}
+					cVal := strings.Trim(parts[1], "\" ")
+					if cVal == facetStr {
+						cat.Count = int(strVal.GetCount())
 					}
 				}
 			}
@@ -980,9 +1041,11 @@ func (ctrl *Controller) kontaktPage(c *gin.Context) {
 	type tplData struct {
 		baseData
 		Collections map[int64]*CollFacetType `json:"collections"`
+		Catalogs    map[int64]*CollFacetType `json:"catalogs"`
 	}
 	var data = &tplData{
 		Collections: map[int64]*CollFacetType{},
+		Catalogs:    map[int64]*CollFacetType{},
 		baseData: baseData{
 			Lang:       lang,
 			RootPath:   "../../",
@@ -1026,6 +1089,39 @@ func (ctrl *Controller) kontaktPage(c *gin.Context) {
 			return
 		}
 	}
+	catFacet := &client.InFacet{
+		Term: &client.InFacetTerm{
+			Name:        "catalogs",
+			Field:       "category.keyword",
+			Size:        200,
+			MinDocCount: 0,
+			Include:     []string{},
+			Exclude:     []string{},
+		},
+		Query: &client.InFilter{
+			BoolTerm: &client.InFilterBoolTerm{
+				Field:  "tags.keyword",
+				Values: []string{},
+				And:    false,
+			},
+		},
+	}
+	for _, cat := range ctrl.catalogs {
+		parts := strings.SplitN(cat.Identifier, ":", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		val := strings.Trim(parts[1], "\" ")
+		catFacet.Term.Include = append(catFacet.Term.Include, val)
+		switch parts[0] {
+		case "catalog":
+			catFacet.Query.BoolTerm.Values = append(catFacet.Query.BoolTerm.Values, val)
+		default:
+			ctrl.logger.Error().Err(err).Msgf("unknown catalog identifier '%s'", cat.Identifier)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("unknown catalog identifier '%s'", cat.Identifier))
+			return
+		}
+	}
 	var size int64 = 1
 	var sortField = c.Query("sortField")
 	var sortOrder = c.Query("sortOrder")
@@ -1036,7 +1132,11 @@ func (ctrl *Controller) kontaktPage(c *gin.Context) {
 			Order: sortOrder,
 		})
 	}
-	result, err := ctrl.client.Search(c, "", []*client.InFacet{collFacet}, nil, nil, nil, &size, nil, sort)
+	facets := []*client.InFacet{collFacet}
+	if len(catFacet.Query.BoolTerm.Values) > 0 {
+		facets = append(facets, catFacet)
+	}
+	result, err := ctrl.client.Search(c, "", facets, nil, nil, nil, &size, nil, sort)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", "")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", "", err))
@@ -1045,6 +1145,9 @@ func (ctrl *Controller) kontaktPage(c *gin.Context) {
 
 	for _, coll := range ctrl.collections {
 		data.Collections[coll.Id] = coll
+	}
+	for _, cat := range ctrl.catalogs {
+		data.Catalogs[cat.Id] = cat
 	}
 
 	for _, facet := range result.GetSearch().GetFacets() {
@@ -1065,6 +1168,25 @@ func (ctrl *Controller) kontaktPage(c *gin.Context) {
 					cVal := strings.Trim(parts[1], "\" ")
 					if cVal == facetStr {
 						coll.Count = int(strVal.GetCount())
+					}
+				}
+			}
+		case "catalogs":
+			for _, val := range facet.GetValues() {
+				strVal := val.GetFacetValueString()
+				if strVal == nil {
+					continue
+				}
+				facetStr := strVal.GetStrVal()
+				cats := data.Catalogs
+				for _, cat := range cats {
+					parts := strings.SplitN(cat.Identifier, ":", 2)
+					if len(parts) != 2 {
+						continue
+					}
+					cVal := strings.Trim(parts[1], "\" ")
+					if cVal == facetStr {
+						cat.Count = int(strVal.GetCount())
 					}
 				}
 			}
@@ -1099,9 +1221,11 @@ func (ctrl *Controller) indexPage(ctx *gin.Context) {
 	type tplData struct {
 		baseData
 		Collections map[int64]*CollFacetType `json:"collections"`
+		Catalogs    map[int64]*CollFacetType `json:"catalogs"`
 	}
 	var data = &tplData{
 		Collections: map[int64]*CollFacetType{},
+		Catalogs:    map[int64]*CollFacetType{},
 		baseData: baseData{
 			Lang:       lang,
 			RootPath:   "",
@@ -1124,29 +1248,76 @@ func (ctrl *Controller) indexPage(ctx *gin.Context) {
 			Exclude:     []string{},
 		},
 		Query: &client.InFilter{
-			BoolTerm: &client.InFilterBoolTerm{
-				Field:  "tags.keyword",
-				Values: []string{},
-				And:    false,
+			ExistsTerm: &client.InFilterExistsTerm{
+				Field: "signature",
 			},
+			/*
+				BoolTerm: &client.InFilterBoolTerm{
+					Field:  "category.keyword",
+					Values: []string{},
+					And:    false,
+				},
+			*/
 		},
 	}
-	for _, coll := range ctrl.collections {
-		parts := strings.SplitN(coll.Identifier, ":", 2)
-		if len(parts) != 2 {
-			continue
+	/*
+		for _, coll := range ctrl.collections {
+			parts := strings.SplitN(coll.Identifier, ":", 2)
+			if len(parts) != 2 {
+				continue
+			}
+			val := strings.Trim(parts[1], "\" ")
+			collFacet.Term.Include = append(collFacet.Term.Include, val)
+			switch parts[0] {
+			case "cat":
+				collFacet.Query.BoolTerm.Values = append(collFacet.Query.BoolTerm.Values, val)
+			default:
+				ctrl.logger.Error().Err(err).Msgf("unknown collection identifier '%s'", coll.Identifier)
+				ctx.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("unknown collection identifier '%s'", coll.Identifier))
+				return
+			}
 		}
-		val := strings.Trim(parts[1], "\" ")
-		collFacet.Term.Include = append(collFacet.Term.Include, val)
-		switch parts[0] {
-		case "cat":
-			collFacet.Query.BoolTerm.Values = append(collFacet.Query.BoolTerm.Values, val)
-		default:
-			ctrl.logger.Error().Err(err).Msgf("unknown collection identifier '%s'", coll.Identifier)
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("unknown collection identifier '%s'", coll.Identifier))
-			return
-		}
+	*/
+	catFacet := &client.InFacet{
+		Term: &client.InFacetTerm{
+			Name:        "catalogs",
+			Field:       "catalog.keyword",
+			Size:        200,
+			MinDocCount: 0,
+			Include:     []string{},
+			Exclude:     []string{},
+		},
+		Query: &client.InFilter{
+			ExistsTerm: &client.InFilterExistsTerm{
+				Field: "signature",
+			},
+			/*
+				BoolTerm: &client.InFilterBoolTerm{
+					Field:  "catalog.keyword",
+					Values: []string{},
+					And:    false,
+				},
+			*/
+		},
 	}
+	/*
+		for _, cat := range ctrl.catalogs {
+			parts := strings.SplitN(cat.Identifier, ":", 2)
+			if len(parts) != 2 {
+				continue
+			}
+			val := strings.Trim(parts[1], "\" ")
+			catFacet.Term.Include = append(catFacet.Term.Include, val)
+			switch parts[0] {
+			case "catalog":
+				catFacet.Query.BoolTerm.Values = append(catFacet.Query.BoolTerm.Values, val)
+			default:
+				ctrl.logger.Error().Err(err).Msgf("unknown catalog identifier '%s'", cat.Identifier)
+				ctx.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("unknown catalog identifier '%s'", cat.Identifier))
+				return
+			}
+		}
+	*/
 	var size int64 = 1
 	var sortField = ctx.Query("sortField")
 	var sortOrder = ctx.Query("sortOrder")
@@ -1171,10 +1342,18 @@ func (ctrl *Controller) indexPage(ctx *gin.Context) {
 			},
 		},
 	}
-	facets := []*client.InFacet{}
-	if len(collFacet.Query.BoolTerm.Values) > 0 {
-		facets = append(facets, collFacet)
+	facets := []*client.InFacet{
+		collFacet,
+		catFacet,
 	}
+	/*
+		if collFacet.Query != nil && len(collFacet.Query.BoolTerm.Values) > 0 {
+			facets = append(facets, collFacet)
+		}
+		if catFacet.Query != nil && len(catFacet.Query.BoolTerm.Values) > 0 {
+			facets = append(facets, catFacet)
+		}
+	*/
 	result, err := ctrl.client.Search(ctx, "", facets, filter, nil, nil, &size, nil, sort)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", "")
@@ -1185,14 +1364,9 @@ func (ctrl *Controller) indexPage(ctx *gin.Context) {
 	//var str string
 	for _, coll := range ctrl.collections {
 		data.Collections[coll.Id] = coll
-		/*
-			str += fmt.Sprintf("[[collection]]\n")
-			str += fmt.Sprintf("id = %d\n", coll.Id)
-			str += fmt.Sprintf("identifier = \"%s\"\n", strings.Replace(coll.Identifier, "\"", "\\\"", -1))
-			str += fmt.Sprintf("title = \"%s\"\n", strings.Replace(coll.GetTitle(), "\"", "\\\"", -1))
-			str += fmt.Sprintf("url = \"%s\"\n", coll.GetUrl())
-			str += fmt.Sprintf("image = \"%s\"\n\n", coll.Image)
-		*/
+	}
+	for _, cat := range ctrl.catalogs {
+		data.Catalogs[cat.Id] = cat
 	}
 	//ctrl.logger.Debug().Msg(str)
 
@@ -1214,6 +1388,25 @@ func (ctrl *Controller) indexPage(ctx *gin.Context) {
 					cVal := strings.Trim(parts[1], "\" ")
 					if cVal == facetStr {
 						coll.Count = int(strVal.GetCount())
+					}
+				}
+			}
+		case "catalogs":
+			for _, val := range facet.GetValues() {
+				strVal := val.GetFacetValueString()
+				if strVal == nil {
+					continue
+				}
+				facetStr := strVal.GetStrVal()
+				cats := data.Catalogs
+				for _, cat := range cats {
+					parts := strings.SplitN(cat.Identifier, ":", 2)
+					if len(parts) != 2 {
+						continue
+					}
+					cVal := strings.Trim(parts[1], "\" ")
+					if cVal == facetStr {
+						cat.Count = int(strVal.GetCount())
 					}
 				}
 			}
@@ -1337,6 +1530,16 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		}
 		collectionIDs = append(collectionIDs, collID)
 	}
+	catalogsString := c.Query("catalogs")
+	parts = strings.Split(catalogsString, ",")
+	catalogIDs := []int{}
+	for _, part := range parts {
+		catID, err := strconv.Atoi(part)
+		if err != nil || catID == 0 {
+			continue
+		}
+		catalogIDs = append(catalogIDs, catID)
+	}
 	vocabularyString := c.Query("vocabulary")
 	parts = strings.Split(vocabularyString, ",")
 	vocabularyIDs := []string{}
@@ -1405,6 +1608,41 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 			}
 		}
 	}
+	catFacet := &client.InFacet{
+		Term: &client.InFacetTerm{
+			Name:        "catalogs",
+			Field:       "category.keyword",
+			Size:        200,
+			MinDocCount: 0,
+			Include:     []string{},
+			Exclude:     []string{},
+		},
+		Query: &client.InFilter{
+			BoolTerm: &client.InFilterBoolTerm{
+				Field:  "category.keyword",
+				Values: []string{},
+				And:    false,
+			},
+		},
+	}
+	for _, cat := range ctrl.catalogs {
+		parts := strings.SplitN(cat.Identifier, ":", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		val := strings.Trim(parts[1], "\" ")
+		catFacet.Term.Include = append(catFacet.Term.Include, val)
+		if len(catalogIDs) == 0 || slices.Contains(catalogIDs, int(cat.Id)) {
+			switch parts[0] {
+			case "catalog":
+				catFacet.Query.BoolTerm.Values = append(catFacet.Query.BoolTerm.Values, val)
+			default:
+				ctrl.logger.Error().Err(err).Msgf("unknown catalog identifier '%s'", cat.Identifier)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("unknown catalog identifier '%s'", cat.Identifier))
+				return
+			}
+		}
+	}
 
 	var result *client.Search
 	var embedding64 = []float64{}
@@ -1456,7 +1694,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 			})
 		}
 	}
-	result, err = ctrl.client.Search(c, queryString, []*client.InFacet{collFacet, vocFacet}, filter, embedding64, nil, nil, &cursorString, sort)
+	result, err = ctrl.client.Search(c, queryString, []*client.InFacet{collFacet, catFacet, vocFacet}, filter, embedding64, nil, nil, &cursorString, sort)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", searchString)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", searchString, err))
@@ -1470,6 +1708,12 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 	}
 
 	type collFacetType struct {
+		ID      int    `json:"id"`
+		Name    string `json:"name"`
+		Count   int    `json:"count"`
+		Checked bool   `json:"checked"`
+	}
+	type catFacetType struct {
 		ID      int    `json:"id"`
 		Name    string `json:"name"`
 		Count   int    `json:"count"`
@@ -1492,6 +1736,9 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 	if collectionsString != "" {
 		currentSearchURL.Set("collections", collectionsString)
 	}
+	if catalogsString != "" {
+		currentSearchURL.Set("catalogs", catalogsString)
+	}
 	if vocabularyString != "" {
 		currentSearchURL.Set("vocabulary", vocabularyString)
 	}
@@ -1510,6 +1757,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		MediaserverBase  string                     `json:"mediaserverBase"`
 		RequestQuery     *queryData                 `json:"request"`
 		CollectionFacets []*collFacetType           `json:"collectionFacets"`
+		CatalogFacets    []*catFacetType            `json:"catalogFacets"`
 		VocabularyFacets map[string][]*vocFacetType `json:"vocabularyFacets"`
 	}{
 		//Result:          result.GetSearch(),
@@ -1538,6 +1786,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 			Search: searchString,
 		},
 		CollectionFacets: []*collFacetType{},
+		CatalogFacets:    []*catFacetType{},
 		VocabularyFacets: map[string][]*vocFacetType{},
 	}
 	if data.baseData.User.IsLoggedIn() {
@@ -1640,6 +1889,30 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 						cf.Name = coll.Title
 						cf.Checked = slices.Contains(collectionIDs, int(coll.Id))
 						data.CollectionFacets = append(data.CollectionFacets, cf)
+					}
+				}
+			}
+		case "catalogs":
+			for _, val := range facet.GetValues() {
+				strVal := val.GetFacetValueString()
+				if strVal == nil {
+					continue
+				}
+				facetStr := strVal.GetStrVal()
+				cf := &catFacetType{
+					Count: int(strVal.GetCount()),
+				}
+				for _, cat := range ctrl.catalogs {
+					parts := strings.SplitN(cat.Identifier, ":", 2)
+					if len(parts) != 2 {
+						continue
+					}
+					cVal := strings.Trim(parts[1], "\" ")
+					if cVal == facetStr {
+						cf.ID = int(cat.Id)
+						cf.Name = cat.Title
+						cf.Checked = slices.Contains(catalogIDs, int(cat.Id))
+						data.CatalogFacets = append(data.CatalogFacets, cf)
 					}
 				}
 			}
