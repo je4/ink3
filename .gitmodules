@@ -1,0 +1,3 @@
+[submodule "ink3web"]
+	path = ink3web
+	url = https://github.com/je4/ink3web

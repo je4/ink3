@@ -92,6 +92,7 @@ type RevCatFrontConfig struct {
 	MediaserverKey      configutil.EnvString    `toml:"mediaserverkey"`
 	DataDir             string                  `toml:"datadir"`
 	Collections         []*server.CollFacetType `toml:"collections"`
+	Catalogs            []*server.CollFacetType `toml:"catalogs"`
 	FieldMapping        map[string]string       `toml:"fieldmapping"`
 	JWTKey              configutil.EnvString    `toml:"jwtkey"`
 	JWTAlg              string                  `toml:"jwtalg"`

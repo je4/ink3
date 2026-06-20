@@ -25,11 +25,11 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gqlgo/gqlgenc/clientv2"
 	"github.com/je4/ink3/v2/config"
+	performance "github.com/je4/ink3/v2/data/_web/templates/perfomance"
 	"github.com/je4/ink3/v2/data/certs"
-	"github.com/je4/ink3/v2/data/web/static"
-	"github.com/je4/ink3/v2/data/web/templates/ink"
-	"github.com/je4/ink3/v2/data/web/templates/ink3"
-	performance "github.com/je4/ink3/v2/data/web/templates/perfomance"
+	"github.com/je4/ink3/v2/ink3web/data/web/static"
+	"github.com/je4/ink3/v2/ink3web/data/web/templates/ink"
+	"github.com/je4/ink3/v2/ink3web/data/web/templates/ink3"
 	"github.com/je4/ink3/v2/pkg/server"
 	"github.com/je4/revcat/v2/tools/client"
 	"github.com/je4/utils/v2/pkg/openai"
@@ -285,6 +285,7 @@ func main() {
 		time.Duration(conf.MediaserverTokenExp),
 		bundle,
 		conf.Collections,
+		conf.Catalogs,
 		conf.FieldMapping,
 		embeddings,
 		conf.Templates != "",
