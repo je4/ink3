@@ -1611,35 +1611,43 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 	catFacet := &client.InFacet{
 		Term: &client.InFacetTerm{
 			Name:        "catalogs",
-			Field:       "category.keyword",
+			Field:       "catalog.keyword",
 			Size:        200,
 			MinDocCount: 0,
 			Include:     []string{},
 			Exclude:     []string{},
 		},
-		Query: &client.InFilter{
+	}
+	if len(catalogIDs) == 0 {
+		catFacet.Query = &client.InFilter{
+			ExistsTerm: &client.InFilterExistsTerm{
+				Field: "signature",
+			},
+		}
+	} else {
+		catFacet.Query = &client.InFilter{
 			BoolTerm: &client.InFilterBoolTerm{
-				Field:  "category.keyword",
+				Field:  "catalog.keyword",
 				Values: []string{},
 				And:    false,
 			},
-		},
-	}
-	for _, cat := range ctrl.catalogs {
-		parts := strings.SplitN(cat.Identifier, ":", 2)
-		if len(parts) != 2 {
-			continue
 		}
-		val := strings.Trim(parts[1], "\" ")
-		catFacet.Term.Include = append(catFacet.Term.Include, val)
-		if len(catalogIDs) == 0 || slices.Contains(catalogIDs, int(cat.Id)) {
-			switch parts[0] {
-			case "catalog":
-				catFacet.Query.BoolTerm.Values = append(catFacet.Query.BoolTerm.Values, val)
-			default:
-				ctrl.logger.Error().Err(err).Msgf("unknown catalog identifier '%s'", cat.Identifier)
-				c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("unknown catalog identifier '%s'", cat.Identifier))
-				return
+		for _, cat := range ctrl.catalogs {
+			parts := strings.SplitN(cat.Identifier, ":", 2)
+			if len(parts) != 2 {
+				continue
+			}
+			val := strings.Trim(parts[1], "\" ")
+			catFacet.Term.Include = append(catFacet.Term.Include, val)
+			if len(catalogIDs) == 0 || slices.Contains(catalogIDs, int(cat.Id)) {
+				switch parts[0] {
+				case "catalog":
+					catFacet.Query.BoolTerm.Values = append(catFacet.Query.BoolTerm.Values, val)
+				default:
+					ctrl.logger.Error().Err(err).Msgf("unknown catalog identifier '%s'", cat.Identifier)
+					c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("unknown catalog identifier '%s'", cat.Identifier))
+					return
+				}
 			}
 		}
 	}
