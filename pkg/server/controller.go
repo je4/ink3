@@ -2074,6 +2074,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 	searchString := c.Query("search")
 	cursorString := c.Query("cursor")
 	collectionsString := c.Query("collections")
+	catalogString := c.Query("catalogs")
 	vocabularyString := c.Query("vocabulary")
 	ki := c.Request.URL.Query().Has("ki")
 	query := url.Values{}
@@ -2082,6 +2083,17 @@ func (ctrl *Controller) detail(c *gin.Context) {
 	}
 	if collectionsString != "" {
 		query.Set("collections", collectionsString)
+	}
+	if catalogString != "" {
+		query.Set("catalogs", catalogString)
+	}
+	if vocabularyString != "" {
+		query.Set("vocabulary", vocabularyString)
+	}
+	if sourceString != "" {
+		query.Set("source", sourceString)
+	}
+	if cursorString != "" {
 	}
 	if cursorString != "" {
 		query.Set("cursor", cursorString)
