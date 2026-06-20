@@ -128,13 +128,20 @@ contact = ""
 
 [[catalogs]]
 id = 6
+identifier = "catalog:\"Performance\""
+title = "Performance Art"
+url = ""
+contact = ""
+
+[[catalogs]]
+id = 7
 identifier = "catalog:\"Video\""
 title = "Video Art and Culture"
 url = ""
 contact = ""
 
 [[catalogs]]
-id = 7
+id = 8
 identifier = "catalog:\"Open\""
 title = "Open and Free Access"
 url = ""
@@ -281,7 +288,7 @@ contact = "mediathek.hgk@fhnw.ch"
 id = 57
 identifier = "cat:\"zotero2!!DigitalBrainstorming\""
 title = "Digital Brainstorming"
-url = "https://mediathek.hgk.fhnw.ch/collection/videonetzwerke"
+url = ""
 image = ""
 contact = "Dominic Landwehr"
 
@@ -289,7 +296,7 @@ contact = "Dominic Landwehr"
 id = 58
 identifier = "cat:\"zotero2!!Konvolute!!Feministisches* Improvisatorium\""
 title = "Feministisches Improvisatorium"
-url = "https://mediathek.hgk.fhnw.ch/collection/videonetzwerke"
+url = ""
 image = ""
 contact = "Chris Regn, Muda Mathis"
 
@@ -297,7 +304,7 @@ contact = "Chris Regn, Muda Mathis"
 id = 59
 identifier = "cat:\"zotero2!!Videocity_memoriav\""
 title = "Videocity"
-url = "https://mediathek.hgk.fhnw.ch/collection/videonetzwerke"
+url = ""
 image = ""
 contact = "Andrea Domesle"
 
@@ -357,29 +364,21 @@ url = "https://apresperf.ch/category/interviews"
 image = "perf_en_bref_klein.png"
 contact = "Chris Regn, Andrea Saemann"
 
-[[collections]]
-id = 87
-identifier = "cat:\"zotero2!!MIGMA\""
-title = "PPP Progr Performance Plattform"
-url = "https://www.ppp-art.ch/"
-image = ""
-contact = "Kate Burgener, Gisela Hochuli"
+#[[collections]]
+#id = 87
+#identifier = "cat:\"zotero2!!MIGMA\""
+#title = "migma"
+#url = "https://www.migma.ch/ueber_migma.html"
+#image = ""
+#tcontact = "Judith Huber"
 
 [[collections]]
 id = 88
 identifier = "cat:\"zotero2!!PPP-ProgrPerformancePlattform\""
-title = "migma"
-url = "https://www.migma.ch/ueber_migma.html"
+title = "PPP Progr Performance Plattform"
+url = ""
 image = ""
-contact = "Judith Huber"
-
-[[collections]]
-id = 89
-identifier = "cat:\"zotero2!!Performance Art!!6x2 Performance-Duos\""
-title = "6x2 Performance-Duos"
-url = "https://mediathek.hgk.fhnw.ch/#/de/bestaende/23"
-image = "6x2duos_klein.png"
-contact = "Pascale Grau, Claudia Grimm"
+contact = "Kate Burgener, Gisela Hochuli"
 
 [[collections]]
 id = 90
