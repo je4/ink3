@@ -93,6 +93,7 @@ type RevCatFrontConfig struct {
 	DataDir             string                  `toml:"datadir"`
 	Collections         []*server.CollFacetType `toml:"collections"`
 	Catalogs            []*server.CollFacetType `toml:"catalogs"`
+	Medias              []*server.CollFacetType `toml:"medias"`
 	FieldMapping        map[string]string       `toml:"fieldmapping"`
 	JWTKey              configutil.EnvString    `toml:"jwtkey"`
 	JWTAlg              string                  `toml:"jwtalg"`

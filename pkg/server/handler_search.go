@@ -63,6 +63,16 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		}
 		catalogIDs = append(catalogIDs, catID)
 	}
+	mediasString := c.Query("medias")
+	parts = strings.Split(mediasString, ",")
+	mediaIDs := []int{}
+	for _, part := range parts {
+		mediaID, err := strconv.Atoi(part)
+		if err != nil || mediaID == 0 {
+			continue
+		}
+		mediaIDs = append(mediaIDs, mediaID)
+	}
 	vocabularyString := c.Query("vocabulary")
 	parts = strings.Split(vocabularyString, ",")
 	vocabularyIDs := []string{}
@@ -177,6 +187,42 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 			}
 		}
 	}
+	// process and include configured medias in the facet query
+	mediaFacet := &client.InFacet{
+		Term: &client.InFacetTerm{
+			Name:        "medias",
+			Field:       "mediatype.keyword",
+			Size:        200,
+			MinDocCount: 0,
+			Include:     []string{},
+			Exclude:     []string{},
+		},
+		Query: &client.InFilter{
+			BoolTerm: &client.InFilterBoolTerm{
+				Field:  "mediatype.keyword",
+				Values: []string{},
+				And:    false,
+			},
+		},
+	}
+	for _, media := range ctrl.medias {
+		parts := strings.SplitN(media.Identifier, ":", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		val := strings.Trim(parts[1], "\" ")
+		mediaFacet.Term.Include = append(mediaFacet.Term.Include, val)
+		if len(mediaIDs) == 0 || slices.Contains(mediaIDs, int(media.Id)) {
+			switch parts[0] {
+			case "mediatypes.keyword":
+				mediaFacet.Query.BoolTerm.Values = append(mediaFacet.Query.BoolTerm.Values, val)
+			default:
+				ctrl.logger.Error().Err(err).Msgf("unknown media identifier '%s'", media.Identifier)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("unknown media identifier '%s'", media.Identifier))
+				return
+			}
+		}
+	}
 
 	var result *client.Search
 	/*
@@ -206,15 +252,17 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		})
 	}
 	// apply access control filters based on user groups
-	user := GetUser(c)
 	filter := append([]*client.InFilter{}, ctrl.baseFilter...)
-	for _, f := range filter {
-		if f.BoolTerm != nil {
-			if f.BoolTerm.Field == "acl.content.keyword" {
-				f.BoolTerm.Values = user.Groups
+	/*
+		user := GetUser(c)
+			for _, f := range filter {
+				if f.BoolTerm != nil {
+					if f.BoolTerm.Field == "acl.content.keyword" {
+						f.BoolTerm.Values = user.Groups
+					}
+				}
 			}
-		}
-	}
+	*/
 	// add field-specific filters to the search request
 	if len(filterStrings) > 0 {
 		for field, value := range filterStrings {
@@ -234,27 +282,15 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		}
 	}
 	// execute the search request using the GraphQL client
-	result, err = ctrl.client.Search(c, queryString, []*client.InFacet{collFacet, catFacet, vocFacet}, filter, nil, nil, nil, &cursorString, sort)
+	result, err = ctrl.client.Search(c, queryString, []*client.InFacet{collFacet, catFacet, mediaFacet, vocFacet}, filter, nil, nil, nil, &cursorString, sort)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", searchString)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", searchString, err))
 		return
 	}
 
-	type vocFacetType struct {
-		Name    string `json:"name"`
-		Count   int    `json:"count"`
-		Checked bool   `json:"checked"`
-	}
-
-	type collFacetType struct {
-		ID      int    `json:"id"`
-		Name    string `json:"name"`
-		Count   int    `json:"count"`
-		Checked bool   `json:"checked"`
-	}
-	type catFacetType struct {
-		ID      int    `json:"id"`
+	type facetType struct {
+		ID      int    `json:"id,omitzero"`
 		Name    string `json:"name"`
 		Count   int    `json:"count"`
 		Checked bool   `json:"checked"`
@@ -280,6 +316,9 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 	if catalogsString != "" {
 		currentSearchURL.Set("catalogs", catalogsString)
 	}
+	if mediasString != "" {
+		currentSearchURL.Set("medias", mediasString)
+	}
 	if vocabularyString != "" {
 		currentSearchURL.Set("vocabulary", vocabularyString)
 	}
@@ -293,14 +332,15 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 	data := struct {
 		baseData
 		//Result           *client.Search_Search      `json:"result"`
-		TotalCount       int                        `json:"totalCount"`
-		PageInfo         *client.PageInfoFragment   `json:"pageInfo"`
-		Edges            []*edge                    `json:"edges"`
-		MediaserverBase  string                     `json:"mediaserverBase"`
-		RequestQuery     *queryData                 `json:"request"`
-		CollectionFacets []*collFacetType           `json:"collectionFacets"`
-		CatalogFacets    []*catFacetType            `json:"catalogFacets"`
-		VocabularyFacets map[string][]*vocFacetType `json:"vocabularyFacets"`
+		TotalCount       int                      `json:"totalCount"`
+		PageInfo         *client.PageInfoFragment `json:"pageInfo"`
+		Edges            []*edge                  `json:"edges"`
+		MediaserverBase  string                   `json:"mediaserverBase"`
+		RequestQuery     *queryData               `json:"request"`
+		CollectionFacets []*facetType             `json:"collectionFacets"`
+		CatalogFacets    []*facetType             `json:"catalogFacets"`
+		MediaFacets      []*facetType             `json:"mediaFacets"`
+		VocabularyFacets map[string][]*facetType  `json:"vocabularyFacets"`
 	}{
 		//Result:          result.GetSearch(),
 		MediaserverBase: ctrl.mediaserverBase,
@@ -327,9 +367,10 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		RequestQuery: &queryData{
 			Search: searchString,
 		},
-		CollectionFacets: []*collFacetType{},
-		CatalogFacets:    []*catFacetType{},
-		VocabularyFacets: map[string][]*vocFacetType{},
+		CollectionFacets: []*facetType{},
+		CatalogFacets:    []*facetType{},
+		MediaFacets:      []*facetType{},
+		VocabularyFacets: map[string][]*facetType{},
 	}
 	if data.baseData.User.IsLoggedIn() {
 		data.baseData.DetailAddr = data.baseData.SearchAddr
@@ -400,12 +441,12 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 					parent = parts[1] // slug.MakeLang(parts[1], "de")
 					name = parts[2]
 					if _, ok := data.VocabularyFacets[parent]; !ok {
-						data.VocabularyFacets[parts[1]] = []*vocFacetType{}
+						data.VocabularyFacets[parts[1]] = []*facetType{}
 					}
 				} else {
 					continue
 				}
-				data.VocabularyFacets[parent] = append(data.VocabularyFacets[parent], &vocFacetType{
+				data.VocabularyFacets[parent] = append(data.VocabularyFacets[parent], &facetType{
 					Count:   int(strVal.GetCount()),
 					Name:    name,
 					Checked: slices.Contains(vocabularyIDs, facetStr),
@@ -419,7 +460,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 					continue
 				}
 				facetStr := strVal.GetStrVal()
-				cf := &collFacetType{
+				cf := &facetType{
 					Count: int(strVal.GetCount()),
 				}
 				for _, coll := range ctrl.collections {
@@ -443,7 +484,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 					continue
 				}
 				facetStr := strVal.GetStrVal()
-				cf := &catFacetType{
+				cf := &facetType{
 					Count: int(strVal.GetCount()),
 				}
 				for _, cat := range ctrl.catalogs {
@@ -457,6 +498,30 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 						cf.Name = cat.Title
 						cf.Checked = slices.Contains(catalogIDs, int(cat.Id))
 						data.CatalogFacets = append(data.CatalogFacets, cf)
+					}
+				}
+			}
+		case "medias":
+			for _, val := range facet.GetValues() {
+				strVal := val.GetFacetValueString()
+				if strVal == nil {
+					continue
+				}
+				facetStr := strVal.GetStrVal()
+				cf := &facetType{
+					Count: int(strVal.GetCount()),
+				}
+				for _, media := range ctrl.medias {
+					parts := strings.SplitN(media.Identifier, ":", 2)
+					if len(parts) != 2 {
+						continue
+					}
+					cVal := strings.Trim(parts[1], "\" ")
+					if cVal == facetStr {
+						cf.ID = int(media.Id)
+						cf.Name = media.Title
+						cf.Checked = slices.Contains(mediaIDs, int(media.Id))
+						data.MediaFacets = append(data.MediaFacets, cf)
 					}
 				}
 			}

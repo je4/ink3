@@ -91,6 +91,46 @@ default = "de"
 folder = ""
 available = ["de", "fr", "it", "en"]
 
+[[medias]]
+id = 1
+identifier = "mediatypes.keyword:\"image\""
+title = "Image"
+
+[[medias]]
+id = 2
+identifier = "mediatypes.keyword:\"video\""
+title = "Video"
+
+[[medias]]
+id = 3
+identifier = "mediatypes.keyword:\"pdf\""
+title = "PDF"
+
+[[medias]]
+id = 4
+identifier = "mediatypes.keyword:\"audio\""
+title = "Audio"
+
+[[medias]]
+id = 5
+identifier = "mediatypes.keyword:\"mei\""
+title = "MEI"
+
+[[medias]]
+id = 6
+identifier = "mediatypes.keyword:\"webrecorder\""
+title = "Webrecording"
+
+[[medias]]
+id = 7
+identifier = "mediatypes.keyword:\"office\""
+title = "Office Document"
+
+[[medias]]
+id = 8
+identifier = "mediatypes.keyword:\"gpx\""
+title = "GPX File"
+
 [[catalogs]]
 id = 1
 identifier = "catalog:\"Educational\""

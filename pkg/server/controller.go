@@ -54,7 +54,7 @@ type CollFacetType struct {
 }
 
 // NewController creates a new Controller instance.
-func NewController(localAddr, externalAddr, searchAddr, detailAddr string, protoHTTP bool, auth map[string]string, cert *tls.Certificate, templateFS, staticFS, dataFS fs.FS, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, mediaserverBase, mediaserverKey string, mediaserverTokenExp time.Duration, bundle *i18n.Bundle, collections, catalogs []*CollFacetType, fieldMapping map[string]string, embeddings *openai.ClientV2, templateDebug, zoomOnly bool, loginURL, loginIssuer, loginJWTKey string, loginJWTAlgs []string, locations map[string][]net.IPNet, facetInclude, facetExclude []string, baseFilter []*client.InFilter, mode string, logger zLogger.ZLogger) (*Controller, error) {
+func NewController(localAddr, externalAddr, searchAddr, detailAddr string, protoHTTP bool, auth map[string]string, cert *tls.Certificate, templateFS, staticFS, dataFS fs.FS, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, mediaserverBase, mediaserverKey string, mediaserverTokenExp time.Duration, bundle *i18n.Bundle, collections, catalogs, medias []*CollFacetType, fieldMapping map[string]string, embeddings *openai.ClientV2, templateDebug, zoomOnly bool, loginURL, loginIssuer, loginJWTKey string, loginJWTAlgs []string, locations map[string][]net.IPNet, facetInclude, facetExclude []string, baseFilter []*client.InFilter, mode string, logger zLogger.ZLogger) (*Controller, error) {
 
 	ctrl := &Controller{
 		localAddr:           localAddr,
@@ -83,6 +83,7 @@ func NewController(localAddr, externalAddr, searchAddr, detailAddr string, proto
 		languageMatcher:     language.NewMatcher(bundle.LanguageTags()),
 		collections:         collections,
 		catalogs:            catalogs,
+		medias:              medias,
 		loginURL:            loginURL,
 		loginIssuer:         loginIssuer,
 		loginJWTKey:         loginJWTKey,
@@ -455,6 +456,8 @@ type Controller struct {
 	protoHTTP           bool
 	auth                map[string]string
 	collections         []*CollFacetType
+	catalogs            []*CollFacetType
+	medias              []*CollFacetType
 	fieldMapping        map[string]string
 	loginURL            string
 	loginIssuer         string
@@ -467,7 +470,6 @@ type Controller struct {
 	facetExclude        []string
 	mode                string
 	baseFilter          []*client.InFilter
-	catalogs            []*CollFacetType
 }
 
 // Start starts the HTTP/HTTPS server.

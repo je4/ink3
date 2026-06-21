@@ -286,6 +286,7 @@ func main() {
 		bundle,
 		conf.Collections,
 		conf.Catalogs,
+		conf.Medias,
 		conf.FieldMapping,
 		embeddings,
 		conf.Templates != "",

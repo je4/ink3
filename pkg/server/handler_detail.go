@@ -121,6 +121,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 	cursorString := c.Query("cursor")
 	collectionsString := c.Query("collections")
 	catalogString := c.Query("catalogs")
+	mediaString := c.Query("medias")
 	vocabularyString := c.Query("vocabulary")
 	ki := c.Request.URL.Query().Has("ki")
 	// build the query parameters for back-to-search or other navigation links
@@ -133,6 +134,9 @@ func (ctrl *Controller) detail(c *gin.Context) {
 	}
 	if catalogString != "" {
 		query.Set("catalogs", catalogString)
+	}
+	if mediaString != "" {
+		query.Set("medias", mediaString)
 	}
 	if vocabularyString != "" {
 		query.Set("vocabulary", vocabularyString)

@@ -361,10 +361,12 @@ func (ctrl *Controller) indexPage(ctx *gin.Context) {
 		baseData
 		Collections map[int64]*CollFacetType `json:"collections"`
 		Catalogs    map[int64]*CollFacetType `json:"catalogs"`
+		Medias      map[int64]*CollFacetType
 	}
 	var data = &tplData{
 		Collections: map[int64]*CollFacetType{},
 		Catalogs:    map[int64]*CollFacetType{},
+		Medias:      map[int64]*CollFacetType{},
 		baseData:    ctrl.getBaseData(ctx, lang, ""),
 	}
 
@@ -381,33 +383,29 @@ func (ctrl *Controller) indexPage(ctx *gin.Context) {
 			ExistsTerm: &client.InFilterExistsTerm{
 				Field: "signature",
 			},
-			/*
-				BoolTerm: &client.InFilterBoolTerm{
-					Field:  "category.keyword",
-					Values: []string{},
-					And:    false,
-				},
-			*/
+			BoolTerm: &client.InFilterBoolTerm{
+				Field:  "category.keyword",
+				Values: []string{},
+				And:    false,
+			},
 		},
 	}
-	/*
-		for _, coll := range ctrl.collections {
-			parts := strings.SplitN(coll.Identifier, ":", 2)
-			if len(parts) != 2 {
-				continue
-			}
-			val := strings.Trim(parts[1], "\" ")
-			collFacet.Term.Include = append(collFacet.Term.Include, val)
-			switch parts[0] {
-			case "cat":
-				collFacet.Query.BoolTerm.Values = append(collFacet.Query.BoolTerm.Values, val)
-			default:
-				ctrl.logger.Error().Err(err).Msgf("unknown collection identifier '%s'", coll.Identifier)
-				ctx.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("unknown collection identifier '%s'", coll.Identifier))
-				return
-			}
+	for _, coll := range ctrl.collections {
+		parts := strings.SplitN(coll.Identifier, ":", 2)
+		if len(parts) != 2 {
+			continue
 		}
-	*/
+		val := strings.Trim(parts[1], "\" ")
+		collFacet.Term.Include = append(collFacet.Term.Include, val)
+		switch parts[0] {
+		case "cat":
+			collFacet.Query.BoolTerm.Values = append(collFacet.Query.BoolTerm.Values, val)
+		default:
+			ctrl.logger.Error().Err(err).Msgf("unknown collection identifier '%s'", coll.Identifier)
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("unknown collection identifier '%s'", coll.Identifier))
+			return
+		}
+	}
 	catFacet := &client.InFacet{
 		Term: &client.InFacetTerm{
 			Name:        "catalogs",
@@ -448,6 +446,28 @@ func (ctrl *Controller) indexPage(ctx *gin.Context) {
 			}
 		}
 	*/
+	mediaFacet := &client.InFacet{
+		Term: &client.InFacetTerm{
+			Name:        "mediatypes",
+			Field:       "mediatype.keyword",
+			Size:        200,
+			MinDocCount: 0,
+			Include:     []string{},
+			Exclude:     []string{},
+		},
+		Query: &client.InFilter{
+			ExistsTerm: &client.InFilterExistsTerm{
+				Field: "signature",
+			},
+			/*
+				BoolTerm: &client.InFilterBoolTerm{
+					Field:  "catalog.keyword",
+					Values: []string{},
+					And:    false,
+				},
+			*/
+		},
+	}
 	var size int64 = 1
 	var sortField = ctx.Query("sortField")
 	var sortOrder = ctx.Query("sortOrder")
@@ -458,23 +478,27 @@ func (ctrl *Controller) indexPage(ctx *gin.Context) {
 			Order: sortOrder,
 		})
 	}
-	user := GetUser(ctx)
-	filter := []*client.InFilter{
-		{
-			ExistsTerm: &client.InFilterExistsTerm{
-				Field: "poster",
-			},
-		},
-		{
-			BoolTerm: &client.InFilterBoolTerm{
-				Field:  "acl.content.keyword",
-				Values: user.Groups,
-			},
-		},
-	}
+	filter := append([]*client.InFilter{}, ctrl.baseFilter...)
+	/*
+		user := GetUser(ctx)
+		filter := []*client.InFilter{
+				{
+					ExistsTerm: &client.InFilterExistsTerm{
+						Field: "poster",
+					},
+				},
+				{
+					BoolTerm: &client.InFilterBoolTerm{
+						Field:  "acl.content.keyword",
+						Values: user.Groups,
+					},
+				},
+		}
+	*/
 	facets := []*client.InFacet{
 		collFacet,
 		catFacet,
+		mediaFacet,
 	}
 	/*
 		if collFacet.Query != nil && len(collFacet.Query.BoolTerm.Values) > 0 {
@@ -498,10 +522,14 @@ func (ctrl *Controller) indexPage(ctx *gin.Context) {
 	for _, cat := range ctrl.catalogs {
 		data.Catalogs[cat.Id] = cat
 	}
+	for _, media := range ctrl.medias {
+		data.Medias[media.Id] = media
+	}
 	//ctrl.logger.Debug().Msg(str)
 
 	for _, facet := range result.GetSearch().GetFacets() {
-		switch facet.GetName() {
+		facetName := facet.GetName()
+		switch facetName {
 		case "collections":
 			for _, val := range facet.GetValues() {
 				strVal := val.GetFacetValueString()
@@ -537,6 +565,25 @@ func (ctrl *Controller) indexPage(ctx *gin.Context) {
 					cVal := strings.Trim(parts[1], "\" ")
 					if cVal == facetStr {
 						cat.Count = int(strVal.GetCount())
+					}
+				}
+			}
+		case "mediatypes":
+			for _, val := range facet.GetValues() {
+				strVal := val.GetFacetValueString()
+				if strVal == nil {
+					continue
+				}
+				facetStr := strVal.GetStrVal()
+				medias := data.Medias
+				for _, media := range medias {
+					parts := strings.SplitN(media.Identifier, ":", 2)
+					if len(parts) != 2 {
+						continue
+					}
+					cVal := strings.Trim(parts[1], "\" ")
+					if cVal == facetStr {
+						media.Count = int(strVal.GetCount())
 					}
 				}
 			}
