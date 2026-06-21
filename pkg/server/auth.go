@@ -32,10 +32,12 @@ type User struct {
 	Groups    []string `json:"groups"`
 }
 
+// IsLoggedIn checks if the user is authenticated (not a guest).
 func (user *User) IsLoggedIn() bool {
 	return !(len(user.Groups) == 0 || (len(user.Groups) == 1 && user.Groups[0] == "global/guest"))
 }
 
+// AuthHandler is a middleware that handles JWT-based authentication.
 func (ctrl *Controller) AuthHandler(ctx *gin.Context) {
 	hasCookie := false
 	bearerToken := ctx.Request.Header.Get("Authorization")
@@ -115,6 +117,7 @@ func (ctrl *Controller) AuthHandler(ctx *gin.Context) {
 	ctx.Next()
 }
 
+// GetUser retrieves the User object from the gin context.
 func GetUser(ctx *gin.Context) *User {
 	userAny, ok := ctx.Get("user")
 	if !ok {
@@ -131,6 +134,7 @@ func GetUser(ctx *gin.Context) *User {
 	return user
 }
 
+// locationGroups returns the list of groups based on the client's IP address and configured locations.
 func (ctrl *Controller) locationGroups(ctx *gin.Context) []string {
 	ip := net.ParseIP(ctx.ClientIP())
 	if ip == nil {
@@ -148,6 +152,7 @@ func (ctrl *Controller) locationGroups(ctx *gin.Context) []string {
 	return groups
 }
 
+// NewJWT generates a new signed JWT token.
 func NewJWT(secret string, subject string, alg string, valid int64, domain string, issuer string, userId string) (tokenString string, err error) {
 
 	var signingMethod jwt.SigningMethod

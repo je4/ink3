@@ -35,6 +35,7 @@ var languageNamer = map[string]display.Namer{
 	"it": display.Italian.Tags(),
 }
 
+// funcMap returns the map of template functions.
 func (ctrl *Controller) funcMap(name string) template.FuncMap {
 	fm := sprig.FuncMap()
 
@@ -204,6 +205,7 @@ func (ctrl *Controller) funcMap(name string) template.FuncMap {
 	return fm
 }
 
+// refreshTemplateFiles rescans the template directory for .gohtml and .gotmpl files.
 func (ctrl *Controller) refreshTemplateFiles() error {
 	ctrl.templateFiles = []string{}
 	return fs.WalkDir(ctrl.templateFS, ".", func(path string, d fs.DirEntry, err error) error {
@@ -220,6 +222,7 @@ func (ctrl *Controller) refreshTemplateFiles() error {
 	})
 }
 
+// getTemplatesByPrefix returns a list of template files that start with a given prefix or contain no underscore.
 func (ctrl *Controller) getTemplatesByPrefix(prefix string, exclude ...string) []string {
 	var files []string
 	for _, file := range ctrl.templateFiles {
@@ -235,6 +238,7 @@ func (ctrl *Controller) getTemplatesByPrefix(prefix string, exclude ...string) [
 	return files
 }
 
+// loadHTMLTemplate parses and loads an HTML template from the filesystem.
 func (ctrl *Controller) loadHTMLTemplate(name string, files []string) (*template.Template, error) {
 	if strings.ToLower(filepath.Ext(name)) != ".gohtml" {
 		return nil, errors.Errorf("template '%s' has wrong extension (should be .gohtml)", name)
@@ -255,6 +259,7 @@ func (ctrl *Controller) loadHTMLTemplate(name string, files []string) (*template
 	return tpl.(*template.Template), nil
 }
 
+// loadTextTemplate parses and loads a text template from the filesystem.
 func (ctrl *Controller) loadTextTemplate(name string, files []string) (*tmpl.Template, error) {
 	if strings.ToLower(filepath.Ext(name)) != ".gotmpl" {
 		return nil, errors.Errorf("template '%s' has wrong extension (should be .gotmpl)", name)

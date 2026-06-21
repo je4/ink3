@@ -53,6 +53,7 @@ type CollFacetType struct {
 	Contact    string `toml:"contact" json:"contact"`
 }
 
+// NewController creates a new Controller instance.
 func NewController(localAddr, externalAddr, searchAddr, detailAddr string, protoHTTP bool, auth map[string]string, cert *tls.Certificate, templateFS, staticFS, dataFS fs.FS, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, mediaserverBase, mediaserverKey string, mediaserverTokenExp time.Duration, bundle *i18n.Bundle, collections, catalogs []*CollFacetType, fieldMapping map[string]string, embeddings *openai.ClientV2, templateDebug, zoomOnly bool, loginURL, loginIssuer, loginJWTKey string, loginJWTAlgs []string, locations map[string][]net.IPNet, facetInclude, facetExclude []string, baseFilter []*client.InFilter, mode string, logger zLogger.ZLogger) (*Controller, error) {
 
 	ctrl := &Controller{
@@ -99,10 +100,13 @@ func NewController(localAddr, externalAddr, searchAddr, detailAddr string, proto
 	return ctrl, nil
 }
 
+// init initializes the controller, sets up routes and middleware.
 func (ctrl *Controller) init() error {
+	// refresh template files to ensure they are up-to-date
 	if err := ctrl.refreshTemplateFiles(); err != nil {
 		return errors.Wrapf(err, "cannot refresh template files")
 	}
+	// set up gin router with default configuration and CORS/Auth middleware
 	router := gin.Default()
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
@@ -110,14 +114,17 @@ func (ctrl *Controller) init() error {
 	if len(ctrl.auth) > 0 {
 		router.Use(gin.BasicAuth(ctrl.auth))
 	}
+	// serve static and data files
 	router.StaticFS("/static", NewDefaultIndexFS(http.FS(ctrl.staticFS), "index.html"))
 	router.StaticFS("/data", NewDefaultIndexFS(http.FS(ctrl.dataFS), "index.html"))
 
+	// version endpoint
 	router.GET("/version", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"version": Version,
 		})
 	})
+	// root redirect based on language detection
 	router.GET("/", func(c *gin.Context) {
 		cookieLang, _ := c.Request.Cookie("lang")
 		accept := c.Request.Header.Get("Accept-Language")
@@ -136,6 +143,7 @@ func (ctrl *Controller) init() error {
 		c.Redirect(http.StatusTemporaryRedirect, target)
 	})
 
+	// language-specific home page or redirect to zoom if configured
 	router.GET("/:lang", func(c *gin.Context) {
 		lang := c.Param("lang")
 		if ctrl.zoomOnly {
@@ -151,6 +159,7 @@ func (ctrl *Controller) init() error {
 		ctrl.indexPage(c)
 	})
 
+	// imprint page redirects and handlers
 	router.GET("/impressum", func(c *gin.Context) {
 		cookieLang, _ := c.Request.Cookie("lang")
 		accept := c.Request.Header.Get("Accept-Language")
@@ -183,6 +192,7 @@ func (ctrl *Controller) init() error {
 		}
 		ctrl.impressumPage(c)
 	})
+	// contact page redirects and handlers
 	router.GET("/kontakt", func(c *gin.Context) {
 		cookieLang, _ := c.Request.Cookie("lang")
 		accept := c.Request.Header.Get("Accept-Language")
@@ -216,6 +226,7 @@ func (ctrl *Controller) init() error {
 		ctrl.kontaktPage(c)
 	})
 
+	// zoom-related endpoints
 	router.GET("/zoom/signature/:PosX/:PosY", ctrl.zoomSignature)
 	router.GET("/zoom/:lang", ctrl.zoomPage)
 	router.GET("/zoom", func(c *gin.Context) {
@@ -239,6 +250,7 @@ func (ctrl *Controller) init() error {
 		c.Redirect(http.StatusTemporaryRedirect, newURL)
 	})
 
+	// grid, table, and list view endpoints (search)
 	router.GET("/grid", func(c *gin.Context) {
 		cookieLang, _ := c.Request.Cookie("lang")
 		accept := c.Request.Header.Get("Accept-Language")
@@ -305,6 +317,7 @@ func (ctrl *Controller) init() error {
 		ctrl.searchPage(c, "list")
 	})
 
+	// detail view endpoints
 	router.GET("/detailtext/:signature/:lang", func(c *gin.Context) {
 		ctrl.detailText(c)
 	})
@@ -340,10 +353,12 @@ func (ctrl *Controller) init() error {
 		c.Redirect(http.StatusTemporaryRedirect, newURL)
 	})
 
+	// foliate viewer endpoint for EPUBs
 	router.GET("/foliateviewer", func(c *gin.Context) {
 		ctrl.foliateViewer(c)
 	})
 
+	// configure and initialize the HTTP server
 	var tlsConfig *tls.Config
 	if ctrl.cert != nil && ctrl.protoHTTP == false {
 		tlsConfig = &tls.Config{
@@ -358,6 +373,7 @@ func (ctrl *Controller) init() error {
 	return nil
 }
 
+// langAvailable checks if a language is available in the i18n bundle.
 func (ctrl *Controller) langAvailable(lang string) bool {
 	for _, l := range ctrl.bundle.LanguageTags() {
 		b, _ := l.Base()
@@ -368,6 +384,7 @@ func (ctrl *Controller) langAvailable(lang string) bool {
 	return false
 }
 
+// getLang extracts the language from the request parameters and falls back to "de" if not available.
 func (ctrl *Controller) getLang(c *gin.Context) string {
 	lang := c.Param("lang")
 	if !ctrl.langAvailable(lang) {
@@ -376,6 +393,7 @@ func (ctrl *Controller) getLang(c *gin.Context) string {
 	return lang
 }
 
+// getMediathekEntry retrieves a mediathek entry from the GraphQL client.
 func (ctrl *Controller) getMediathekEntry(c *gin.Context, id string) (*client.MediathekEntries_MediathekEntries, error) {
 	if id == "" {
 		return nil, errors.New("id missing")
@@ -391,6 +409,7 @@ func (ctrl *Controller) getMediathekEntry(c *gin.Context, id string) (*client.Me
 	return source.MediathekEntries[0], nil
 }
 
+// getBaseData populates the baseData struct with request-specific information.
 func (ctrl *Controller) getBaseData(c *gin.Context, lang string, rootPath string) baseData {
 	user := GetUser(c)
 	detailAddr := ctrl.detailAddr
@@ -451,6 +470,7 @@ type Controller struct {
 	catalogs            []*CollFacetType
 }
 
+// Start starts the HTTP/HTTPS server.
 func (ctrl *Controller) Start() error {
 	go func() {
 		if ctrl.srv.TLSConfig == nil {
@@ -472,6 +492,7 @@ func (ctrl *Controller) Start() error {
 	return nil
 }
 
+// Stop stops the HTTP/HTTPS server.
 func (ctrl *Controller) Stop() error {
 	return ctrl.srv.Shutdown(context.Background())
 }

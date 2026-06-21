@@ -18,6 +18,7 @@ import (
 	"golang.org/x/text/language"
 )
 
+// detailJSON returns a mediathek entry as JSON.
 func (ctrl *Controller) detailJSON(c *gin.Context) {
 	id := c.Param("signature")
 	entry, err := ctrl.getMediathekEntry(c, id)
@@ -35,6 +36,7 @@ func (ctrl *Controller) detailJSON(c *gin.Context) {
 	c.JSON(http.StatusOK, entry)
 }
 
+// detailText renders a mediathek entry as markdown text.
 func (ctrl *Controller) detailText(c *gin.Context) {
 	lang := ctrl.getLang(c)
 	templateName := "detail_text.gotmpl"
@@ -78,6 +80,7 @@ func (ctrl *Controller) detailText(c *gin.Context) {
 	}
 }
 
+// foliateViewer renders the foliate.js viewer for EPUB files.
 func (ctrl *Controller) foliateViewer(c *gin.Context) {
 	media := strings.TrimPrefix(c.Query("epub"), "mediaserver:")
 	if media == "" {
@@ -109,7 +112,9 @@ func (ctrl *Controller) foliateViewer(c *gin.Context) {
 	}
 }
 
+// detail renders the detail page for a mediathek entry.
 func (ctrl *Controller) detail(c *gin.Context) {
+	// extract language and various search/filter parameters from the query string
 	lang := ctrl.getLang(c)
 	sourceString := c.Query("source")
 	searchString := c.Query("search")
@@ -118,6 +123,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 	catalogString := c.Query("catalogs")
 	vocabularyString := c.Query("vocabulary")
 	ki := c.Request.URL.Query().Has("ki")
+	// build the query parameters for back-to-search or other navigation links
 	query := url.Values{}
 	if searchString != "" {
 		query.Set("search", searchString)
@@ -144,6 +150,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 		query.Set("ki", "")
 
 	}
+	// load and initialize the HTML template for the detail view
 	templateName := "detail.gohtml"
 	files := ctrl.getTemplatesByPrefix("detail_", "index.gohtml", "impressum.gohtml", "kontakt.gohtml", "search_grid.gohtml", "zoom.gohtml")
 	textTemplate, err := ctrl.loadHTMLTemplate(templateName, files)
@@ -152,6 +159,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
 		return
 	}
+	// fetch the mediathek entry based on the signature parameter
 	id := c.Param("signature")
 	entry, err := ctrl.getMediathekEntry(c, id)
 	if err != nil {
@@ -181,6 +189,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 	}
 	_, isIFrame := c.GetQuery("iframe")
 	_, isExhibition := c.GetQuery("exhibition")
+	// refine categories: keep only the most specific ones (longest path) and remove parent categories
 	categories := entry.GetBase().GetCategory()
 	slices.SortFunc(categories, func(a, b string) int {
 		return len(b) - len(a)
@@ -199,6 +208,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 		}
 	}
 	entry.Base.Category = newCategories
+	// populate template data
 	bd := ctrl.getBaseData(c, lang, "../../")
 	bd.Exhibition = isExhibition
 	bd.Params = template.URL(strings.TrimPrefix(searchParams, "?"))
@@ -211,6 +221,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 		MediaserverBase: ctrl.mediaserverBase,
 	}
 
+	// render the detail page
 	if err := textTemplate.Execute(c.Writer, data); err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
@@ -218,6 +229,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 	}
 }
 
+// qr generates a QR code image for a given URL.
 func (ctrl *Controller) qr(c *gin.Context) {
 	url := c.Query("url")
 	qrc, err := qrcode.New(url)
@@ -234,6 +246,7 @@ func (ctrl *Controller) qr(c *gin.Context) {
 	}
 }
 
+// detailTextList returns a list of detail text URLs for a collection.
 func (ctrl *Controller) detailTextList(c *gin.Context) {
 	var collectionStr = c.Param("collection")
 	collectionId, err := strconv.Atoi(collectionStr)

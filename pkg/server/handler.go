@@ -10,6 +10,7 @@ import (
 	"github.com/je4/revcat/v2/tools/client"
 )
 
+// impressumPage renders the imprint page.
 func (ctrl *Controller) impressumPage(c *gin.Context) {
 	lang := ctrl.getLang(c)
 
@@ -176,6 +177,7 @@ func (ctrl *Controller) impressumPage(c *gin.Context) {
 	}
 }
 
+// kontaktPage renders the contact page.
 func (ctrl *Controller) kontaktPage(c *gin.Context) {
 	lang := ctrl.getLang(c)
 
@@ -342,6 +344,7 @@ func (ctrl *Controller) kontaktPage(c *gin.Context) {
 	}
 }
 
+// indexPage renders the home page.
 func (ctrl *Controller) indexPage(ctx *gin.Context) {
 	lang := ctrl.getLang(ctx)
 
@@ -551,6 +554,7 @@ type queryData struct {
 	Search string
 }
 
+// zoomSignature handles the request for a signature based on coordinates in the zoom view.
 func (ctrl *Controller) zoomSignature(c *gin.Context) {
 	pxs := c.Param("PosX")
 	pys := c.Param("PosY")
@@ -584,6 +588,7 @@ func (ctrl *Controller) zoomSignature(c *gin.Context) {
 	c.JSON(http.StatusOK, signature)
 }
 
+// zoomPage renders the zoom view page.
 func (ctrl *Controller) zoomPage(c *gin.Context) {
 	var lang = c.Param("lang")
 	if !ctrl.langAvailable(lang) {

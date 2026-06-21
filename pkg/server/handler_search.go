@@ -15,11 +15,14 @@ import (
 	"golang.org/x/text/language"
 )
 
+// searchPage handles the search request and renders the search grid, table, or list page.
 func (ctrl *Controller) searchPage(c *gin.Context, page string) {
+	// determine language from parameter, fallback to German if not available
 	var lang = c.Param("lang")
 	if !ctrl.langAvailable(lang) {
 		lang = "de"
 	}
+	// load and initialize the HTML template for the search grid
 	templateName := "search_grid.gohtml"
 	files := ctrl.getTemplatesByPrefix("search_", "index.gohtml", "impressum.gohtml", "kontakt.gohtml", "detail.gohtml", "zoom.gohtml")
 	gridTemplate, err := ctrl.loadHTMLTemplate(templateName, files)
@@ -28,6 +31,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
 		return
 	}
+	// parse the search query string into filter and query components
 	searchString := c.Query("search")
 	filterStrings, queryString, err := parseQuery(searchString)
 	if err != nil {
@@ -36,6 +40,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		queryString = searchString
 	}
 
+	// extract and process search parameters like cursor, ki, collections, catalogs, and vocabulary
 	cursorString := c.Query("cursor")
 	ki := c.Request.URL.Query().Has("ki")
 	collectionsString := c.Query("collections")
@@ -68,6 +73,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		}
 		vocabularyIDs = append(vocabularyIDs, vocabularyID)
 	}
+	// define facets for vocabulary, collections, and catalogs for the search request
 	vocFacet := &client.InFacet{
 		Term: &client.InFacetTerm{
 			Name:        "vocabulary",
@@ -91,6 +97,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 	if len(ctrl.facetExclude) > 0 {
 		vocFacet.Term.Exclude = append(vocFacet.Term.Exclude, ctrl.facetExclude...)
 	}
+	// process and include configured collections in the facet query
 	collFacet := &client.InFacet{
 		Term: &client.InFacetTerm{
 			Name:        "collections",
@@ -126,6 +133,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 			}
 		}
 	}
+	// process and include configured catalogs in the facet query
 	catFacet := &client.InFacet{
 		Term: &client.InFacetTerm{
 			Name:        "catalogs",
@@ -187,6 +195,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 			queryString = ""
 		}
 	*/
+	// determine sort field and order from query parameters
 	var sortField = c.Query("sortField")
 	var sortOrder = c.Query("sortOrder")
 	var sort = []*client.SortField{}
@@ -196,6 +205,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 			Order: sortOrder,
 		})
 	}
+	// apply access control filters based on user groups
 	user := GetUser(c)
 	filter := append([]*client.InFilter{}, ctrl.baseFilter...)
 	for _, f := range filter {
@@ -205,6 +215,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 			}
 		}
 	}
+	// add field-specific filters to the search request
 	if len(filterStrings) > 0 {
 		for field, value := range filterStrings {
 			internalField, ok := ctrl.fieldMapping[field]
@@ -222,6 +233,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 			})
 		}
 	}
+	// execute the search request using the GraphQL client
 	result, err = ctrl.client.Search(c, queryString, []*client.InFacet{collFacet, catFacet, vocFacet}, filter, nil, nil, nil, &cursorString, sort)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", searchString)
@@ -257,6 +269,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		ShowContent      bool
 		ProtectedContent bool
 	}
+	// prepare search URL and parameters for the template data
 	currentSearchURL := url.Values{}
 	if searchString != "" {
 		currentSearchURL.Set("search", searchString)
@@ -276,6 +289,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 	}
 	_, isExhibition := c.GetQuery("exhibition")
 
+	// populate template data with search results, facets, and request metadata
 	data := struct {
 		baseData
 		//Result           *client.Search_Search      `json:"result"`
@@ -320,6 +334,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 	if data.baseData.User.IsLoggedIn() {
 		data.baseData.DetailAddr = data.baseData.SearchAddr
 	}
+	// process search result edges, extract titles, persons, and roles
 	for _, e := range result.GetSearch().GetEdges() {
 		ne := &edge{
 			Edge:       e,
@@ -356,6 +371,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		}
 		data.Edges = append(data.Edges, ne)
 	}
+	// process search facets and group them into vocabulary, collections, and catalogs
 	for _, facet := range result.GetSearch().GetFacets() {
 		switch facet.GetName() {
 		case "vocabulary":
@@ -461,6 +477,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 
 	}
 
+	// render the template with the populated data
 	if err := gridTemplate.Execute(c.Writer, data); err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
