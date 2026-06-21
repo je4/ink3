@@ -360,11 +360,54 @@ func (ctrl *Controller) init() error {
 
 func (ctrl *Controller) langAvailable(lang string) bool {
 	for _, l := range ctrl.bundle.LanguageTags() {
-		if l.String() == lang {
+		b, _ := l.Base()
+		if b.String() == lang {
 			return true
 		}
 	}
 	return false
+}
+
+func (ctrl *Controller) getLang(c *gin.Context) string {
+	lang := c.Param("lang")
+	if !ctrl.langAvailable(lang) {
+		lang = "de"
+	}
+	return lang
+}
+
+func (ctrl *Controller) getMediathekEntry(c *gin.Context, id string) (*client.MediathekEntries_MediathekEntries, error) {
+	if id == "" {
+		return nil, errors.New("id missing")
+	}
+
+	source, err := ctrl.client.MediathekEntries(c, []string{id})
+	if err != nil {
+		return nil, errors.Wrapf(err, "cannot get source '%s'", id)
+	}
+	if source == nil || len(source.MediathekEntries) == 0 {
+		return nil, errors.Errorf("source '%s' not found", id)
+	}
+	return source.MediathekEntries[0], nil
+}
+
+func (ctrl *Controller) getBaseData(c *gin.Context, lang string, rootPath string) baseData {
+	user := GetUser(c)
+	detailAddr := ctrl.detailAddr
+	if user.IsLoggedIn() {
+		detailAddr = ctrl.searchAddr
+	}
+
+	return baseData{
+		Lang:       lang,
+		RootPath:   rootPath,
+		SearchAddr: ctrl.searchAddr,
+		DetailAddr: detailAddr,
+		LoginURL:   ctrl.loginURL,
+		Self:       fmt.Sprintf("%s%s", ctrl.externalAddr, c.Request.URL.Path),
+		User:       user,
+		Mode:       ctrl.mode,
+	}
 }
 
 type Controller struct {

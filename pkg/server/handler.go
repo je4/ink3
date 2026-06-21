@@ -16,13 +16,7 @@ import (
 )
 
 func (ctrl *Controller) impressumPage(c *gin.Context) {
-	var lang = c.Param("lang")
-	if lang == "" {
-		lang = "de"
-	}
-	if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
-		lang = "de"
-	}
+	lang := ctrl.getLang(c)
 
 	templateName := "impressum.gohtml"
 	files := ctrl.getTemplatesByPrefix("impressum_", "index.gohtml", "kontakt.gohtml", "search_grid.gohtml", "detail.gohtml", "zoom.gohtml")
@@ -41,15 +35,7 @@ func (ctrl *Controller) impressumPage(c *gin.Context) {
 	var data = &tplData{
 		Collections: map[int64]*CollFacetType{},
 		Catalogs:    map[int64]*CollFacetType{},
-		baseData: baseData{
-			Lang:       lang,
-			RootPath:   "../../",
-			SearchAddr: ctrl.searchAddr,
-			LoginURL:   ctrl.loginURL,
-			Self:       c.Request.URL.String(),
-			User:       GetUser(c),
-			Mode:       ctrl.mode,
-		},
+		baseData:    ctrl.getBaseData(c, lang, "../../"),
 	}
 	collFacet := &client.InFacet{
 		Term: &client.InFacetTerm{
@@ -196,13 +182,7 @@ func (ctrl *Controller) impressumPage(c *gin.Context) {
 }
 
 func (ctrl *Controller) kontaktPage(c *gin.Context) {
-	var lang = c.Param("lang")
-	if lang == "" {
-		lang = "de"
-	}
-	if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
-		lang = "de"
-	}
+	lang := ctrl.getLang(c)
 
 	templateName := "kontakt.gohtml"
 	files := ctrl.getTemplatesByPrefix("kontakt_", "index.gohtml", "impressum.gohtml", "search_grid.gohtml", "detail.gohtml", "zoom.gohtml")
@@ -221,15 +201,7 @@ func (ctrl *Controller) kontaktPage(c *gin.Context) {
 	var data = &tplData{
 		Collections: map[int64]*CollFacetType{},
 		Catalogs:    map[int64]*CollFacetType{},
-		baseData: baseData{
-			Lang:       lang,
-			RootPath:   "../../",
-			SearchAddr: ctrl.searchAddr,
-			LoginURL:   ctrl.loginURL,
-			Self:       c.Request.URL.String(),
-			User:       GetUser(c),
-			Mode:       ctrl.mode,
-		},
+		baseData:    ctrl.getBaseData(c, lang, "../../"),
 	}
 	collFacet := &client.InFacet{
 		Term: &client.InFacetTerm{
@@ -376,13 +348,7 @@ func (ctrl *Controller) kontaktPage(c *gin.Context) {
 }
 
 func (ctrl *Controller) indexPage(ctx *gin.Context) {
-	var lang = ctx.Param("lang")
-	if lang == "" {
-		lang = "de"
-	}
-	if !slices.Contains([]string{"de", "en", "fr", "it"}, lang) {
-		lang = "de"
-	}
+	lang := ctrl.getLang(ctx)
 
 	templateName := "index.gohtml"
 	files := ctrl.getTemplatesByPrefix("index_", "impressum.gohtml", "kontakt.gohtml", "search_grid.gohtml", "detail.gohtml", "zoom.gohtml")
@@ -401,16 +367,7 @@ func (ctrl *Controller) indexPage(ctx *gin.Context) {
 	var data = &tplData{
 		Collections: map[int64]*CollFacetType{},
 		Catalogs:    map[int64]*CollFacetType{},
-		baseData: baseData{
-			Lang:       lang,
-			RootPath:   "",
-			SearchAddr: ctrl.searchAddr,
-			DetailAddr: ctrl.detailAddr,
-			LoginURL:   ctrl.loginURL,
-			Self:       fmt.Sprintf("%s%s", ctrl.externalAddr, ctx.Request.URL.Path),
-			User:       GetUser(ctx),
-			Mode:       ctrl.mode,
-		},
+		baseData:    ctrl.getBaseData(ctx, lang, ""),
 	}
 
 	collFacet := &client.InFacet{

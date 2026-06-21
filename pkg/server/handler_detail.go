@@ -19,53 +19,36 @@ import (
 )
 
 func (ctrl *Controller) detailJSON(c *gin.Context) {
-	var lang = c.Param("lang")
-	if !ctrl.langAvailable(lang) {
-		lang = "de"
-	}
 	id := c.Param("signature")
-	if id == "" {
-		ctrl.logger.Error().Msgf("id missing")
-		c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("id missing"))
-		return
-	}
-
-	source, err := ctrl.client.MediathekEntries(c, []string{id})
+	entry, err := ctrl.getMediathekEntry(c, id)
 	if err != nil {
-		ctrl.logger.Error().Err(err).Msgf("cannot get source '%s'", id)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot get source '%s': %v", id, err))
+		ctrl.logger.Error().Err(err).Msg("cannot get mediathek entry")
+		status := http.StatusInternalServerError
+		if strings.Contains(err.Error(), "not found") {
+			status = http.StatusNotFound
+		} else if strings.Contains(err.Error(), "missing") {
+			status = http.StatusBadRequest
+		}
+		c.AbortWithStatusJSON(status, err.Error())
 		return
 	}
-	if source == nil || len(source.MediathekEntries) == 0 {
-		ctrl.logger.Error().Err(err).Msgf("source '%s' not found", id)
-		c.AbortWithStatusJSON(http.StatusNotFound, fmt.Sprintf("source '%s' not found", id))
-		return
-	}
-	c.JSON(http.StatusOK, source.MediathekEntries[0])
+	c.JSON(http.StatusOK, entry)
 }
 
 func (ctrl *Controller) detailText(c *gin.Context) {
-	var lang = c.Param("lang")
-	if !ctrl.langAvailable(lang) {
-		lang = "de"
-	}
+	lang := ctrl.getLang(c)
 	templateName := "detail_text.gotmpl"
 	id := c.Param("signature")
-	if id == "" {
-		ctrl.logger.Error().Msgf("id missing")
-		c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("id missing"))
-		return
-	}
-
-	source, err := ctrl.client.MediathekEntries(c, []string{id})
+	entry, err := ctrl.getMediathekEntry(c, id)
 	if err != nil {
-		ctrl.logger.Error().Err(err).Msgf("cannot get source '%s'", id)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot get source '%s': %v", id, err))
-		return
-	}
-	if source == nil || len(source.MediathekEntries) == 0 {
-		ctrl.logger.Error().Err(err).Msgf("source '%s' not found", id)
-		c.AbortWithStatusJSON(http.StatusNotFound, fmt.Sprintf("source '%s' not found", id))
+		ctrl.logger.Error().Err(err).Msg("cannot get mediathek entry")
+		status := http.StatusInternalServerError
+		if strings.Contains(err.Error(), "not found") {
+			status = http.StatusNotFound
+		} else if strings.Contains(err.Error(), "missing") {
+			status = http.StatusBadRequest
+		}
+		c.AbortWithStatusJSON(status, err.Error())
 		return
 	}
 
@@ -75,16 +58,8 @@ func (ctrl *Controller) detailText(c *gin.Context) {
 		MediaserverBase string                                    `json:"mediaserverBase"`
 	}
 	var data = &tplData{
-		Source: source.MediathekEntries[0],
-		baseData: baseData{
-			Lang:       lang,
-			RootPath:   "../",
-			SearchAddr: ctrl.searchAddr,
-			LoginURL:   ctrl.loginURL,
-			Self:       fmt.Sprintf("%s%s", ctrl.externalAddr, c.Request.URL.Path),
-			User:       GetUser(c),
-			Mode:       ctrl.mode,
-		},
+		Source:          entry,
+		baseData:        ctrl.getBaseData(c, lang, "../"),
 		MediaserverBase: ctrl.mediaserverBase,
 	}
 
@@ -96,7 +71,6 @@ func (ctrl *Controller) detailText(c *gin.Context) {
 		return
 	}
 	c.Header("Content-Type", "text/markdown; charset=utf-8")
-	//	c.Set("Content-Type", "text/markdown; charset=utf-8")
 	if err := tpl.Execute(c.Writer, data); err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
@@ -136,10 +110,7 @@ func (ctrl *Controller) foliateViewer(c *gin.Context) {
 }
 
 func (ctrl *Controller) detail(c *gin.Context) {
-	var lang = c.Param("lang")
-	if !ctrl.langAvailable(lang) {
-		lang = "de"
-	}
+	lang := ctrl.getLang(c)
 	sourceString := c.Query("source")
 	searchString := c.Query("search")
 	cursorString := c.Query("cursor")
@@ -164,8 +135,6 @@ func (ctrl *Controller) detail(c *gin.Context) {
 		query.Set("source", sourceString)
 	}
 	if cursorString != "" {
-	}
-	if cursorString != "" {
 		query.Set("cursor", cursorString)
 	}
 	if vocabularyString != "" {
@@ -184,21 +153,16 @@ func (ctrl *Controller) detail(c *gin.Context) {
 		return
 	}
 	id := c.Param("signature")
-	if id == "" {
-		ctrl.logger.Error().Err(err).Msgf("signature missing")
-		c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("signature missing"))
-		return
-	}
-
-	source, err := ctrl.client.MediathekEntries(c, []string{id})
+	entry, err := ctrl.getMediathekEntry(c, id)
 	if err != nil {
-		ctrl.logger.Error().Err(err).Msgf("cannot get source '%s'", id)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot get source '%s': %v", id, err))
-		return
-	}
-	if source == nil || len(source.MediathekEntries) == 0 {
-		ctrl.logger.Error().Err(err).Msgf("source '%s' not found", id)
-		c.AbortWithStatusJSON(http.StatusNotFound, fmt.Sprintf("source '%s' not found", id))
+		ctrl.logger.Error().Err(err).Msg("cannot get mediathek entry")
+		status := http.StatusInternalServerError
+		if strings.Contains(err.Error(), "not found") {
+			status = http.StatusNotFound
+		} else if strings.Contains(err.Error(), "missing") {
+			status = http.StatusBadRequest
+		}
+		c.AbortWithStatusJSON(status, err.Error())
 		return
 	}
 
@@ -217,13 +181,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 	}
 	_, isIFrame := c.GetQuery("iframe")
 	_, isExhibition := c.GetQuery("exhibition")
-	user := GetUser(c)
-	detailAddr := ctrl.detailAddr
-	if user.IsLoggedIn() {
-		detailAddr = ctrl.searchAddr
-	}
-	me := source.MediathekEntries[0]
-	categories := me.GetBase().GetCategory()
+	categories := entry.GetBase().GetCategory()
 	slices.SortFunc(categories, func(a, b string) int {
 		return len(b) - len(a)
 	})
@@ -240,24 +198,16 @@ func (ctrl *Controller) detail(c *gin.Context) {
 			newCategories = append(newCategories, cat)
 		}
 	}
-	me.Base.Category = newCategories
+	entry.Base.Category = newCategories
+	bd := ctrl.getBaseData(c, lang, "../../")
+	bd.Exhibition = isExhibition
+	bd.Params = template.URL(strings.TrimPrefix(searchParams, "?"))
+
 	var data = &tplData{
-		Source:       source.MediathekEntries[0],
-		IFrame:       isIFrame,
-		SearchSource: sourceString,
-		baseData: baseData{
-			Lang:       lang,
-			RootPath:   "../../",
-			Exhibition: isExhibition,
-			SearchAddr: ctrl.searchAddr,
-			DetailAddr: detailAddr,
-			//Search:     template.URL(fmt.Sprintf("%s/search/%s%s", ctrl.searchAddr, lang, searchParams)),
-			Params:   template.URL(strings.TrimPrefix(searchParams, "?")),
-			LoginURL: ctrl.loginURL,
-			Self:     fmt.Sprintf("%s%s", ctrl.externalAddr, c.Request.URL.Path),
-			User:     user,
-			Mode:     ctrl.mode,
-		},
+		Source:          entry,
+		IFrame:          isIFrame,
+		SearchSource:    sourceString,
+		baseData:        bd,
 		MediaserverBase: ctrl.mediaserverBase,
 	}
 
