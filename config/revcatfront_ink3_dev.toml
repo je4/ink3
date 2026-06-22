@@ -1,18 +1,20 @@
-name = "ink"
+name = "ink3"
 logfile = ""
 loglevel = "DEBUG"
+notemplatecache = true
+localaddr = ":8445"
+externaladdr = "https://localhost:8445"
+searchaddr = "https://localhost:8445"
+detailaddr = "https://localhost:8445"
+mode = "dark" # auto, dark, light
+zoomonly = false
 
-localaddr = "localhost:8449"
-externaladdr = "https://ink3.sammlung.cc"
-searchaddr = "https://ink3.sammlung.cc"
-detailaddr = "https://ink3.sammlung.cc"
+openaiapikey = "%%OPENAI_API_KEY%%"
 
-mode = "dark"
-
-templates = "/root/ink3web/data/web/ink3/templates"
-staticfiles = "/root/ink3web/data/web/ink3/static"
-datadir = "/var/www/vhosts/performance.ausstellung.cc/digitalesee"
-
+templates = "C:/daten/go/dev/ink3web/data/web/ink3/templates"
+staticfiles = "C:/daten/go/dev/ink3web/data/web/ink3/static"
+datadir = "c:/temp/performance"
+#mediaserverbase = "https://localhost:8446"
 mediaserverbase = "https://ba14ns21403-sec1.fhnw.ch/mediasrv"
 mediaserverkey = "%%MEDIASERVER_KEY%%"
 mediaservertokenexp = "6h"
@@ -28,9 +30,6 @@ fieldmapping.collection = "collectiontitle"
 fieldmapping.signature = "signature.keyword"
 fieldmapping.abstract = "abstract"
 
-
-openaiapikey = "%%OPENAI_API_KEY%%"
-
 facetinclude = []
 facetexclude = ["vww:*"]
 
@@ -39,18 +38,15 @@ basefilter = """
 """
 
 
-#[[auth]]
-#user="performance"
-#password="schweiz"
+[[clients]]
 
 [login]
 jwtkey = "%%LOGIN_JWTKEY%%" # ":Xf/#|IKYrDsNi4]LN*o(W7;:"
 jwtalg = ["HS256","HS384","HS512"]
 linktokenexp = "1h"
 #url = "https://intern.hgk.fhnw.ch/ango/shib/auth/localhost"
-url = "https://intern.hgk.fhnw.ch/ango/oidc/auth/revcat"
-issuer = "auth.hgk.fhnw.ch/revcat"
-
+url = "https://intern.hgk.fhnw.ch/ango/oidc/auth/localhost"
+issuer = "auth.hgk.fhnw.ch/localhost"
 
 
 [[locations]]
@@ -73,27 +69,26 @@ networks = ["62.2.199.158/32"]
 group = "net/bfh"
 networks = ["147.87.0.0/16", "5.35.244.248/32", "213.200.195.102/32", "193.5.80.0/21", "2a07:6b40::/29", "2001:620:500::/48"]
 
-[[locations]]
-group = "net/tabeahome"
-networks = ["212.51.149.28/32", "2a02:168:5608:0:c8b5:db0f:4ce6:f9d1/48"]
-
+[mediaserver]
+localaddr = "localhost:8446"
+externaladdr = "https://localhost:8446"
+basedir = "performance/mediaserver"
 
 [revcat]
-endpoint = "https://localhost:8443/graphql"
+endpoint = "https://localhost:8441/graphql"
 insecure = true
-apikey = "Zwksedjpwo43iucn45XR"
-jwtkey = "%%REVCAT_JWTKEY%%"
+#apikey = "%%REVCAT_APIKEY%%"
+apikey = "%%REVCAT_APIKEY_INK%%"
 
 [directus]
 baseurl = "https://cms.basel-collections.ch"
-token = "abc123"
+token = "%%DIRECTUS_TOKEN%%"
 cachetime = "10s"
 catalogid = 2
 
 [locale]
 default = "de"
 folder = ""
-#folder = "rcfront/revcati13n"
 available = ["de", "fr", "it", "en"]
 
 [[medias]]

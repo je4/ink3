@@ -1,0 +1,200 @@
+name = "ink"
+logfile = ""
+loglevel = "DEBUG"
+
+localaddr = "localhost:8452"
+externaladdr = "https://scb.mab.sammlung.cc"
+searchaddr = "https://scb.mab.sammlung.cc"
+detailaddr = "https://scb.mab.sammlung.cc"
+
+mode = "dark"
+
+templates = "/root/ink3web/data/web/ink3/templates"
+staticfiles = "/root/ink3web/data/web/ink3/static"
+datadir = "/var/www/vhosts/performance.ausstellung.cc/digitalesee"
+
+mediaserverbase = "https://ba14ns21403-sec1.fhnw.ch/mediasrv"
+mediaserverkey = "%%MEDIASERVER_KEY%%"
+mediaservertokenexp = "6h"
+
+jwtkey = "%%JWTKEY%%" # ":Xf/#|IKYrDsNi4]LN*o(W7;:"
+jwtalg = "HS512"
+
+fieldmapping.author = "[persons].name"
+fieldmapping.category = "category.keyword"
+fieldmapping.title = "title"
+fieldmapping.fulltext = "[media.pdf].fulltext"
+fieldmapping.collection = "collectiontitle"
+fieldmapping.signature = "signature.keyword"
+fieldmapping.abstract = "abstract"
+
+
+openaiapikey = "%%OPENAI_API_KEY%%"
+
+facetinclude = []
+facetexclude = ["vww:*"]
+
+basefilter = """
+[]
+"""
+
+
+#[[auth]]
+#user="performance"
+#password="schweiz"
+
+[login]
+jwtkey = "%%LOGIN_JWTKEY%%" # ":Xf/#|IKYrDsNi4]LN*o(W7;:"
+jwtalg = ["HS256","HS384","HS512"]
+linktokenexp = "1h"
+#url = "https://intern.hgk.fhnw.ch/ango/shib/auth/localhost"
+url = "https://intern.hgk.fhnw.ch/ango/oidc/auth/revcat"
+issuer = "auth.hgk.fhnw.ch/revcat"
+
+
+
+[[locations]]
+group = "net/local"
+networks = ["127.0.0.1/32", "::1/128"]
+
+[[locations]]
+group = "location/fhnw"
+networks = ["10.0.0.0/8", "192.168.0.0/16", "147.86.0.0/16"]
+
+[[locations]]
+group = "net/fhnw"
+networks = ["10.0.0.0/8", "192.168.0.0/16", "147.86.0.0/16"]
+
+[[locations]]
+group = "location/memoriav"
+networks = ["62.2.199.158/32"]
+
+[[locations]]
+group = "net/bfh"
+networks = ["147.87.0.0/16", "5.35.244.248/32", "213.200.195.102/32", "193.5.80.0/21", "2a07:6b40::/29", "2001:620:500::/48"]
+
+[[locations]]
+group = "net/tabeahome"
+networks = ["212.51.149.28/32", "2a02:168:5608:0:c8b5:db0f:4ce6:f9d1/48"]
+
+
+[revcat]
+endpoint = "https://localhost:8443/graphql"
+insecure = true
+apikey = "Zwksedjpwo43iucn45XR"
+jwtkey = "%%REVCAT_JWTKEY%%"
+
+[directus]
+baseurl = "https://cms.basel-collections.ch"
+token = "abc123"
+cachetime = "10s"
+catalogid = 2
+
+[locale]
+default = "de"
+folder = ""
+#folder = "rcfront/revcati13n"
+available = ["de", "fr", "it", "en"]
+
+[[medias]]
+id = 1
+identifier = "mediatypes.keyword:\"image\""
+title = "Image"
+
+[[medias]]
+id = 2
+identifier = "mediatypes.keyword:\"video\""
+title = "Video"
+
+[[medias]]
+id = 3
+identifier = "mediatypes.keyword:\"pdf\""
+title = "PDF"
+
+[[medias]]
+id = 4
+identifier = "mediatypes.keyword:\"audio\""
+title = "Audio"
+
+[[medias]]
+id = 5
+identifier = "mediatypes.keyword:\"mei\""
+title = "MEI"
+
+[[medias]]
+id = 6
+identifier = "mediatypes.keyword:\"webrecorder\""
+title = "Webrecording"
+
+[[medias]]
+id = 7
+identifier = "mediatypes.keyword:\"office\""
+title = "Office Document"
+
+[[medias]]
+id = 8
+identifier = "mediatypes.keyword:\"gpx\""
+title = "GPX File"
+
+#[[catalogs]]
+#id = 1
+#identifier = "catalog:\"Educational\""
+#title = "Educational Resources"
+#url = ""
+#contact = ""
+
+#[[catalogs]]
+#id = 2
+#identifier = "catalog:\"Open\""
+#title = "Open and Free Access"
+#url = ""
+#contact = ""
+
+
+[[collections]]
+id = 1
+identifier = "cat:\"zotero2!!HSM-Datenbanken!!Schola Cantorum Basiliensis!!Grande Écurie\""
+title = "Grande Écurie"
+url = ""
+image = ""
+contact = "Martina Papiro"
+
+id = 2
+identifier = "cat:\"zotero2!!HSM-Datenbanken!!Schola Cantorum Basiliensis!!Frühe Streichinstrumente um 1500\""
+title = "Frühe Streichinstrumente um 1500 I&II"
+url = ""
+image = ""
+contact = "Martina Papiro"
+
+[[collections]]
+id = 3
+identifier = "cat:\"zotero2!!HSM-Datenbanken!!Ina Lohr\""
+title = "Ina Lohr"
+url = ""
+image = ""
+contact = "Martina Papiro"
+
+
+#[[collections]]
+#id = 200
+#identifier = "cat:\"zotero2!!HSM-Datenbanken\""
+#title = "HSM Datenbanken"
+#url = ""
+#image = ""
+#contact = "Tabea Lurk"
+
+[[collections]]
+id = 4
+identifier = "cat:\"zotero2!!Werke!!Hochschule für Musik!!Motet Cycles\""
+title = "Motet Cycles"
+url = ""
+image = ""
+contact = "Tabea Lurk"
+
+[[collections]]
+id = 5
+identifier = "cat:\"zotero2!!HSM-Datenbanken!!Schola Cantorum Basiliensis!!Open Access Publikationen\""
+title = "Open Access Publikationen"
+url = ""
+image = ""
+contact = "Martina Papiro"
