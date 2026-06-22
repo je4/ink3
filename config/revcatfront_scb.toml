@@ -159,6 +159,7 @@ url = ""
 image = ""
 contact = "Martina Papiro"
 
+[[collections]]
 id = 2
 identifier = "cat:\"zotero2!!HSM-Datenbanken!!Schola Cantorum Basiliensis!!Frühe Streichinstrumente um 1500\""
 title = "Frühe Streichinstrumente um 1500 I&II"
