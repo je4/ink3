@@ -43,40 +43,26 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 	// extract and process search parameters like cursor, ki, collections, catalogs, and vocabulary
 	cursorString := c.Query("cursor")
 	ki := c.Request.URL.Query().Has("ki")
+	parseIDs := func(s string) []int {
+		var ids []int
+		for _, part := range strings.Split(s, ",") {
+			id, err := strconv.Atoi(part)
+			if err != nil || id == 0 {
+				continue
+			}
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	collectionIDs := parseIDs(c.Query("collections"))
+	catalogIDs := parseIDs(c.Query("catalogs"))
+	mediaIDs := parseIDs(c.Query("medias"))
 	collectionsString := c.Query("collections")
-	parts := strings.Split(collectionsString, ",")
-	collectionIDs := []int{}
-	for _, part := range parts {
-		collID, err := strconv.Atoi(part)
-		if err != nil || collID == 0 {
-			continue
-		}
-		collectionIDs = append(collectionIDs, collID)
-	}
 	catalogsString := c.Query("catalogs")
-	parts = strings.Split(catalogsString, ",")
-	catalogIDs := []int{}
-	for _, part := range parts {
-		catID, err := strconv.Atoi(part)
-		if err != nil || catID == 0 {
-			continue
-		}
-		catalogIDs = append(catalogIDs, catID)
-	}
 	mediasString := c.Query("medias")
-	parts = strings.Split(mediasString, ",")
-	mediaIDs := []int{}
-	for _, part := range parts {
-		mediaID, err := strconv.Atoi(part)
-		if err != nil || mediaID == 0 {
-			continue
-		}
-		mediaIDs = append(mediaIDs, mediaID)
-	}
 	vocabularyString := c.Query("vocabulary")
-	parts = strings.Split(vocabularyString, ",")
 	vocabularyIDs := []string{}
-	for _, part := range parts {
+	for _, part := range strings.Split(vocabularyString, ",") {
 		vocabularyID := strings.TrimSpace(part)
 		if part == "" {
 			continue
@@ -107,122 +93,58 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 	if len(ctrl.facetExclude) > 0 {
 		vocFacet.Term.Exclude = append(vocFacet.Term.Exclude, ctrl.facetExclude...)
 	}
-	// process and include configured collections in the facet query
-	collFacet := &client.InFacet{
-		Term: &client.InFacetTerm{
-			Name:        "collections",
-			Field:       "category.keyword",
-			Size:        200,
-			MinDocCount: 0,
-			Include:     []string{},
-			Exclude:     []string{},
-		},
-		Query: &client.InFilter{
-			BoolTerm: &client.InFilterBoolTerm{
-				Field:  "category.keyword",
-				Values: []string{},
-				And:    false,
+	createFacet := func(name, field string, ctrlList []*CollFacetType, selectedIDs []int, idPrefix string) *client.InFacet {
+		facet := &client.InFacet{
+			Term: &client.InFacetTerm{
+				Name:        name,
+				Field:       field,
+				Size:        200,
+				MinDocCount: 0,
+				Include:     []string{},
+				Exclude:     []string{},
 			},
-		},
-	}
-	for _, coll := range ctrl.collections {
-		parts := strings.SplitN(coll.Identifier, ":", 2)
-		if len(parts) != 2 {
-			continue
 		}
-		val := strings.Trim(parts[1], "\" ")
-		collFacet.Term.Include = append(collFacet.Term.Include, val)
-		if len(collectionIDs) == 0 || slices.Contains(collectionIDs, int(coll.Id)) {
-			switch parts[0] {
-			case "cat":
-				collFacet.Query.BoolTerm.Values = append(collFacet.Query.BoolTerm.Values, val)
-			default:
-				ctrl.logger.Error().Err(err).Msgf("unknown collection identifier '%s'", coll.Identifier)
-				c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("unknown collection identifier '%s'", coll.Identifier))
-				return
+
+		// Special case for catalogs when no IDs are selected
+		if name != "collections" && len(selectedIDs) == 0 {
+			facet.Query = &client.InFilter{
+				ExistsTerm: &client.InFilterExistsTerm{
+					Field: "signature",
+				},
+			}
+		} else {
+			facet.Query = &client.InFilter{
+				BoolTerm: &client.InFilterBoolTerm{
+					Field:  field,
+					Values: []string{},
+					And:    false,
+				},
 			}
 		}
-	}
-	// process and include configured catalogs in the facet query
-	catFacet := &client.InFacet{
-		Term: &client.InFacetTerm{
-			Name:        "catalogs",
-			Field:       "catalog.keyword",
-			Size:        200,
-			MinDocCount: 0,
-			Include:     []string{},
-			Exclude:     []string{},
-		},
-	}
-	if len(catalogIDs) == 0 {
-		catFacet.Query = &client.InFilter{
-			ExistsTerm: &client.InFilterExistsTerm{
-				Field: "signature",
-			},
-		}
-	} else {
-		catFacet.Query = &client.InFilter{
-			BoolTerm: &client.InFilterBoolTerm{
-				Field:  "catalog.keyword",
-				Values: []string{},
-				And:    false,
-			},
-		}
-		for _, cat := range ctrl.catalogs {
-			parts := strings.SplitN(cat.Identifier, ":", 2)
+
+		for _, item := range ctrlList {
+			parts := strings.SplitN(item.Identifier, ":", 2)
 			if len(parts) != 2 {
 				continue
 			}
 			val := strings.Trim(parts[1], "\" ")
-			catFacet.Term.Include = append(catFacet.Term.Include, val)
-			if len(catalogIDs) == 0 || slices.Contains(catalogIDs, int(cat.Id)) {
-				switch parts[0] {
-				case "catalog":
-					catFacet.Query.BoolTerm.Values = append(catFacet.Query.BoolTerm.Values, val)
-				default:
-					ctrl.logger.Error().Err(err).Msgf("unknown catalog identifier '%s'", cat.Identifier)
-					c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("unknown catalog identifier '%s'", cat.Identifier))
-					return
+			facet.Term.Include = append(facet.Term.Include, val)
+			if len(selectedIDs) == 0 || slices.Contains(selectedIDs, int(item.Id)) {
+				if facet.Query.BoolTerm != nil {
+					if parts[0] == idPrefix {
+						facet.Query.BoolTerm.Values = append(facet.Query.BoolTerm.Values, val)
+					} else {
+						ctrl.logger.Error().Msgf("unknown %s identifier '%s' (expected prefix '%s')", name, item.Identifier, idPrefix)
+					}
 				}
 			}
 		}
+		return facet
 	}
-	// process and include configured medias in the facet query
-	mediaFacet := &client.InFacet{
-		Term: &client.InFacetTerm{
-			Name:        "medias",
-			Field:       "mediatype.keyword",
-			Size:        200,
-			MinDocCount: 0,
-			Include:     []string{},
-			Exclude:     []string{},
-		},
-		Query: &client.InFilter{
-			BoolTerm: &client.InFilterBoolTerm{
-				Field:  "mediatype.keyword",
-				Values: []string{},
-				And:    false,
-			},
-		},
-	}
-	for _, media := range ctrl.medias {
-		parts := strings.SplitN(media.Identifier, ":", 2)
-		if len(parts) != 2 {
-			continue
-		}
-		val := strings.Trim(parts[1], "\" ")
-		mediaFacet.Term.Include = append(mediaFacet.Term.Include, val)
-		if len(mediaIDs) == 0 || slices.Contains(mediaIDs, int(media.Id)) {
-			switch parts[0] {
-			case "mediatypes.keyword":
-				mediaFacet.Query.BoolTerm.Values = append(mediaFacet.Query.BoolTerm.Values, val)
-			default:
-				ctrl.logger.Error().Err(err).Msgf("unknown media identifier '%s'", media.Identifier)
-				c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("unknown media identifier '%s'", media.Identifier))
-				return
-			}
-		}
-	}
+
+	collFacet := createFacet("collections", "category.keyword", ctrl.collections, collectionIDs, "cat")
+	catFacet := createFacet("catalogs", "catalog.keyword", ctrl.catalogs, catalogIDs, "catalog")
+	mediaFacet := createFacet("medias", "mediatype.keyword", ctrl.medias, mediaIDs, "mediatypes.keyword")
 
 	var result *client.Search
 	/*

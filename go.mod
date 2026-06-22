@@ -16,14 +16,13 @@ require (
 	github.com/gosimple/slug v1.15.0
 	github.com/gqlgo/gqlgenc v0.37.0
 	github.com/je4/basel-collections/v2 v2.0.2
-	github.com/je4/ink3web v0.0.4
-	github.com/je4/revcat/v2 v2.0.19
+	github.com/je4/ink3web v0.0.5
+	github.com/je4/revcat/v2 v2.0.20
 	github.com/je4/utils/v2 v2.0.68
 	github.com/je4/zsearch/v2 v2.0.11
 	github.com/nicksnyder/go-i18n/v2 v2.6.1
 	github.com/rs/cors v1.11.1
 	github.com/rs/zerolog v1.35.1
-	github.com/sashabaranov/go-openai v1.41.2
 	github.com/yeqown/go-qrcode/v2 v2.2.5
 	github.com/yeqown/go-qrcode/writer/standard v1.3.0
 	golang.org/x/net v0.56.0
@@ -32,7 +31,7 @@ require (
 
 require (
 	dario.cat/mergo v1.0.2 // indirect
-	github.com/99designs/gqlgen v0.17.91 // indirect
+	github.com/99designs/gqlgen v0.17.92 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
 	github.com/andybalholm/brotli v1.2.1 // indirect
@@ -74,6 +73,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.60.0 // indirect
+	github.com/sashabaranov/go-openai v1.41.2 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/sosodev/duration v1.4.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
