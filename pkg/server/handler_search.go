@@ -295,6 +295,31 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		Count   int    `json:"count"`
 		Checked bool   `json:"checked"`
 	}
+	fillFacet := func(values []*client.FacetValueFragment, ctrlList []*CollFacetType, selectedIDs []int, target *[]*facetType) {
+		for _, val := range values {
+			strVal := val.GetFacetValueString()
+			if strVal == nil {
+				continue
+			}
+			facetStr := strVal.GetStrVal()
+			cf := &facetType{
+				Count: int(strVal.GetCount()),
+			}
+			for _, item := range ctrlList {
+				parts := strings.SplitN(item.Identifier, ":", 2)
+				if len(parts) != 2 {
+					continue
+				}
+				cVal := strings.Trim(parts[1], "\" ")
+				if cVal == facetStr {
+					cf.ID = int(item.Id)
+					cf.Name = item.Title
+					cf.Checked = slices.Contains(selectedIDs, int(item.Id))
+					*target = append(*target, cf)
+				}
+			}
+		}
+	}
 	type edge struct {
 		Edge             *client.Search_Search_Edges `json:"edge"`
 		Title            *translate.MultiLangString  `json:"title"`
@@ -454,77 +479,11 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 			}
 
 		case "collections":
-			for _, val := range facet.GetValues() {
-				strVal := val.GetFacetValueString()
-				if strVal == nil {
-					continue
-				}
-				facetStr := strVal.GetStrVal()
-				cf := &facetType{
-					Count: int(strVal.GetCount()),
-				}
-				for _, coll := range ctrl.collections {
-					parts := strings.SplitN(coll.Identifier, ":", 2)
-					if len(parts) != 2 {
-						continue
-					}
-					cVal := strings.Trim(parts[1], "\" ")
-					if cVal == facetStr {
-						cf.ID = int(coll.Id)
-						cf.Name = coll.Title
-						cf.Checked = slices.Contains(collectionIDs, int(coll.Id))
-						data.CollectionFacets = append(data.CollectionFacets, cf)
-					}
-				}
-			}
+			fillFacet(facet.GetValues(), ctrl.collections, collectionIDs, &data.CollectionFacets)
 		case "catalogs":
-			for _, val := range facet.GetValues() {
-				strVal := val.GetFacetValueString()
-				if strVal == nil {
-					continue
-				}
-				facetStr := strVal.GetStrVal()
-				cf := &facetType{
-					Count: int(strVal.GetCount()),
-				}
-				for _, cat := range ctrl.catalogs {
-					parts := strings.SplitN(cat.Identifier, ":", 2)
-					if len(parts) != 2 {
-						continue
-					}
-					cVal := strings.Trim(parts[1], "\" ")
-					if cVal == facetStr {
-						cf.ID = int(cat.Id)
-						cf.Name = cat.Title
-						cf.Checked = slices.Contains(catalogIDs, int(cat.Id))
-						data.CatalogFacets = append(data.CatalogFacets, cf)
-					}
-				}
-			}
+			fillFacet(facet.GetValues(), ctrl.catalogs, catalogIDs, &data.CatalogFacets)
 		case "medias":
-			for _, val := range facet.GetValues() {
-				strVal := val.GetFacetValueString()
-				if strVal == nil {
-					continue
-				}
-				facetStr := strVal.GetStrVal()
-				cf := &facetType{
-					Count: int(strVal.GetCount()),
-				}
-				for _, media := range ctrl.medias {
-					parts := strings.SplitN(media.Identifier, ":", 2)
-					if len(parts) != 2 {
-						continue
-					}
-					cVal := strings.Trim(parts[1], "\" ")
-					if cVal == facetStr {
-						cf.ID = int(media.Id)
-						cf.Name = media.Title
-						cf.Checked = slices.Contains(mediaIDs, int(media.Id))
-						data.MediaFacets = append(data.MediaFacets, cf)
-					}
-				}
-			}
+			fillFacet(facet.GetValues(), ctrl.medias, mediaIDs, &data.MediaFacets)
 		}
 	}
 	var str string
