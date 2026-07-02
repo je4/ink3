@@ -180,7 +180,7 @@ func main() {
 			templateFS = performance.FS
 		case "ink":
 			templateFS = ink.FS
-		case "ink3":
+		case "ink3", "scb.mab":
 			templateFS = ink3.FS
 		default:
 			logger.Fatal().Msgf("no template folder specified")
@@ -268,6 +268,7 @@ func main() {
 		logger.Fatal().Err(err).Msgf("cannot unmarshal base filter '%s'", conf.BaseFilter)
 	}
 	ctrl, err := server.NewController(
+		conf.Name,
 		conf.LocalAddr,
 		conf.ExternalAddr,
 		conf.SearchAddr,

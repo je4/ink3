@@ -26,6 +26,7 @@ import (
 )
 
 type baseData struct {
+	Name       string
 	Lang       string
 	RootPath   string
 	Exhibition bool
@@ -54,9 +55,10 @@ type CollFacetType struct {
 }
 
 // NewController creates a new Controller instance.
-func NewController(localAddr, externalAddr, searchAddr, detailAddr string, protoHTTP bool, auth map[string]string, cert *tls.Certificate, templateFS, staticFS, dataFS fs.FS, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, mediaserverBase, mediaserverKey string, mediaserverTokenExp time.Duration, bundle *i18n.Bundle, collections, catalogs, medias []*CollFacetType, fieldMapping map[string]string, embeddings *openai.ClientV2, templateDebug, zoomOnly bool, loginURL, loginIssuer, loginJWTKey string, loginJWTAlgs []string, locations map[string][]net.IPNet, facetInclude, facetExclude []string, baseFilter []*client.InFilter, mode string, logger zLogger.ZLogger) (*Controller, error) {
+func NewController(name, localAddr, externalAddr, searchAddr, detailAddr string, protoHTTP bool, auth map[string]string, cert *tls.Certificate, templateFS, staticFS, dataFS fs.FS, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, mediaserverBase, mediaserverKey string, mediaserverTokenExp time.Duration, bundle *i18n.Bundle, collections, catalogs, medias []*CollFacetType, fieldMapping map[string]string, embeddings *openai.ClientV2, templateDebug, zoomOnly bool, loginURL, loginIssuer, loginJWTKey string, loginJWTAlgs []string, locations map[string][]net.IPNet, facetInclude, facetExclude []string, baseFilter []*client.InFilter, mode string, logger zLogger.ZLogger) (*Controller, error) {
 
 	ctrl := &Controller{
+		name:                name,
 		localAddr:           localAddr,
 		externalAddr:        externalAddr,
 		searchAddr:          searchAddr,
@@ -419,6 +421,7 @@ func (ctrl *Controller) getBaseData(c *gin.Context, lang string, rootPath string
 	}
 
 	return baseData{
+		Name:       ctrl.name,
 		Lang:       lang,
 		RootPath:   rootPath,
 		SearchAddr: ctrl.searchAddr,
@@ -470,6 +473,7 @@ type Controller struct {
 	facetExclude        []string
 	mode                string
 	baseFilter          []*client.InFilter
+	name                string
 }
 
 // Start starts the HTTP/HTTPS server.
