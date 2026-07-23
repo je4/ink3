@@ -117,6 +117,7 @@ func (ctrl *Controller) detail(c *gin.Context) {
 	// extract language and various search/filter parameters from the query string
 	lang := ctrl.getLang(c)
 	sourceString := c.Query("source")
+	searchType := c.Query("searchtype")
 	searchString := c.Query("search")
 	cursorString := c.Query("cursor")
 	collectionsString := c.Query("collections")
@@ -126,6 +127,9 @@ func (ctrl *Controller) detail(c *gin.Context) {
 	ki := c.Request.URL.Query().Has("ki")
 	// build the query parameters for back-to-search or other navigation links
 	query := url.Values{}
+	if searchType != "" {
+		query.Set("searchtype", searchType)
+	}
 	if searchString != "" {
 		query.Set("search", searchString)
 	}
@@ -305,6 +309,7 @@ func (ctrl *Controller) detailTextList(c *gin.Context) {
 	for {
 		result, err := ctrl.client.Search(
 			c,
+			"all",
 			"",
 			[]*client.InFacet{},
 			[]*client.InFilter{

@@ -113,7 +113,7 @@ func (ctrl *Controller) impressumPage(c *gin.Context) {
 	if len(catFacet.Query.BoolTerm.Values) > 0 {
 		facets = append(facets, catFacet)
 	}
-	result, err := ctrl.client.Search(c, "", facets, nil, nil, nil, &size, nil, sort)
+	result, err := ctrl.client.Search(c, "all", "", facets, nil, nil, nil, &size, nil, sort)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", "")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", "", err))
@@ -280,7 +280,7 @@ func (ctrl *Controller) kontaktPage(c *gin.Context) {
 	if len(catFacet.Query.BoolTerm.Values) > 0 {
 		facets = append(facets, catFacet)
 	}
-	result, err := ctrl.client.Search(c, "", facets, nil, nil, nil, &size, nil, sort)
+	result, err := ctrl.client.Search(c, "all", "", facets, nil, nil, nil, &size, nil, sort)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", "")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", "", err))
@@ -508,7 +508,7 @@ func (ctrl *Controller) indexPage(ctx *gin.Context) {
 			facets = append(facets, catFacet)
 		}
 	*/
-	result, err := ctrl.client.Search(ctx, "", facets, filter, nil, nil, &size, nil, sort)
+	result, err := ctrl.client.Search(ctx, "all", "", facets, filter, nil, nil, &size, nil, sort)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", "")
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", "", err))

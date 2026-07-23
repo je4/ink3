@@ -54,6 +54,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		}
 		return ids
 	}
+	searchType := c.Query("searchtype")
 	collectionIDs := parseIDs(c.Query("collections"))
 	catalogIDs := parseIDs(c.Query("catalogs"))
 	mediaIDs := parseIDs(c.Query("medias"))
@@ -204,7 +205,7 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		}
 	}
 	// execute the search request using the GraphQL client
-	result, err = ctrl.client.Search(c, queryString, []*client.InFacet{collFacet, catFacet, mediaFacet, vocFacet}, filter, nil, nil, nil, &cursorString, sort)
+	result, err = ctrl.client.Search(c, searchType, queryString, []*client.InFacet{collFacet, catFacet, mediaFacet, vocFacet}, filter, nil, nil, nil, &cursorString, sort)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", searchString)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", searchString, err))
@@ -254,6 +255,9 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 	}
 	// prepare search URL and parameters for the template data
 	currentSearchURL := url.Values{}
+	if searchType != "" {
+		currentSearchURL.Set("searchtype", searchType)
+	}
 	if searchString != "" {
 		currentSearchURL.Set("search", searchString)
 	}
