@@ -202,6 +202,12 @@ func (ctrl *Controller) funcMap(name string) template.FuncMap {
 		return urlstr
 	}
 
+	fm["sortMediaItems"] = func(items []*client.MediaItemFragment) []*client.MediaItemFragment {
+		return slices.SortedFunc(slices.Values(items), func(e *client.MediaItemFragment, e2 *client.MediaItemFragment) int {
+			return strings.Compare(e.Name, e2.Name)
+		})
+	}
+
 	return fm
 }
 
