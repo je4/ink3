@@ -64,10 +64,10 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		return ids
 	}
 	searchType := c.Query("searchtype")
-	collectionIDs := parseIDs(c.Query("collections"))
+	collectionsString := c.Query("collections")
+	collectionIDs := parseIDs(collectionsString)
 	catalogIDs := parseIDs(c.Query("catalogs"))
 	mediaIDs := parseIDs(c.Query("medias"))
-	collectionsString := c.Query("collections")
 	catalogsString := c.Query("catalogs")
 	mediasString := c.Query("medias")
 	vocabularyString := c.Query("vocabulary")

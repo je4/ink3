@@ -220,7 +220,6 @@ func (ctrl *Controller) detail(c *gin.Context) {
 	bd := ctrl.getBaseData(c, lang, "../../")
 	bd.Exhibition = isExhibition
 	bd.Params = template.URL(strings.TrimPrefix(searchParams, "?"))
-
 	var data = &tplData{
 		Source:          entry,
 		IFrame:          isIFrame,
