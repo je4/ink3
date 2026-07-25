@@ -42,6 +42,15 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 
 	// extract and process search parameters like cursor, ki, collections, catalogs, and vocabulary
 	cursorString := c.Query("cursor")
+	fromString := c.Query("from")
+	_from, _ := strconv.Atoi(fromString)
+	from := int64(_from)
+	pageSizeString := c.Query("pagesize")
+	_pageSize, _ := strconv.Atoi(pageSizeString)
+	pageSize := int64(_pageSize)
+	if cursorString == "" && pageSize == 0 {
+		pageSize = 36
+	}
 	ki := c.Request.URL.Query().Has("ki")
 	parseIDs := func(s string) []int {
 		var ids []int
@@ -205,7 +214,15 @@ func (ctrl *Controller) searchPage(c *gin.Context, page string) {
 		}
 	}
 	// execute the search request using the GraphQL client
-	result, err = ctrl.client.Search(c, searchType, queryString, []*client.InFacet{collFacet, catFacet, mediaFacet, vocFacet}, filter, nil, nil, nil, &cursorString, sort)
+	var fromPtr, pageSizePtr *int64
+	var cursorPtr *string
+	if cursorString != "" {
+		cursorPtr = &cursorString
+	} else {
+		fromPtr = &from
+		pageSizePtr = &pageSize
+	}
+	result, err = ctrl.client.Search(c, searchType, queryString, []*client.InFacet{collFacet, catFacet, mediaFacet, vocFacet}, filter, nil, fromPtr, pageSizePtr, cursorPtr, sort)
 	if err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", searchString)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot search for '%s': %v", searchString, err))
