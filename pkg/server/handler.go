@@ -1,13 +1,18 @@
 package server
 
 import (
+	"bytes"
 	"fmt"
+	"io/fs"
 	"net/http"
+	"path"
+	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/je4/revcat/v2/tools/client"
+	"gopkg.in/yaml.v3"
 )
 
 // impressumPage renders the imprint page.
@@ -171,6 +176,86 @@ func (ctrl *Controller) impressumPage(c *gin.Context) {
 	}
 
 	if err := impressumTemplate.Execute(c.Writer, data); err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
+		return
+	}
+}
+
+var frontMatterRegex = regexp.MustCompile(`(?s)^[ \t]*-{3,}[ \t]*\r?\n.*?\r?\n[ \t]*-{3,}[ \t]*\r?\n?`)
+
+// pagePage renders the page page.
+func (ctrl *Controller) pagePage(c *gin.Context) {
+	lang := ctrl.getLang(c)
+
+	name := strings.TrimPrefix(c.Param("any"), "/")
+	if strings.HasSuffix(name, "/") {
+		name = path.Join(name, "readme.md")
+	}
+	if strings.ToLower(path.Ext(name)) != ".md" {
+		c.FileFromFS(name, http.FS(ctrl.pagesFS))
+		return
+	}
+	mdData, err := fs.ReadFile(ctrl.pagesFS, name)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot open %s: %v", name, err))
+		return
+	}
+	// check for metadata prefix
+	var meta = map[string]string{}
+	if loc := frontMatterRegex.FindIndex(mdData); loc != nil {
+		frontMatter := mdData[loc[0]:loc[1]]
+		mdData = mdData[loc[1]:]
+
+		// remove separators
+		// find first newline (ends first separator)
+		firstNL := bytes.IndexByte(frontMatter, '\n')
+		// find last occurrence of dashes
+		lastDashes := bytes.LastIndex(frontMatter, []byte("---"))
+		if firstNL != -1 && lastDashes != -1 && firstNL < lastDashes {
+			yamlBytes := frontMatter[firstNL+1 : lastDashes]
+			if err := yaml.Unmarshal(yamlBytes, &meta); err != nil {
+				ctrl.logger.Error().Err(err).Msgf("cannot decode metadata in %s", name)
+			}
+			for k, v := range meta {
+				lk := strings.ToLower(k)
+				if lk != k {
+					delete(meta, k)
+					meta[lk] = v
+				}
+			}
+		}
+	}
+	if meta["title"] == "" {
+		meta["title"] = name
+	}
+	htmlBuffer := bytes.NewBuffer(nil)
+	if err := ctrl.md.Convert(mdData, htmlBuffer); err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot render %s: %v", name, err))
+		return
+	}
+
+	templateName := "page.gohtml"
+	files := ctrl.getTemplatesByPrefix("page_", "index.gohtml", "impressum.gohtml", "search_grid.gohtml", "detail.gohtml", "zoom.gohtml")
+	pageTemplate, err := ctrl.loadHTMLTemplate(templateName, files)
+	if err != nil {
+		ctrl.logger.Error().Err(err).Msgf("cannot load template '%s'", templateName)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot load template '%s': %v", templateName, err))
+		return
+	}
+
+	type tplData struct {
+		baseData
+		HTML string
+		Meta map[string]string
+	}
+	var data = &tplData{
+		baseData: ctrl.getBaseData(c, lang, "../../"),
+		HTML:     htmlBuffer.String(),
+		Meta:     meta,
+	}
+
+	if err := pageTemplate.Execute(c.Writer, data); err != nil {
 		ctrl.logger.Error().Err(err).Msgf("cannot execute template '%s'", templateName)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot execute template '%s': %v", templateName, err))
 		return

@@ -81,6 +81,7 @@ type RevCatFrontConfig struct {
 	OpenAIApiKey        configutil.EnvString    `toml:"openaiapikey"`
 	Templates           string                  `toml:"templates"`
 	StaticFiles         string                  `toml:"staticfiles"`
+	PagesFiles          string                  `toml:"pagesfiles"`
 	Locale              LocaleConfig            `toml:"locale"`
 	LogFile             string                  `toml:"logfile"`
 	LogLevel            string                  `toml:"loglevel"`

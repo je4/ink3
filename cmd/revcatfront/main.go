@@ -181,6 +181,11 @@ func main() {
 		logger.Fatal().Msgf("no static files folder specified")
 	}
 
+	var pagesFS fs.FS
+	if conf.PagesFiles != "" {
+		pagesFS = os.DirFS(conf.PagesFiles)
+	}
+
 	var embeddings *openai.ClientV2
 	if string(conf.OpenAIApiKey) != "" {
 		kv := openai.NewKVGCache(gcache.New(256).LRU().Build())
@@ -266,6 +271,7 @@ func main() {
 		templateFS,
 		staticFS,
 		dataFS,
+		pagesFS,
 		revcatClient,
 		collagePos,
 		conf.MediaserverBase,

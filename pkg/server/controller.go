@@ -22,6 +22,10 @@ import (
 	"github.com/je4/utils/v2/pkg/openai"
 	"github.com/je4/utils/v2/pkg/zLogger"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer/html"
 	"golang.org/x/text/language"
 )
 
@@ -55,8 +59,17 @@ type CollFacetType struct {
 }
 
 // NewController creates a new Controller instance.
-func NewController(name, localAddr, externalAddr, searchAddr, detailAddr string, protoHTTP bool, auth map[string]string, cert *tls.Certificate, templateFS, staticFS, dataFS fs.FS, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, mediaserverBase, mediaserverKey string, mediaserverTokenExp time.Duration, bundle *i18n.Bundle, collections, catalogs, medias []*CollFacetType, fieldMapping map[string]string, embeddings *openai.ClientV2, templateDebug, zoomOnly bool, loginURL, loginIssuer, loginJWTKey string, loginJWTAlgs []string, locations map[string][]net.IPNet, facetInclude, facetExclude []string, baseFilter []*client.InFilter, mode string, logger zLogger.ZLogger) (*Controller, error) {
-
+func NewController(name, localAddr, externalAddr, searchAddr, detailAddr string, protoHTTP bool, auth map[string]string, cert *tls.Certificate, templateFS, staticFS, dataFS, pagesFS fs.FS, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, mediaserverBase, mediaserverKey string, mediaserverTokenExp time.Duration, bundle *i18n.Bundle, collections, catalogs, medias []*CollFacetType, fieldMapping map[string]string, embeddings *openai.ClientV2, templateDebug, zoomOnly bool, loginURL, loginIssuer, loginJWTKey string, loginJWTAlgs []string, locations map[string][]net.IPNet, facetInclude, facetExclude []string, baseFilter []*client.InFilter, mode string, logger zLogger.ZLogger) (*Controller, error) {
+	md := goldmark.New(
+		goldmark.WithExtensions(extension.GFM),
+		goldmark.WithParserOptions(
+			parser.WithAutoHeadingID(),
+		),
+		goldmark.WithRendererOptions(
+			html.WithHardWraps(),
+			html.WithXHTML(),
+		),
+	)
 	ctrl := &Controller{
 		name:                name,
 		localAddr:           localAddr,
@@ -64,12 +77,14 @@ func NewController(name, localAddr, externalAddr, searchAddr, detailAddr string,
 		searchAddr:          searchAddr,
 		detailAddr:          detailAddr,
 		protoHTTP:           protoHTTP,
+		md:                  md,
 		auth:                auth,
 		srv:                 nil,
 		cert:                cert,
 		templateFS:          templateFS,
 		staticFS:            staticFS,
 		dataFS:              dataFS,
+		pagesFS:             pagesFS,
 		zoomPos:             zoomPos,
 		templateDebug:       templateDebug,
 		templateCache:       make(map[string]any),
@@ -120,6 +135,10 @@ func (ctrl *Controller) init() error {
 	// serve static and data files
 	router.StaticFS("/static", NewDefaultIndexFS(http.FS(ctrl.staticFS), "index.html"))
 	router.StaticFS("/data", NewDefaultIndexFS(http.FS(ctrl.dataFS), "index.html"))
+
+	if ctrl.pagesFS != nil {
+		router.GET("/pages/*any", ctrl.pagePage)
+	}
 
 	// version endpoint
 	router.GET("/version", func(c *gin.Context) {
@@ -443,6 +462,7 @@ type Controller struct {
 	templateFiles       []string // Liste aller .gohtml und .gotmpl Dateien
 	staticFS            fs.FS
 	dataFS              fs.FS
+	pagesFS             fs.FS
 	dir                 *directus.Directus
 	templateDebug       bool
 	templateCache       map[string]any
@@ -474,6 +494,7 @@ type Controller struct {
 	mode                string
 	baseFilter          []*client.InFilter
 	name                string
+	md                  goldmark.Markdown
 }
 
 // Start starts the HTTP/HTTPS server.
