@@ -10,7 +10,9 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"path"
 	"slices"
+	"strings"
 	"sync"
 	"time"
 
@@ -120,6 +122,37 @@ func NewController(name, localAddr, externalAddr, searchAddr, detailAddr string,
 
 // init initializes the controller, sets up routes and middleware.
 func (ctrl *Controller) init() error {
+	// create list with type/id and path for markdowns
+	ctrl.markdowns = map[string]map[string]string{}
+	if ctrl.pagesFS != nil {
+		if err := fs.WalkDir(ctrl.pagesFS, ".", func(pathName string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if d.IsDir() {
+				return nil
+			}
+			if strings.ToLower(path.Ext(pathName)) != ".md" {
+				return nil
+			}
+			mdData, err := fs.ReadFile(ctrl.pagesFS, pathName)
+			if err != nil {
+				return errors.Wrapf(err, "cannot read file %s", pathName)
+			}
+			meta := ctrl.parseMetadata(mdData, pathName)
+
+			if meta["type"] == "" || meta["id"] == "" {
+				return nil
+			}
+			meta["path"] = pathName
+			name := fmt.Sprintf("%s.%s", meta["type"], meta["id"])
+			ctrl.markdowns[name] = meta
+			return nil
+		}); err != nil {
+			return errors.Wrap(err, "cannot walk pagesFS")
+		}
+	}
+
 	// refresh template files to ensure they are up-to-date
 	if err := ctrl.refreshTemplateFiles(); err != nil {
 		return errors.Wrapf(err, "cannot refresh template files")
@@ -495,6 +528,7 @@ type Controller struct {
 	baseFilter          []*client.InFilter
 	name                string
 	md                  goldmark.Markdown
+	markdowns           map[string]map[string]string
 }
 
 // Start starts the HTTP/HTTPS server.

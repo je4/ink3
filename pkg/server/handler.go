@@ -184,28 +184,10 @@ func (ctrl *Controller) impressumPage(c *gin.Context) {
 
 var frontMatterRegex = regexp.MustCompile(`(?s)^[ \t]*-{3,}[ \t]*\r?\n.*?\r?\n[ \t]*-{3,}[ \t]*\r?\n?`)
 
-// pagePage renders the page page.
-func (ctrl *Controller) pagePage(c *gin.Context) {
-	lang := ctrl.getLang(c)
-
-	name := strings.TrimPrefix(c.Param("any"), "/")
-	if strings.HasSuffix(name, "/") {
-		name = path.Join(name, "readme.md")
-	}
-	if strings.ToLower(path.Ext(name)) != ".md" {
-		c.FileFromFS(name, http.FS(ctrl.pagesFS))
-		return
-	}
-	mdData, err := fs.ReadFile(ctrl.pagesFS, name)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot open %s: %v", name, err))
-		return
-	}
-	// check for metadata prefix
+func (ctrl *Controller) parseMetadata(mdData []byte, name string) map[string]string {
 	var meta = map[string]string{}
 	if loc := frontMatterRegex.FindIndex(mdData); loc != nil {
 		frontMatter := mdData[loc[0]:loc[1]]
-		mdData = mdData[loc[1]:]
 
 		// remove separators
 		// find first newline (ends first separator)
@@ -229,6 +211,29 @@ func (ctrl *Controller) pagePage(c *gin.Context) {
 	if meta["title"] == "" {
 		meta["title"] = name
 	}
+	return meta
+}
+
+// pagePage renders the page page.
+func (ctrl *Controller) pagePage(c *gin.Context) {
+	lang := ctrl.getLang(c)
+
+	name := strings.TrimPrefix(c.Param("any"), "/")
+	if strings.HasSuffix(name, "/") {
+		name = path.Join(name, "readme.md")
+	}
+	if strings.ToLower(path.Ext(name)) != ".md" {
+		c.FileFromFS(name, http.FS(ctrl.pagesFS))
+		return
+	}
+	mdData, err := fs.ReadFile(ctrl.pagesFS, name)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot open %s: %v", name, err))
+		return
+	}
+	// check for metadata prefix
+	meta := ctrl.parseMetadata(mdData, name)
+
 	htmlBuffer := bytes.NewBuffer(nil)
 	if err := ctrl.md.Convert(mdData, htmlBuffer); err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot render %s: %v", name, err))
