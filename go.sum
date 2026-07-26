@@ -102,8 +102,6 @@ github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOl
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/je4/basel-collections/v2 v2.0.2 h1:TlDDwwML7dRt3NTFEhdRY7R9zNoNkHcMqCo0kmf76Z4=
 github.com/je4/basel-collections/v2 v2.0.2/go.mod h1:w5ZpB04cTI6JNr1pNe2QbgRzOkSwmGRJcr115q5ZQGQ=
-github.com/je4/ink3web v0.0.6 h1:1mJ3OfiKHKX90ct3A8I4liKZOEBPT3+W2V7syFFibMQ=
-github.com/je4/ink3web v0.0.6/go.mod h1:MClaiqqeksONgiyLkyQRRWDjl3p6EeZwDQaqVrVQoyU=
 github.com/je4/revcat/v2 v2.0.21 h1:MpOa3D2v8UHtf1HjD7hMDNcl9WOmlNV7UWTCWcl8G+A=
 github.com/je4/revcat/v2 v2.0.21/go.mod h1:bWKZ1g7p9uo7brPilyJIRH/Tg0SAIzhrizu8Br6P+fc=
 github.com/je4/utils/v2 v2.0.70 h1:fQoSSPxIOMAvGh5VuCen5gOH1srU3EHlZepKCfq9/Jc=

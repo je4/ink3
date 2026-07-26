@@ -27,10 +27,6 @@ import (
 	"github.com/je4/ink3/v2/config"
 	"github.com/je4/ink3/v2/data/certs"
 	"github.com/je4/ink3/v2/pkg/server"
-	ink3 "github.com/je4/ink3web/data/web/ink3/templates"
-	"github.com/je4/ink3web/data/web/static"
-	"github.com/je4/ink3web/data/web/templates/ink"
-	"github.com/je4/ink3web/data/web/templates/performance"
 	"github.com/je4/revcat/v2/tools/client"
 	"github.com/je4/utils/v2/pkg/openai"
 	"github.com/je4/utils/v2/pkg/zLogger"
@@ -175,23 +171,14 @@ func main() {
 	if conf.Templates != "" {
 		templateFS = os.DirFS(conf.Templates)
 	} else {
-		switch conf.Name {
-		case "performance":
-			templateFS = performance.FS
-		case "ink":
-			templateFS = ink.FS
-		case "ink3", "scb.mab":
-			templateFS = ink3.FS
-		default:
-			logger.Fatal().Msgf("no template folder specified")
-		}
+		logger.Fatal().Msgf("no template folder specified")
 	}
 
 	var staticFS fs.FS
 	if conf.StaticFiles != "" {
 		staticFS = os.DirFS(conf.StaticFiles)
 	} else {
-		staticFS = static.FS
+		logger.Fatal().Msgf("no static files folder specified")
 	}
 
 	var embeddings *openai.ClientV2
