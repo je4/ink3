@@ -184,20 +184,26 @@ func (ctrl *Controller) impressumPage(c *gin.Context) {
 
 var frontMatterRegex = regexp.MustCompile(`(?s)^[ \t]*-{3,}[ \t]*\r?\n.*?\r?\n[ \t]*-{3,}[ \t]*\r?\n?`)
 
-func (ctrl *Controller) parseMetadata(mdData []byte, name string) map[string]string {
+func (ctrl *Controller) parseMarkdown(mdData []byte, name string) (map[string]string, string) {
+	mdData = bytes.TrimPrefix(mdData, []byte("\xef\xbb\xbf"))
 	var meta = map[string]string{}
+	var body = string(mdData)
 	if loc := frontMatterRegex.FindIndex(mdData); loc != nil {
 		frontMatter := mdData[loc[0]:loc[1]]
+		body = string(mdData[loc[1]:])
 
 		// remove separators
 		// find first newline (ends first separator)
 		firstNL := bytes.IndexByte(frontMatter, '\n')
-		// find last occurrence of dashes
-		lastDashes := bytes.LastIndex(frontMatter, []byte("---"))
-		if firstNL != -1 && lastDashes != -1 && firstNL < lastDashes {
-			yamlBytes := frontMatter[firstNL+1 : lastDashes]
+		// find last newline before the closing dashes
+		lastNL := bytes.LastIndex(frontMatter[:len(frontMatter)-1], []byte("\n"))
+
+		if firstNL != -1 && lastNL != -1 && firstNL < lastNL {
+			yamlBytes := frontMatter[firstNL+1 : lastNL]
 			if err := yaml.Unmarshal(yamlBytes, &meta); err != nil {
-				ctrl.logger.Error().Err(err).Msgf("cannot decode metadata in %s", name)
+				if ctrl.logger != nil {
+					ctrl.logger.Error().Err(err).Msgf("cannot decode metadata in %s", name)
+				}
 			}
 			for k, v := range meta {
 				lk := strings.ToLower(k)
@@ -211,7 +217,7 @@ func (ctrl *Controller) parseMetadata(mdData []byte, name string) map[string]str
 	if meta["title"] == "" {
 		meta["title"] = name
 	}
-	return meta
+	return meta, strings.TrimSpace(body)
 }
 
 // pagePage renders the page page.
@@ -232,10 +238,10 @@ func (ctrl *Controller) pagePage(c *gin.Context) {
 		return
 	}
 	// check for metadata prefix
-	meta := ctrl.parseMetadata(mdData, name)
+	meta, mdContent := ctrl.parseMarkdown(mdData, name)
 
 	htmlBuffer := bytes.NewBuffer(nil)
-	if err := ctrl.md.Convert(mdData, htmlBuffer); err != nil {
+	if err := ctrl.md.Convert([]byte(mdContent), htmlBuffer); err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot render %s: %v", name, err))
 		return
 	}
@@ -258,6 +264,11 @@ func (ctrl *Controller) pagePage(c *gin.Context) {
 		baseData: ctrl.getBaseData(c, lang, "../../"),
 		HTML:     htmlBuffer.String(),
 		Meta:     meta,
+	}
+	if c.Query("back") != "" {
+		data.baseData.Back = c.Query("back")
+	} else {
+		data.baseData.Back = data.baseData.Self
 	}
 
 	if err := pageTemplate.Execute(c.Writer, data); err != nil {

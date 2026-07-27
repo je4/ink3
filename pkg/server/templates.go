@@ -90,6 +90,14 @@ func (ctrl *Controller) funcMap(name string) template.FuncMap {
 		return *s
 	}
 
+	fm["staticRef"] = func(t, id string) template.URL {
+		name := strings.ToLower(fmt.Sprintf("%s.%s", t, id))
+		u, ok := ctrl.markdowns[name]
+		if !ok {
+			return ""
+		}
+		return template.URL(u["path"])
+	}
 	fm["toHTMLif"] = func(s string) any {
 		tokens, err := html.ParseFragment(bytes.NewBuffer([]byte(s)), nil)
 		if err != nil {
