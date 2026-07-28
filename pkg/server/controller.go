@@ -480,7 +480,7 @@ func (ctrl *Controller) getBaseData(c *gin.Context, lang string, rootPath string
 		SearchAddr: ctrl.searchAddr,
 		DetailAddr: detailAddr,
 		LoginURL:   ctrl.loginURL,
-		Self:       fmt.Sprintf("%s%s", ctrl.externalAddr, c.Request.URL.Path),
+		Self:       fmt.Sprintf("%s%s", ctrl.externalAddr, c.Request.URL.String()),
 		User:       user,
 		Mode:       ctrl.mode,
 	}
