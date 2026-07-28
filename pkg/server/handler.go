@@ -240,6 +240,11 @@ func (ctrl *Controller) pagePage(c *gin.Context) {
 	// check for metadata prefix
 	meta, mdContent := ctrl.parseMarkdown(mdData, name)
 
+	if meta["redirect"] != "" {
+		c.Redirect(http.StatusFound, meta["redirect"])
+		return
+	}
+
 	htmlBuffer := bytes.NewBuffer(nil)
 	if err := ctrl.md.Convert([]byte(mdContent), htmlBuffer); err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("cannot render %s: %v", name, err))
