@@ -102,8 +102,8 @@ github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOl
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/je4/basel-collections/v2 v2.0.2 h1:TlDDwwML7dRt3NTFEhdRY7R9zNoNkHcMqCo0kmf76Z4=
 github.com/je4/basel-collections/v2 v2.0.2/go.mod h1:w5ZpB04cTI6JNr1pNe2QbgRzOkSwmGRJcr115q5ZQGQ=
-github.com/je4/revcat/v2 v2.0.23 h1:IU5cfyu4b1TRuYQbO6qF20zzcfOkQX+0PErokVsRI2g=
-github.com/je4/revcat/v2 v2.0.23/go.mod h1:bWKZ1g7p9uo7brPilyJIRH/Tg0SAIzhrizu8Br6P+fc=
+github.com/je4/revcat/v2 v2.0.24 h1:u4UCvg5o1XSjymAAtX7oa3PdxcAe1mkmjF0sQfHm9Kc=
+github.com/je4/revcat/v2 v2.0.24/go.mod h1:GpeLxhdI+XH4UVz7GZ1fbaGfl2tOVBrvftbSx4cZTeI=
 github.com/je4/utils/v2 v2.0.70 h1:fQoSSPxIOMAvGh5VuCen5gOH1srU3EHlZepKCfq9/Jc=
 github.com/je4/utils/v2 v2.0.70/go.mod h1:pOLO/mBuvvKo/MQ8o30aUPJknyWZdpFUEB829guF5MU=
 github.com/je4/zsearch/v2 v2.0.11 h1:YV5rNgEFwkZtee0/pYHWdL+ZyS5GwgeOhIiVUtAC3XQ=

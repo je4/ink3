@@ -16,7 +16,7 @@ require (
 	github.com/gosimple/slug v1.15.0
 	github.com/gqlgo/gqlgenc v0.38.0
 	github.com/je4/basel-collections/v2 v2.0.2
-	github.com/je4/revcat/v2 v2.0.23
+	github.com/je4/revcat/v2 v2.0.24
 	github.com/je4/utils/v2 v2.0.70
 	github.com/je4/zsearch/v2 v2.0.11
 	github.com/nicksnyder/go-i18n/v2 v2.6.1
