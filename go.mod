@@ -16,7 +16,7 @@ require (
 	github.com/gosimple/slug v1.15.0
 	github.com/gqlgo/gqlgenc v0.38.0
 	github.com/je4/basel-collections/v2 v2.0.2
-	github.com/je4/revcat/v2 v2.0.21
+	github.com/je4/revcat/v2 v2.0.23
 	github.com/je4/utils/v2 v2.0.70
 	github.com/je4/zsearch/v2 v2.0.11
 	github.com/nicksnyder/go-i18n/v2 v2.6.1
@@ -24,7 +24,7 @@ require (
 	github.com/rs/zerolog v1.35.1
 	github.com/yeqown/go-qrcode/v2 v2.2.5
 	github.com/yeqown/go-qrcode/writer/standard v1.3.0
-	github.com/yuin/goldmark v1.8.4
+	github.com/yuin/goldmark v1.8.5
 	golang.org/x/net v0.57.0
 	golang.org/x/text v0.40.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -41,7 +41,7 @@ require (
 	github.com/bytedance/sonic/loader v0.5.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.7 // indirect
-	github.com/dgraph-io/badger/v4 v4.9.4 // indirect
+	github.com/dgraph-io/badger/v4 v4.9.5 // indirect
 	github.com/dgraph-io/ristretto/v2 v2.4.2 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fogleman/gg v1.3.0 // indirect
@@ -65,7 +65,7 @@ require (
 	github.com/klauspost/cpuid/v2 v2.4.0 // indirect
 	github.com/leodido/go-urn v1.5.0 // indirect
 	github.com/mattn/go-colorable v0.1.15 // indirect
-	github.com/mattn/go-isatty v0.0.23 // indirect
+	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
@@ -73,7 +73,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.4.3 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
-	github.com/quic-go/quic-go v0.60.0 // indirect
+	github.com/quic-go/quic-go v0.61.0 // indirect
 	github.com/sashabaranov/go-openai v1.41.2 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/sosodev/duration v1.4.0 // indirect
@@ -90,7 +90,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.29.0 // indirect
 	golang.org/x/crypto v0.54.0 // indirect
-	golang.org/x/exp v0.0.0-20260718201538-764159d718ef // indirect
+	golang.org/x/exp v0.0.0-20260727155853-b88d891fe743 // indirect
 	golang.org/x/image v0.44.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
