@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"crypto/tls"
-	"encoding/json"
+	"encoding/json/v2"
 	"flag"
 	"fmt"
 	"image"
@@ -232,8 +232,7 @@ func main() {
 	if err != nil {
 		logger.Panic().Msgf("cannot open %s: %v", collageFilename, err)
 	}
-	jsonDec := json.NewDecoder(fp)
-	if err := jsonDec.Decode(&collagePos); err != nil {
+	if err := json.UnmarshalRead(fp, &collagePos); err != nil {
 		fp.Close()
 		logger.Panic().Msgf("cannot decode %s: %v", collageFilename, err)
 	}
@@ -256,7 +255,7 @@ func main() {
 	}
 
 	var baseFilter = []*client.InFilter{}
-	if json.Unmarshal([]byte(conf.BaseFilter), &baseFilter) != nil {
+	if err := json.Unmarshal([]byte(conf.BaseFilter), &baseFilter); err != nil {
 		logger.Fatal().Err(err).Msgf("cannot unmarshal base filter '%s'", conf.BaseFilter)
 	}
 	ctrl, err := server.NewController(

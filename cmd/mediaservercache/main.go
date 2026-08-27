@@ -6,7 +6,7 @@ import (
 	"crypto/sha512"
 	"crypto/tls"
 	"emperror.dev/errors"
-	"encoding/json"
+	"encoding/json/v2"
 	"flag"
 	"fmt"
 	"github.com/gqlgo/gqlgenc/clientv2"
@@ -221,8 +221,7 @@ func initMediaserver(conf *RevCatFrontConfig, logger zLogger.ZLogger) {
 	if err != nil {
 		logger.Panic().Msgf("cannot open %s: %v", collageFilename, err)
 	}
-	jsonDec := json.NewDecoder(fp)
-	if err := jsonDec.Decode(&collagePos); err != nil {
+	if err := json.UnmarshalRead(fp, &collagePos); err != nil {
 		fp.Close()
 		logger.Panic().Msgf("cannot decode %s: %v", collageFilename, err)
 	}

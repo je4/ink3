@@ -141,11 +141,11 @@ func (ctrl *Controller) init() error {
 				return errors.Wrapf(err, "cannot read file %s", pathName)
 			}
 			meta, markdown := ctrl.parseMarkdown(mdData, pathName)
-			if meta["type"] == "" || meta["id"] == "" || len(markdown) == 0 {
+			if meta["type"] == "" || meta["collectiontitle"] == "" || len(markdown) == 0 {
 				return nil
 			}
 			meta["path"] = pathName
-			name := strings.ToLower(fmt.Sprintf("%s.%s", meta["type"], meta["id"]))
+			name := strings.ToLower(fmt.Sprintf("%s.%s", meta["type"], meta["collectiontitle"]))
 			ctrl.logger.Info().Msgf("adding markdown [%s] --> %s", name, pathName)
 			ctrl.markdowns[name] = meta
 			return nil
