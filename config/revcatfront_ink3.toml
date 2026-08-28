@@ -81,7 +81,7 @@ networks = ["212.51.149.28/32", "2a02:168:5608:0:c8b5:db0f:4ce6:f9d1/48"]
 [revcat]
 endpoint = "https://localhost:8443/graphql"
 insecure = true
-apikey = "Zwksedjpwo43iucn45XR"
+apikey = "%%INK_APIKEY%%"
 jwtkey = "%%REVCAT_JWTKEY%%"
 
 [directus]
