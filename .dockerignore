@@ -1,0 +1,6 @@
+.git
+.gitlab-ci.yml
+.gitmodules
+docker/
+README.md
+LICENSE
