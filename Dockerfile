@@ -21,9 +21,9 @@ RUN mkdir -p /app/cache /app/data
 
 WORKDIR /app
 
-RUN mkdir -p /var/www/vhosts/performance.ausstellung.cc/digitalesee
+RUN mkdir -p /var/www/vhosts/performance.ausstellung.cc/digitalesee/collage
 
-RUN touch /var/www/vhosts/performance.ausstellung.cc/digitalesee/collage.json
+RUN touch /var/www/vhosts/performance.ausstellung.cc/digitalesee/collage/collage.json
 
 EXPOSE 8445
 ENTRYPOINT ["/app/revcatfront", "-config", "/config/revcatfront.toml"]
