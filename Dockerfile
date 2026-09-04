@@ -20,10 +20,5 @@ COPY config/ /config/
 RUN mkdir -p /app/cache /app/data
 
 WORKDIR /app
-
-RUN mkdir -p /var/www/vhosts/performance.ausstellung.cc/digitalesee
-
-RUN touch /var/www/vhosts/performance.ausstellung.cc/digitalesee/collage.json
-
 EXPOSE 8445
 ENTRYPOINT ["/app/revcatfront", "-config", "/config/revcatfront.toml"]
