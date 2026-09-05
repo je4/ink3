@@ -168,7 +168,9 @@ func (ctrl *Controller) init() error {
 	}
 	// serve static and data files
 	router.StaticFS("/static", NewDefaultIndexFS(http.FS(ctrl.staticFS), "index.html"))
-	router.StaticFS("/data", NewDefaultIndexFS(http.FS(ctrl.dataFS), "index.html"))
+	if ctrl.dataFS != nil {
+		router.StaticFS("/data", NewDefaultIndexFS(http.FS(ctrl.dataFS), "index.html"))
+	}
 
 	if ctrl.pagesFS != nil {
 		router.GET("/pages/*any", ctrl.pagePage)

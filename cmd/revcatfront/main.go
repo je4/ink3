@@ -227,16 +227,18 @@ func main() {
 		})
 
 	var collagePos = map[string][]image.Rectangle{}
-	collageFilename := filepath.Join(conf.DataDir, "collage/collage.json")
-	fp, err := os.Open(collageFilename)
-	if err != nil {
-		logger.Panic().Msgf("cannot open %s: %v", collageFilename, err)
-	}
-	if err := json.UnmarshalRead(fp, &collagePos); err != nil {
+	if conf.DataDir != "" {
+		collageFilename := filepath.Join(conf.DataDir, "collage/collage.json")
+		fp, err := os.Open(collageFilename)
+		if err != nil {
+			logger.Panic().Msgf("cannot open %s: %v", collageFilename, err)
+		}
+		if err := json.UnmarshalRead(fp, &collagePos); err != nil {
+			fp.Close()
+			logger.Panic().Msgf("cannot decode %s: %v", collageFilename, err)
+		}
 		fp.Close()
-		logger.Panic().Msgf("cannot decode %s: %v", collageFilename, err)
 	}
-	fp.Close()
 
 	var authConfig map[string]string
 	if len(conf.Auth) > 0 {
