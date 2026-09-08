@@ -1,3 +1,9 @@
+# Build, publish and deploy only for v* tags.
+workflow:
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v/
+    - when: never
+
 include:
   - component: $CI_SERVER_FQDN/fhnw/fhnw-ink-app/fhnw-go-docker-deploy/build@main
     inputs:
