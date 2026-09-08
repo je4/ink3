@@ -59,3 +59,70 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  deploy:
+    name: Restart revcat_front_v3 on v001340.fhnw.ch
+    needs: docker
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
+    env:
+      DEPLOY_HOST: v001340.fhnw.ch
+      SERVICE_NAME: revcat_front_v3
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Configure SSH (bastion jump host)
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SSH_PRIVATE_KEY}" ]; then
+            echo "::error::Secret SSH_PRIVATE_KEY is not set."
+            exit 1
+          fi
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          printf '%s\n' "${SSH_PRIVATE_KEY}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          # Host keys for v001340.fhnw.ch and sshgw.fhnw.ch are pinned in the repo
+          # and shared with the GitLab deploy component.
+          cp docker/pki/known_hosts ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+          {
+            echo "Host *"
+            echo "  StrictHostKeyChecking yes"
+            echo "  UserKnownHostsFile ~/.ssh/known_hosts"
+            echo "  IdentitiesOnly yes"
+            echo "  IdentityFile ~/.ssh/deploy_key"
+            echo "  BatchMode yes"
+            echo "  ServerAliveInterval 30"
+            echo "  ServerAliveCountMax 6"
+            echo
+            cat docker/pki/ssh_config
+          } > ~/.ssh/config
+          chmod 600 ~/.ssh/config
+
+      - name: Verify connection
+        run: ssh "${DEPLOY_HOST}" 'echo "connected to $(hostname -f) as $(id -un)"'
+
+      - name: Restart ${{ env.SERVICE_NAME }}
+        run: ssh -tt "${DEPLOY_HOST}" "sudo systemctl restart ${SERVICE_NAME}"
+
+      - name: Show service status
+        run: ssh "${DEPLOY_HOST}" "systemctl is-active ${SERVICE_NAME}"
+
+      - name: Clean up SSH material
+        if: always()
+        run: rm -rf ~/.ssh
