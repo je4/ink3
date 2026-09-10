@@ -36,7 +36,7 @@ func (ctrl *Controller) impressumPage(c *gin.Context) {
 	var data = &tplData{
 		Collections: map[int64]*CollFacetType{},
 		Catalogs:    map[int64]*CollFacetType{},
-		baseData:    ctrl.getBaseData(c, lang, "../../"),
+		baseData:    ctrl.getBaseData(c, lang, "../"),
 	}
 	collFacet := &client.InFacet{
 		Term: &client.InFacetTerm{
@@ -304,7 +304,7 @@ func (ctrl *Controller) kontaktPage(c *gin.Context) {
 	var data = &tplData{
 		Collections: map[int64]*CollFacetType{},
 		Catalogs:    map[int64]*CollFacetType{},
-		baseData:    ctrl.getBaseData(c, lang, "../../"),
+		baseData:    ctrl.getBaseData(c, lang, "../"),
 	}
 	collFacet := &client.InFacet{
 		Term: &client.InFacetTerm{
