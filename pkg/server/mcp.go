@@ -115,11 +115,11 @@ func (ctrl *Controller) getItemDescription(itemType string, items []*CollFacetTy
 }
 
 func (ctrl *Controller) getCollectionDescription(title string, id int64) (string, error) {
-	return ctrl.getItemDescription("collection", ctrl.collections, title, id)
+	return ctrl.getItemDescription("collection", ctrl.getCollections(), title, id)
 }
 
 func (ctrl *Controller) getEstateDescription(title string, id int64) (string, error) {
-	return ctrl.getItemDescription("estate", ctrl.estates, title, id)
+	return ctrl.getItemDescription("estate", ctrl.getEstates(), title, id)
 }
 
 func (ctrl *Controller) initMCP(router *gin.Engine) {
@@ -135,7 +135,7 @@ func (ctrl *Controller) initMCP(router *gin.Engine) {
 		Name:        "get_collections",
 		Description: "liefert eine Liste der Sammlungen",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, args struct{}) (*mcp.CallToolResult, []*CollFacetType, error) {
-		return nil, ctrl.collections, nil
+		return nil, ctrl.getCollections(), nil
 	})
 
 	mcp.AddTool(mcpServer, &mcp.Tool{
@@ -153,12 +153,12 @@ func (ctrl *Controller) initMCP(router *gin.Engine) {
 		Name:        "get_estates",
 		Description: "liefert eine Liste der Nachlässe",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, args struct{}) (*mcp.CallToolResult, []*CollFacetType, error) {
-		return nil, ctrl.estates, nil
+		return nil, ctrl.getEstates(), nil
 	})
 
 	mcp.AddTool(mcpServer, &mcp.Tool{
 		Name:        "get_estate_description",
-		Description: "liefert die Beschreibung eines Nachlasses anhand des Titels oder der ID",
+		Description: "liefert die Bestandes eines Nachlasses anhand des Titels oder der ID",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, args GetEstateDescriptionArgs) (*mcp.CallToolResult, string, error) {
 		desc, err := ctrl.getEstateDescription(args.Title, args.Id)
 		if err != nil {

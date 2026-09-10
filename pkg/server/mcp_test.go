@@ -599,3 +599,146 @@ Content of other item`),
 		t.Errorf("expected key 'generic.other item' in markdowns")
 	}
 }
+
+func TestGetEstatesTool_FromMarkdowns(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+
+	pagesFS := fstest.MapFS{
+		"pages/estates/100_samuel_herzog.md": &fstest.MapFile{
+			Data: []byte(`---
+type: estate
+estatetitle: Samuel Herzog
+estateid: 100
+identifier: 'cat:"herzog"'
+url: /pages/estates/100_samuel_herzog
+image: /images/herzog.jpg
+contact: info@example.com
+count: 42
+---
+Beschreibung Samuel Herzog`),
+		},
+		"pages/estates/200_anna_meier.md": &fstest.MapFile{
+			Data: []byte(`---
+type: estate
+title: Anna Meier
+id: 200
+identifier: 'cat:"meier"'
+---
+Beschreibung Anna Meier`),
+		},
+		"pages/collections/85_poster.md": &fstest.MapFile{
+			Data: []byte(`---
+type: collection
+collectiontitle: Plakatsammlung
+id: 85
+---
+Beschreibung Plakate`),
+		},
+	}
+
+	ctrl := &Controller{
+		name:       "test",
+		pagesFS:    pagesFS,
+		templateFS: fstest.MapFS{},
+		staticFS:   fstest.MapFS{},
+		estates:    nil, // intentionally nil to test dynamic markdown discovery
+	}
+
+	if err := ctrl.init(); err != nil {
+		t.Fatalf("ctrl.init() failed: %v", err)
+	}
+
+	ctrl.initMCP(router)
+
+	ts := httptest.NewServer(router)
+	defer ts.Close()
+
+	clientTransport := &mcp.SSEClientTransport{
+		Endpoint: ts.URL + "/mcp",
+	}
+	client := mcp.NewClient(&mcp.Implementation{
+		Name:    "test client",
+		Version: "0.0.1",
+	}, nil)
+
+	session, err := client.Connect(t.Context(), clientTransport, nil)
+	if err != nil {
+		t.Fatalf("failed to connect via SSE: %v", err)
+	}
+	defer session.Close()
+
+	// 1. Call get_estates and verify dynamic population from markdowns
+	res, err := session.CallTool(t.Context(), &mcp.CallToolParams{
+		Name: "get_estates",
+	})
+	if err != nil {
+		t.Fatalf("CallTool get_estates failed: %v", err)
+	}
+	if res.IsError {
+		t.Fatalf("CallTool get_estates returned error")
+	}
+
+	raw, err := json.Marshal(res.StructuredContent)
+	if err != nil {
+		t.Fatalf("failed to marshal structured content: %v", err)
+	}
+	var resultEstates []*CollFacetType
+	if err := json.Unmarshal(raw, &resultEstates); err != nil {
+		t.Fatalf("failed to unmarshal structured content: %v", err)
+	}
+
+	if len(resultEstates) != 2 {
+		t.Fatalf("expected 2 discovered estates, got %d", len(resultEstates))
+	}
+	if resultEstates[0].Id != 100 || resultEstates[0].Title != "Samuel Herzog" {
+		t.Errorf("unexpected estate[0]: %+v", resultEstates[0])
+	}
+	if resultEstates[0].Identifier != `cat:"herzog"` || resultEstates[0].Url != "/pages/estates/100_samuel_herzog" || resultEstates[0].Contact != "info@example.com" || resultEstates[0].Count != 42 {
+		t.Errorf("unexpected estate[0] metadata: %+v", resultEstates[0])
+	}
+	if resultEstates[1].Id != 200 || resultEstates[1].Title != "Anna Meier" {
+		t.Errorf("unexpected estate[1]: %+v", resultEstates[1])
+	}
+
+	// 2. Call get_estate_description by ID on discovered estate
+	descRes, err := session.CallTool(t.Context(), &mcp.CallToolParams{
+		Name: "get_estate_description",
+		Arguments: map[string]any{
+			"id": 100,
+		},
+	})
+	if err != nil {
+		t.Fatalf("CallTool get_estate_description failed: %v", err)
+	}
+	if descRes.IsError {
+		t.Fatalf("CallTool get_estate_description returned error")
+	}
+	var desc string
+	rawDesc, _ := json.Marshal(descRes.StructuredContent)
+	if err := json.Unmarshal(rawDesc, &desc); err != nil {
+		t.Fatalf("failed to unmarshal description: %v", err)
+	}
+	if desc != "Beschreibung Samuel Herzog" {
+		t.Errorf("expected 'Beschreibung Samuel Herzog', got '%s'", desc)
+	}
+
+	// 3. Call get_collections and verify dynamic population from markdowns
+	collRes, err := session.CallTool(t.Context(), &mcp.CallToolParams{
+		Name: "get_collections",
+	})
+	if err != nil {
+		t.Fatalf("CallTool get_collections failed: %v", err)
+	}
+	if collRes.IsError {
+		t.Fatalf("CallTool get_collections returned error")
+	}
+	var resultCollections []*CollFacetType
+	rawColl, _ := json.Marshal(collRes.StructuredContent)
+	if err := json.Unmarshal(rawColl, &resultCollections); err != nil {
+		t.Fatalf("failed to unmarshal structured collections: %v", err)
+	}
+	if len(resultCollections) != 1 || resultCollections[0].Id != 85 || resultCollections[0].Title != "Plakatsammlung" {
+		t.Errorf("unexpected collections: %+v", resultCollections)
+	}
+}

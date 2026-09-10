@@ -13,6 +13,7 @@ import (
 	"net/url"
 	"path"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -158,6 +159,13 @@ func (ctrl *Controller) init() error {
 		}); err != nil {
 			return errors.Wrap(err, "cannot walk pagesFS")
 		}
+	}
+
+	if len(ctrl.estates) == 0 {
+		ctrl.estates = ctrl.buildFacetItemsFromMarkdowns("estate")
+	}
+	if len(ctrl.collections) == 0 {
+		ctrl.collections = ctrl.buildFacetItemsFromMarkdowns("collection")
 	}
 
 	// refresh template files to ensure they are up-to-date
@@ -563,6 +571,89 @@ func (ctrl *Controller) Start() error {
 	}()
 
 	return nil
+}
+
+// buildFacetItemsFromMarkdowns extracts CollFacetType instances from indexed markdown metadata.
+func (ctrl *Controller) buildFacetItemsFromMarkdowns(itemType string) []*CollFacetType {
+	if ctrl.markdowns == nil {
+		return nil
+	}
+	itemTypeLower := strings.ToLower(itemType)
+	seen := make(map[string]bool)
+	var items []*CollFacetType
+
+	for _, meta := range ctrl.markdowns {
+		if !strings.EqualFold(meta["type"], itemTypeLower) {
+			continue
+		}
+		title := cmp.Or(meta[itemTypeLower+"title"], meta["title"], meta["estatetitle"], meta["collectiontitle"])
+		if title == "" {
+			continue
+		}
+		titleKey := strings.ToLower(title)
+		if seen[titleKey] {
+			continue
+		}
+		seen[titleKey] = true
+
+		var id int64
+		idStr := cmp.Or(meta[itemTypeLower+"id"], meta["id"], meta["estateid"], meta["collectionid"])
+		if idStr != "" {
+			if parsed, err := strconv.ParseInt(strings.TrimSpace(idStr), 10, 64); err == nil {
+				id = parsed
+			}
+		}
+
+		var count int
+		countStr := cmp.Or(meta[itemTypeLower+"count"], meta["count"])
+		if countStr != "" {
+			if parsed, err := strconv.Atoi(strings.TrimSpace(countStr)); err == nil {
+				count = parsed
+			}
+		}
+		if id == 0 {
+			id = int64(len(items)) + 1
+		}
+
+		facet := &CollFacetType{
+			Id:         id,
+			Title:      title,
+			Identifier: cmp.Or(meta[itemTypeLower+"identifier"], meta["identifier"]),
+			Url:        cmp.Or(meta[itemTypeLower+"url"], meta["url"]),
+			Image:      cmp.Or(meta[itemTypeLower+"image"], meta["image"], meta["poster"]),
+			Contact:    cmp.Or(meta[itemTypeLower+"contact"], meta["contact"]),
+			Count:      count,
+		}
+		items = append(items, facet)
+	}
+
+	slices.SortFunc(items, func(a, b *CollFacetType) int {
+		if a.Id != 0 || b.Id != 0 {
+			if a.Id != b.Id {
+				if a.Id < b.Id {
+					return -1
+				}
+				return 1
+			}
+		}
+		return strings.Compare(strings.ToLower(a.Title), strings.ToLower(b.Title))
+	})
+
+	return items
+}
+
+func (ctrl *Controller) getEstates() []*CollFacetType {
+	if len(ctrl.estates) > 0 {
+		return ctrl.estates
+	}
+	return ctrl.buildFacetItemsFromMarkdowns("estate")
+}
+
+func (ctrl *Controller) getCollections() []*CollFacetType {
+	if len(ctrl.collections) > 0 {
+		return ctrl.collections
+	}
+	return ctrl.buildFacetItemsFromMarkdowns("collection")
 }
 
 // Stop stops the HTTP/HTTPS server.
