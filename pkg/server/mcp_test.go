@@ -1,14 +1,18 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http/httptest"
+	"slices"
 	"strings"
 	"testing"
 	"testing/fstest"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gqlgo/gqlgenc/clientv2"
+	"github.com/je4/revcat/v2/tools/client"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
@@ -1829,6 +1833,8 @@ func TestMCPToolsList_OutputSchema(t *testing.T) {
 		"get_estate_description",
 		"get_topics",
 		"get_topic_description",
+		"search",
+		"detail",
 	}
 
 	toolsMap := make(map[string]*mcp.Tool)
@@ -1903,4 +1909,994 @@ func TestMCPToolsList_OutputSchema(t *testing.T) {
 		t.Fatalf("get_topics topics field missing items: %+v", topicsField)
 	}
 	assertAnyOfTypes(t, topicItems, "get_topics.outputSchema.properties.topics.items", "null", "object")
+
+	// Verify search outputSchema properties structure and anyOf
+	searchTool := toolsMap["search"]
+	searchSchema := toMap(t, searchTool.OutputSchema)
+	searchProps, ok := searchSchema["properties"].(map[string]any)
+	if !ok {
+		t.Fatalf("search outputSchema missing properties: %+v", searchSchema)
+	}
+	itemsField, ok := searchProps["items"].(map[string]any)
+	if !ok {
+		t.Fatalf("search outputSchema missing items field: %+v", searchProps)
+	}
+	assertAnyOfTypes(t, itemsField, "search.outputSchema.properties.items", "null", "array")
+
+	searchItemObj, ok := itemsField["items"].(map[string]any)
+	if !ok {
+		t.Fatalf("search items field missing items schema: %+v", itemsField)
+	}
+	assertAnyOfTypes(t, searchItemObj, "search.outputSchema.properties.items.items", "null", "object")
+
+	// Verify detail outputSchema properties structure and anyOf
+	detailTool := toolsMap["detail"]
+	detailSchema := toMap(t, detailTool.OutputSchema)
+	detailProps, ok := detailSchema["properties"].(map[string]any)
+	if !ok {
+		t.Fatalf("detail outputSchema missing properties: %+v", detailSchema)
+	}
+	for _, prop := range []string{"persons", "media", "categories", "tags", "notes", "references"} {
+		fld, ok := detailProps[prop].(map[string]any)
+		if !ok {
+			t.Fatalf("detail outputSchema missing %s field: %+v", prop, detailProps)
+		}
+		assertAnyOfTypes(t, fld, "detail.outputSchema.properties."+prop, "null", "array")
+	}
+}
+
+type mockRevCatClient struct {
+	searchFunc           func(ctx context.Context, searchtype string, query string, facets []*client.InFacet, filter []*client.InFilter, vector []float64, first *int64, size *int64, cursor *string, sort []*client.SortField, interceptors ...clientv2.RequestInterceptor) (*client.Search, error)
+	mediathekEntriesFunc func(ctx context.Context, signatures []string, interceptors ...clientv2.RequestInterceptor) (*client.MediathekEntries, error)
+}
+
+func (m *mockRevCatClient) MediathekEntries(ctx context.Context, signatures []string, interceptors ...clientv2.RequestInterceptor) (*client.MediathekEntries, error) {
+	if m.mediathekEntriesFunc != nil {
+		return m.mediathekEntriesFunc(ctx, signatures, interceptors...)
+	}
+	return nil, nil
+}
+
+func (m *mockRevCatClient) Search(ctx context.Context, searchtype string, query string, facets []*client.InFacet, filter []*client.InFilter, vector []float64, first *int64, size *int64, cursor *string, sort []*client.SortField, interceptors ...clientv2.RequestInterceptor) (*client.Search, error) {
+	if m.searchFunc != nil {
+		return m.searchFunc(ctx, searchtype, query, facets, filter, vector, first, size, cursor, sort, interceptors...)
+	}
+	return &client.Search{}, nil
+}
+
+func stringPtr(s string) *string {
+	return &s
+}
+
+func TestMCPSearchTool_Basic(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+
+	var calledQuery string
+	mock := &mockRevCatClient{
+		searchFunc: func(ctx context.Context, searchtype string, query string, facets []*client.InFacet, filter []*client.InFilter, vector []float64, first *int64, size *int64, cursor *string, sort []*client.SortField, interceptors ...clientv2.RequestInterceptor) (*client.Search, error) {
+			calledQuery = query
+			return &client.Search{
+				Search: client.Search_Search{
+					TotalCount: 1,
+					PageInfo: &client.PageInfoFragment{
+						HasNextPage: false,
+						EndCursor:   "cursor_end_1",
+					},
+					Edges: []*client.Search_Search_Edges{
+						{
+							Base: &client.MediathekBaseFragment{
+								Signature: "SIG-001",
+								Title: []*client.MultiLangFragment{
+									{
+										Lang:       "de",
+										Value:      "Test Performance Video",
+										Translated: false,
+									},
+								},
+								Person: []*client.PersonFragment{
+									{
+										Name: "Max Mustermann",
+										Role: stringPtr("author"),
+									},
+								},
+								Date: stringPtr("2021"),
+								Type: stringPtr("Video"),
+							},
+						},
+					},
+				},
+			}, nil
+		},
+	}
+
+	ctrl := &Controller{
+		name:         "test",
+		detailAddr:   "https://example.com",
+		externalAddr: "https://example.com",
+		client:       mock,
+	}
+	ctrl.initMCP(router)
+
+	ts := httptest.NewServer(router)
+	defer ts.Close()
+
+	clientTransport := &mcp.StreamableClientTransport{
+		Endpoint: ts.URL + "/mcp",
+	}
+	mcpCli := mcp.NewClient(&mcp.Implementation{
+		Name:    "test client",
+		Version: "0.0.1",
+	}, nil)
+
+	session, err := mcpCli.Connect(t.Context(), clientTransport, nil)
+	if err != nil {
+		t.Fatalf("failed to connect: %v", err)
+	}
+	defer session.Close()
+
+	res, err := session.CallTool(t.Context(), &mcp.CallToolParams{
+		Name: "search",
+		Arguments: map[string]any{
+			"query": "performance",
+		},
+	})
+	if err != nil {
+		t.Fatalf("CallTool search failed: %v", err)
+	}
+	if res.IsError {
+		t.Fatalf("CallTool search returned error")
+	}
+
+	if calledQuery != "performance" {
+		t.Errorf("expected called query 'performance', got %q", calledQuery)
+	}
+
+	raw, err := json.Marshal(res.StructuredContent)
+	if err != nil {
+		t.Fatalf("failed to marshal structured content: %v", err)
+	}
+	var searchResult SearchResult
+	if err := json.Unmarshal(raw, &searchResult); err != nil {
+		t.Fatalf("failed to unmarshal structured content: %v", err)
+	}
+
+	if searchResult.TotalCount != 1 {
+		t.Errorf("expected TotalCount 1, got %d", searchResult.TotalCount)
+	}
+	if len(searchResult.Items) != 1 {
+		t.Fatalf("expected 1 item, got %d", len(searchResult.Items))
+	}
+	item := searchResult.Items[0]
+	if item.Signature != "SIG-001" {
+		t.Errorf("expected Signature 'SIG-001', got %q", item.Signature)
+	}
+	if item.Title != "Test Performance Video" {
+		t.Errorf("expected Title 'Test Performance Video', got %q", item.Title)
+	}
+	if len(item.Persons) != 1 || item.Persons[0] != "Max Mustermann" {
+		t.Errorf("expected Persons ['Max Mustermann'], got %+v", item.Persons)
+	}
+	if item.Date != "2021" {
+		t.Errorf("expected Date '2021', got %q", item.Date)
+	}
+	if item.Type != "Video" {
+		t.Errorf("expected Type 'Video', got %q", item.Type)
+	}
+	if item.Url != "https://example.com/detail/SIG-001/de" {
+		t.Errorf("expected Url 'https://example.com/detail/SIG-001/de', got %q", item.Url)
+	}
+
+	if len(res.Content) == 0 {
+		t.Fatalf("expected at least 1 content item in response")
+	}
+	textContent, ok := res.Content[0].(*mcp.TextContent)
+	if !ok {
+		t.Fatalf("expected *mcp.TextContent, got %T", res.Content[0])
+	}
+	if !strings.Contains(textContent.Text, "Test Performance Video") {
+		t.Errorf("markdown content does not contain title: %s", textContent.Text)
+	}
+	if !strings.Contains(textContent.Text, "SIG-001") {
+		t.Errorf("markdown content does not contain signature: %s", textContent.Text)
+	}
+}
+
+func TestMCPSearchTool_FilterByTitles(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+
+	pagesFS := fstest.MapFS{
+		"pages/estates/100_samuel_herzog.md": &fstest.MapFile{
+			Data: []byte(`---
+type: estate
+estatetitle: Samuel Herzog
+estateid: 100
+identifier: 'cat:"herzog"'
+---
+Beschreibung Samuel Herzog`),
+		},
+		"pages/topics/30_art.md": &fstest.MapFile{
+			Data: []byte(`---
+type: topic
+topictitle: Kunstgeschichte
+topicid: 30
+identifier: 'voc:"art"'
+---
+Beschreibung Kunstgeschichte`),
+		},
+	}
+
+	var capturedFacets []*client.InFacet
+	mock := &mockRevCatClient{
+		searchFunc: func(ctx context.Context, searchtype string, query string, facets []*client.InFacet, filter []*client.InFilter, vector []float64, first *int64, size *int64, cursor *string, sort []*client.SortField, interceptors ...clientv2.RequestInterceptor) (*client.Search, error) {
+			capturedFacets = facets
+			return &client.Search{
+				Search: client.Search_Search{
+					TotalCount: 0,
+					Edges:      []*client.Search_Search_Edges{},
+				},
+			}, nil
+		},
+	}
+
+	ctrl := &Controller{
+		name:       "test",
+		pagesFS:    pagesFS,
+		templateFS: fstest.MapFS{},
+		staticFS:   fstest.MapFS{},
+		collections: []*CollFacetType{
+			{
+				Id:         10,
+				Title:      "Performance Chronik Basel",
+				Identifier: `cat:"pcb"`,
+			},
+		},
+		client: mock,
+	}
+	if err := ctrl.init(); err != nil {
+		t.Fatalf("ctrl.init() failed: %v", err)
+	}
+	ctrl.initMCP(router)
+
+	ts := httptest.NewServer(router)
+	defer ts.Close()
+
+	clientTransport := &mcp.StreamableClientTransport{
+		Endpoint: ts.URL + "/mcp",
+	}
+	mcpCli := mcp.NewClient(&mcp.Implementation{
+		Name:    "test client",
+		Version: "0.0.1",
+	}, nil)
+
+	session, err := mcpCli.Connect(t.Context(), clientTransport, nil)
+	if err != nil {
+		t.Fatalf("failed to connect: %v", err)
+	}
+	defer session.Close()
+
+	res, err := session.CallTool(t.Context(), &mcp.CallToolParams{
+		Name: "search",
+		Arguments: map[string]any{
+			"search":      "photo",
+			"collections": []string{"Performance Chronik Basel"},
+			"estates":     []string{"Samuel Herzog"},
+			"topics":      []string{"Kunstgeschichte"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("CallTool search failed: %v", err)
+	}
+	if res.IsError {
+		t.Fatalf("CallTool search returned error")
+	}
+
+	var collFacet, vocFacet *client.InFacet
+	for _, f := range capturedFacets {
+		if f.Term.Name == "collections" {
+			collFacet = f
+		} else if f.Term.Name == "vocabulary" {
+			vocFacet = f
+		}
+	}
+
+	if collFacet == nil {
+		t.Fatalf("missing collections facet")
+	}
+	if collFacet.Query == nil || collFacet.Query.BoolTerm == nil {
+		t.Fatalf("expected BoolTerm in collections facet query")
+	}
+	collVals := collFacet.Query.BoolTerm.Values
+	if !slices.Contains(collVals, "pcb") {
+		t.Errorf("expected 'pcb' in collections facet values, got %+v", collVals)
+	}
+	if !slices.Contains(collVals, "herzog") {
+		t.Errorf("expected 'herzog' in collections facet values, got %+v", collVals)
+	}
+
+	if vocFacet == nil {
+		t.Fatalf("missing vocabulary facet")
+	}
+	if vocFacet.Query == nil || vocFacet.Query.BoolTerm == nil {
+		t.Fatalf("expected BoolTerm in vocabulary facet query")
+	}
+	vocVals := vocFacet.Query.BoolTerm.Values
+	if !slices.Contains(vocVals, "art") {
+		t.Errorf("expected 'art' in vocabulary facet values, got %+v", vocVals)
+	}
+}
+
+func TestMCPSearchTool_QueryParserAndFieldMapping(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+
+	var capturedQuery string
+	var capturedFilters []*client.InFilter
+	mock := &mockRevCatClient{
+		searchFunc: func(ctx context.Context, searchtype string, query string, facets []*client.InFacet, filter []*client.InFilter, vector []float64, first *int64, size *int64, cursor *string, sort []*client.SortField, interceptors ...clientv2.RequestInterceptor) (*client.Search, error) {
+			capturedQuery = query
+			capturedFilters = filter
+			return &client.Search{
+				Search: client.Search_Search{
+					TotalCount: 0,
+					Edges:      []*client.Search_Search_Edges{},
+				},
+			}, nil
+		},
+	}
+
+	ctrl := &Controller{
+		name: "test",
+		fieldMapping: map[string]string{
+			"author": "person.name.keyword",
+		},
+		client: mock,
+	}
+	ctrl.initMCP(router)
+
+	ts := httptest.NewServer(router)
+	defer ts.Close()
+
+	clientTransport := &mcp.StreamableClientTransport{
+		Endpoint: ts.URL + "/mcp",
+	}
+	mcpCli := mcp.NewClient(&mcp.Implementation{
+		Name:    "test client",
+		Version: "0.0.1",
+	}, nil)
+
+	session, err := mcpCli.Connect(t.Context(), clientTransport, nil)
+	if err != nil {
+		t.Fatalf("failed to connect: %v", err)
+	}
+	defer session.Close()
+
+	res, err := session.CallTool(t.Context(), &mcp.CallToolParams{
+		Name: "search",
+		Arguments: map[string]any{
+			"query": "author:\"John Doe\" photography",
+		},
+	})
+	if err != nil {
+		t.Fatalf("CallTool search failed: %v", err)
+	}
+	if res.IsError {
+		t.Fatalf("CallTool search returned error")
+	}
+
+	if capturedQuery != "photography" {
+		t.Errorf("expected captured query 'photography', got %q", capturedQuery)
+	}
+
+	var authorFilterFound bool
+	for _, f := range capturedFilters {
+		if f.BoolTerm != nil && f.BoolTerm.Field == "person.name.keyword" {
+			if slices.Contains(f.BoolTerm.Values, "John Doe") {
+				authorFilterFound = true
+			}
+		}
+	}
+	if !authorFilterFound {
+		t.Errorf("expected field filter for author 'John Doe' in captured filters: %+v", capturedFilters)
+	}
+}
+
+func TestMCPSearchTool_Pagination(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+
+	var capturedFrom, capturedPageSize *int64
+	var capturedCursor *string
+
+	mock := &mockRevCatClient{
+		searchFunc: func(ctx context.Context, searchtype string, query string, facets []*client.InFacet, filter []*client.InFilter, vector []float64, first *int64, size *int64, cursor *string, sort []*client.SortField, interceptors ...clientv2.RequestInterceptor) (*client.Search, error) {
+			capturedFrom = first
+			capturedPageSize = size
+			capturedCursor = cursor
+			return &client.Search{
+				Search: client.Search_Search{
+					TotalCount: 50,
+					PageInfo: &client.PageInfoFragment{
+						HasNextPage: true,
+						EndCursor:   "cursor_next_page",
+					},
+					Edges: []*client.Search_Search_Edges{},
+				},
+			}, nil
+		},
+	}
+
+	ctrl := &Controller{
+		name:   "test",
+		client: mock,
+	}
+	ctrl.initMCP(router)
+
+	ts := httptest.NewServer(router)
+	defer ts.Close()
+
+	clientTransport := &mcp.StreamableClientTransport{
+		Endpoint: ts.URL + "/mcp",
+	}
+	mcpCli := mcp.NewClient(&mcp.Implementation{
+		Name:    "test client",
+		Version: "0.0.1",
+	}, nil)
+
+	session, err := mcpCli.Connect(t.Context(), clientTransport, nil)
+	if err != nil {
+		t.Fatalf("failed to connect: %v", err)
+	}
+	defer session.Close()
+
+	// 1. Test from + pageSize
+	res, err := session.CallTool(t.Context(), &mcp.CallToolParams{
+		Name: "search",
+		Arguments: map[string]any{
+			"from":     10,
+			"pageSize": 20,
+		},
+	})
+	if err != nil {
+		t.Fatalf("CallTool search pagination failed: %v", err)
+	}
+	if res.IsError {
+		t.Fatalf("CallTool search pagination returned error")
+	}
+
+	if capturedFrom == nil || *capturedFrom != 10 {
+		t.Errorf("expected from 10, got %v", capturedFrom)
+	}
+	if capturedPageSize == nil || *capturedPageSize != 20 {
+		t.Errorf("expected pageSize 20, got %v", capturedPageSize)
+	}
+
+	// 2. Test cursor
+	res, err = session.CallTool(t.Context(), &mcp.CallToolParams{
+		Name: "search",
+		Arguments: map[string]any{
+			"cursor": "cursor_prev",
+		},
+	})
+	if err != nil {
+		t.Fatalf("CallTool search cursor failed: %v", err)
+	}
+	if res.IsError {
+		t.Fatalf("CallTool search cursor returned error")
+	}
+
+	if capturedCursor == nil || *capturedCursor != "cursor_prev" {
+		t.Errorf("expected cursor 'cursor_prev', got %v", capturedCursor)
+	}
+}
+
+func TestMCPSearchTool_NoClient(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+
+	ctrl := &Controller{
+		name:   "test",
+		client: nil,
+	}
+	ctrl.initMCP(router)
+
+	ts := httptest.NewServer(router)
+	defer ts.Close()
+
+	clientTransport := &mcp.StreamableClientTransport{
+		Endpoint: ts.URL + "/mcp",
+	}
+	mcpCli := mcp.NewClient(&mcp.Implementation{
+		Name:    "test client",
+		Version: "0.0.1",
+	}, nil)
+
+	session, err := mcpCli.Connect(t.Context(), clientTransport, nil)
+	if err != nil {
+		t.Fatalf("failed to connect: %v", err)
+	}
+	defer session.Close()
+
+	res, err := session.CallTool(t.Context(), &mcp.CallToolParams{
+		Name: "search",
+		Arguments: map[string]any{
+			"query": "anything",
+		},
+	})
+	if err != nil {
+		t.Fatalf("unexpected call error: %v", err)
+	}
+	if !res.IsError {
+		t.Fatalf("expected CallTool to return error result when client is nil")
+	}
+}
+
+func int64Ptr(i int64) *int64 {
+	return &i
+}
+
+func TestMCPDetailTool_Basic(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+
+	var requestedSignatures []string
+	mock := &mockRevCatClient{
+		mediathekEntriesFunc: func(ctx context.Context, signatures []string, interceptors ...clientv2.RequestInterceptor) (*client.MediathekEntries, error) {
+			requestedSignatures = signatures
+			return &client.MediathekEntries{
+				MediathekEntries: []*client.MediathekEntries_MediathekEntries{
+					{
+						ID: "SIG-001",
+						Base: &client.MediathekBaseFragment{
+							Signature:       "SIG-001",
+							CollectionTitle: stringPtr("Performance Art Collection"),
+							Source:          "Archiv Basel",
+							Title: []*client.MultiLangFragment{
+								{
+									Lang:       "de",
+									Value:      "Performance Dokumentation Basel",
+									Translated: false,
+								},
+								{
+									Lang:       "en",
+									Value:      "Performance Documentation Basel",
+									Translated: false,
+								},
+							},
+							Person: []*client.PersonFragment{
+								{
+									Name: "Marina Abramovic",
+									Role: stringPtr("Künstlerin"),
+									Year: int64Ptr(1946),
+								},
+							},
+							Date:       stringPtr("1980"),
+							Series:     stringPtr("Video Collection Series A"),
+							Place:      stringPtr("Basel"),
+							Publisher:  stringPtr("Kunstverlag"),
+							Rights:     stringPtr("All rights reserved"),
+							License:    stringPtr("CC-BY-NC"),
+							Type:       stringPtr("Video"),
+							Category:   []string{"Archiv", "Archiv/Video", "Archiv/Video/1980"},
+							Tags:       []string{"Performance", "Video Art"},
+							References: []*client.ReferenceFragment{},
+						},
+						Abstract: []*client.MultiLangFragment{
+							{
+								Lang:       "de",
+								Value:      "Eine ausführliche Videoaufzeichnung der Performance.",
+								Translated: false,
+							},
+							{
+								Lang:       "en",
+								Value:      "A detailed video recording of the performance.",
+								Translated: false,
+							},
+						},
+						Media: []*client.MediaListFragment{
+							{
+								Type: "video",
+								Items: []*client.MediaItemFragment{
+									{
+										Name:     "video_master.mp4",
+										Mimetype: "video/mp4",
+										Type:     "video",
+										URI:      "https://mediaserver.example.com/video_master.mp4",
+									},
+								},
+							},
+						},
+						Notes: []*client.NoteFragment{
+							{
+								Title: stringPtr("Restaurierungsbericht"),
+								Text:  "Digitalisiert im Jahr 2015.",
+							},
+						},
+						ReferencesFull: []*client.MediathekBaseFragment{
+							{
+								Signature: "SIG-REF-01",
+								Title: []*client.MultiLangFragment{
+									{
+										Lang:  "de",
+										Value: "Zugehöriges Fotokonvolut",
+									},
+								},
+								Type: stringPtr("Foto"),
+							},
+						},
+						Extra: []*client.KeyValueFragment{
+							{
+								Key:   "Dauer",
+								Value: "45 Min",
+							},
+						},
+					},
+				},
+			}, nil
+		},
+	}
+
+	ctrl := &Controller{
+		name:         "test",
+		detailAddr:   "https://example.com",
+		externalAddr: "https://example.com",
+		client:       mock,
+	}
+	ctrl.initMCP(router)
+
+	ts := httptest.NewServer(router)
+	defer ts.Close()
+
+	clientTransport := &mcp.StreamableClientTransport{
+		Endpoint: ts.URL + "/mcp",
+	}
+	mcpCli := mcp.NewClient(&mcp.Implementation{
+		Name:    "test client",
+		Version: "0.0.1",
+	}, nil)
+
+	session, err := mcpCli.Connect(t.Context(), clientTransport, nil)
+	if err != nil {
+		t.Fatalf("failed to connect: %v", err)
+	}
+	defer session.Close()
+
+	res, err := session.CallTool(t.Context(), &mcp.CallToolParams{
+		Name: "detail",
+		Arguments: map[string]any{
+			"signature": "SIG-001",
+			"lang":      "de",
+		},
+	})
+	if err != nil {
+		t.Fatalf("CallTool detail failed: %v", err)
+	}
+	if res.IsError {
+		t.Fatalf("CallTool detail returned error")
+	}
+
+	if len(requestedSignatures) != 1 || requestedSignatures[0] != "SIG-001" {
+		t.Errorf("expected requested signature ['SIG-001'], got %v", requestedSignatures)
+	}
+
+	if len(res.Content) == 0 {
+		t.Fatalf("expected non-empty content in CallToolResult")
+	}
+	textContent, ok := res.Content[0].(*mcp.TextContent)
+	if !ok {
+		t.Fatalf("expected TextContent, got %T", res.Content[0])
+	}
+	mdText := textContent.Text
+	if !strings.Contains(mdText, "Performance Dokumentation Basel") {
+		t.Errorf("expected title in Markdown, got: %s", mdText)
+	}
+	if !strings.Contains(mdText, "Marina Abramovic") {
+		t.Errorf("expected person in Markdown, got: %s", mdText)
+	}
+	if !strings.Contains(mdText, "Archiv/Video/1980") {
+		t.Errorf("expected refined category in Markdown, got: %s", mdText)
+	}
+	if strings.Contains(mdText, "Archiv/Video,") || strings.Contains(mdText, "Archiv,") {
+		t.Errorf("expected pruned parent categories in Markdown, got: %s", mdText)
+	}
+	if !strings.Contains(mdText, "Eine ausführliche Videoaufzeichnung der Performance.") {
+		t.Errorf("expected German abstract in Markdown, got: %s", mdText)
+	}
+	if !strings.Contains(mdText, "video_master.mp4") {
+		t.Errorf("expected media in Markdown, got: %s", mdText)
+	}
+	if !strings.Contains(mdText, "Restaurierungsbericht: Digitalisiert im Jahr 2015.") {
+		t.Errorf("expected note in Markdown, got: %s", mdText)
+	}
+	if !strings.Contains(mdText, "Zugehöriges Fotokonvolut") {
+		t.Errorf("expected reference in Markdown, got: %s", mdText)
+	}
+	if !strings.Contains(mdText, "**Dauer:** 45 Min") {
+		t.Errorf("expected extra in Markdown, got: %s", mdText)
+	}
+}
+
+func TestMCPDetailTool_IdFallback(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+
+	var requestedSignatures []string
+	mock := &mockRevCatClient{
+		mediathekEntriesFunc: func(ctx context.Context, signatures []string, interceptors ...clientv2.RequestInterceptor) (*client.MediathekEntries, error) {
+			requestedSignatures = signatures
+			return &client.MediathekEntries{
+				MediathekEntries: []*client.MediathekEntries_MediathekEntries{
+					{
+						ID: "SIG-002",
+						Base: &client.MediathekBaseFragment{
+							Signature: "SIG-002",
+							Title: []*client.MultiLangFragment{
+								{
+									Lang:  "de",
+									Value: "Test ID Fallback",
+								},
+							},
+						},
+					},
+				},
+			}, nil
+		},
+	}
+
+	ctrl := &Controller{
+		name:   "test",
+		client: mock,
+	}
+	ctrl.initMCP(router)
+
+	ts := httptest.NewServer(router)
+	defer ts.Close()
+
+	clientTransport := &mcp.StreamableClientTransport{
+		Endpoint: ts.URL + "/mcp",
+	}
+	mcpCli := mcp.NewClient(&mcp.Implementation{
+		Name:    "test client",
+		Version: "0.0.1",
+	}, nil)
+
+	session, err := mcpCli.Connect(t.Context(), clientTransport, nil)
+	if err != nil {
+		t.Fatalf("failed to connect: %v", err)
+	}
+	defer session.Close()
+
+	res, err := session.CallTool(t.Context(), &mcp.CallToolParams{
+		Name: "detail",
+		Arguments: map[string]any{
+			"id": "SIG-002",
+		},
+	})
+	if err != nil {
+		t.Fatalf("CallTool detail failed: %v", err)
+	}
+	if res.IsError {
+		t.Fatalf("CallTool detail returned error")
+	}
+	if len(requestedSignatures) != 1 || requestedSignatures[0] != "SIG-002" {
+		t.Errorf("expected requested signature ['SIG-002'], got %v", requestedSignatures)
+	}
+}
+
+func TestMCPDetailTool_LanguageSelection(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+
+	mock := &mockRevCatClient{
+		mediathekEntriesFunc: func(ctx context.Context, signatures []string, interceptors ...clientv2.RequestInterceptor) (*client.MediathekEntries, error) {
+			return &client.MediathekEntries{
+				MediathekEntries: []*client.MediathekEntries_MediathekEntries{
+					{
+						ID: "SIG-001",
+						Base: &client.MediathekBaseFragment{
+							Signature: "SIG-001",
+							Title: []*client.MultiLangFragment{
+								{
+									Lang:  "de",
+									Value: "Deutscher Titel",
+								},
+								{
+									Lang:  "en",
+									Value: "English Title",
+								},
+							},
+						},
+						Abstract: []*client.MultiLangFragment{
+							{
+								Lang:  "de",
+								Value: "Deutsche Zusammenfassung",
+							},
+							{
+								Lang:  "en",
+								Value: "English Abstract",
+							},
+						},
+					},
+				},
+			}, nil
+		},
+	}
+
+	ctrl := &Controller{
+		name:   "test",
+		client: mock,
+	}
+	ctrl.initMCP(router)
+
+	ts := httptest.NewServer(router)
+	defer ts.Close()
+
+	clientTransport := &mcp.StreamableClientTransport{
+		Endpoint: ts.URL + "/mcp",
+	}
+	mcpCli := mcp.NewClient(&mcp.Implementation{
+		Name:    "test client",
+		Version: "0.0.1",
+	}, nil)
+
+	session, err := mcpCli.Connect(t.Context(), clientTransport, nil)
+	if err != nil {
+		t.Fatalf("failed to connect: %v", err)
+	}
+	defer session.Close()
+
+	res, err := session.CallTool(t.Context(), &mcp.CallToolParams{
+		Name: "detail",
+		Arguments: map[string]any{
+			"signature": "SIG-001",
+			"lang":      "en",
+		},
+	})
+	if err != nil {
+		t.Fatalf("CallTool detail failed: %v", err)
+	}
+	if res.IsError {
+		t.Fatalf("CallTool detail returned error")
+	}
+
+	textContent, ok := res.Content[0].(*mcp.TextContent)
+	if !ok {
+		t.Fatalf("expected TextContent, got %T", res.Content[0])
+	}
+	if !strings.Contains(textContent.Text, "English Title") {
+		t.Errorf("expected English title in Markdown, got: %s", textContent.Text)
+	}
+	if !strings.Contains(textContent.Text, "English Abstract") {
+		t.Errorf("expected English abstract in Markdown, got: %s", textContent.Text)
+	}
+}
+
+func TestMCPDetailTool_NotFound(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+
+	mock := &mockRevCatClient{
+		mediathekEntriesFunc: func(ctx context.Context, signatures []string, interceptors ...clientv2.RequestInterceptor) (*client.MediathekEntries, error) {
+			return &client.MediathekEntries{
+				MediathekEntries: []*client.MediathekEntries_MediathekEntries{},
+			}, nil
+		},
+	}
+
+	ctrl := &Controller{
+		name:   "test",
+		client: mock,
+	}
+	ctrl.initMCP(router)
+
+	ts := httptest.NewServer(router)
+	defer ts.Close()
+
+	clientTransport := &mcp.StreamableClientTransport{
+		Endpoint: ts.URL + "/mcp",
+	}
+	mcpCli := mcp.NewClient(&mcp.Implementation{
+		Name:    "test client",
+		Version: "0.0.1",
+	}, nil)
+
+	session, err := mcpCli.Connect(t.Context(), clientTransport, nil)
+	if err != nil {
+		t.Fatalf("failed to connect: %v", err)
+	}
+	defer session.Close()
+
+	res, err := session.CallTool(t.Context(), &mcp.CallToolParams{
+		Name: "detail",
+		Arguments: map[string]any{
+			"signature": "NON_EXISTENT",
+		},
+	})
+	if err != nil {
+		t.Fatalf("unexpected call error: %v", err)
+	}
+	if !res.IsError {
+		t.Fatalf("expected CallTool to return error result when entry is not found")
+	}
+}
+
+func TestMCPDetailTool_MissingSignature(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+
+	ctrl := &Controller{
+		name:   "test",
+		client: &mockRevCatClient{},
+	}
+	ctrl.initMCP(router)
+
+	ts := httptest.NewServer(router)
+	defer ts.Close()
+
+	clientTransport := &mcp.StreamableClientTransport{
+		Endpoint: ts.URL + "/mcp",
+	}
+	mcpCli := mcp.NewClient(&mcp.Implementation{
+		Name:    "test client",
+		Version: "0.0.1",
+	}, nil)
+
+	session, err := mcpCli.Connect(t.Context(), clientTransport, nil)
+	if err != nil {
+		t.Fatalf("failed to connect: %v", err)
+	}
+	defer session.Close()
+
+	res, err := session.CallTool(t.Context(), &mcp.CallToolParams{
+		Name:      "detail",
+		Arguments: map[string]any{},
+	})
+	if err != nil {
+		t.Fatalf("unexpected call error: %v", err)
+	}
+	if !res.IsError {
+		t.Fatalf("expected CallTool to return error result when signature is empty")
+	}
+}
+
+func TestMCPDetailTool_NoClient(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+
+	ctrl := &Controller{
+		name:   "test",
+		client: nil,
+	}
+	ctrl.initMCP(router)
+
+	ts := httptest.NewServer(router)
+	defer ts.Close()
+
+	clientTransport := &mcp.StreamableClientTransport{
+		Endpoint: ts.URL + "/mcp",
+	}
+	mcpCli := mcp.NewClient(&mcp.Implementation{
+		Name:    "test client",
+		Version: "0.0.1",
+	}, nil)
+
+	session, err := mcpCli.Connect(t.Context(), clientTransport, nil)
+	if err != nil {
+		t.Fatalf("failed to connect: %v", err)
+	}
+	defer session.Close()
+
+	res, err := session.CallTool(t.Context(), &mcp.CallToolParams{
+		Name: "detail",
+		Arguments: map[string]any{
+			"signature": "SIG-001",
+		},
+	})
+	if err != nil {
+		t.Fatalf("unexpected call error: %v", err)
+	}
+	if !res.IsError {
+		t.Fatalf("expected CallTool to return error result when client is nil")
+	}
 }

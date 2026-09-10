@@ -1,5 +1,7 @@
 package server
 
+// npx @modelcontextprotocol/inspector --server-url https://localhost:8445/mcp/ --transport http
+
 import (
 	"cmp"
 	"context"
@@ -10,12 +12,16 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/jsonschema-go/jsonschema"
+	"github.com/je4/revcat/v2/tools/client"
+	"github.com/je4/zsearch/v2/pkg/translate"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
+	"golang.org/x/text/language"
 )
 
 type GetCollectionDescriptionArgs struct {
@@ -70,6 +76,83 @@ type GetTopicsResult struct {
 
 type GetTopicDescriptionResult struct {
 	Description string `json:"description"`
+}
+
+type SearchArgs struct {
+	Query       string   `json:"query,omitzero"`
+	Search      string   `json:"search,omitzero"`
+	Collections []string `json:"collections,omitzero"`
+	Topics      []string `json:"topics,omitzero"`
+	Estates     []string `json:"estates,omitzero"`
+	From        int64    `json:"from,omitzero"`
+	PageSize    int64    `json:"pageSize,omitzero"`
+	Cursor      string   `json:"cursor,omitzero"`
+}
+
+type SearchItemResult struct {
+	Signature string   `json:"signature"`
+	Title     string   `json:"title"`
+	Persons   []string `json:"persons,omitzero"`
+	Date      string   `json:"date,omitzero"`
+	Type      string   `json:"type,omitzero"`
+	Url       string   `json:"url,omitzero"`
+}
+
+type SearchPageInfoResult struct {
+	HasNextPage bool   `json:"hasNextPage"`
+	EndCursor   string `json:"endCursor,omitzero"`
+}
+
+type SearchResult struct {
+	TotalCount int64                 `json:"totalCount"`
+	PageInfo   *SearchPageInfoResult `json:"pageInfo,omitzero"`
+	Items      []*SearchItemResult   `json:"items"`
+}
+
+type DetailArgs struct {
+	Signature string `json:"signature,omitzero"`
+}
+
+type DetailPersonResult struct {
+	Name string  `json:"name"`
+	Role *string `json:"role,omitzero"`
+	Year *int64  `json:"year,omitzero"`
+}
+
+type DetailMediaResult struct {
+	Name     string `json:"name"`
+	MimeType string `json:"mimetype,omitzero"`
+	Type     string `json:"type,omitzero"`
+	Uri      string `json:"uri,omitzero"`
+}
+
+type DetailReferenceResult struct {
+	Signature string `json:"signature"`
+	Title     string `json:"title,omitzero"`
+	Type      string `json:"type,omitzero"`
+}
+
+type DetailResult struct {
+	Signature       string                   `json:"signature"`
+	Title           string                   `json:"title"`
+	CollectionTitle string                   `json:"collectionTitle,omitzero"`
+	Source          string                   `json:"source,omitzero"`
+	Abstract        string                   `json:"abstract,omitzero"`
+	Persons         []*DetailPersonResult    `json:"persons,omitzero"`
+	Date            string                   `json:"date,omitzero"`
+	Series          string                   `json:"series,omitzero"`
+	Place           string                   `json:"place,omitzero"`
+	Publisher       string                   `json:"publisher,omitzero"`
+	Rights          string                   `json:"rights,omitzero"`
+	License         string                   `json:"license,omitzero"`
+	Type            string                   `json:"type,omitzero"`
+	Categories      []string                 `json:"categories,omitzero"`
+	Tags            []string                 `json:"tags,omitzero"`
+	Url             string                   `json:"url,omitzero"`
+	Media           []*DetailMediaResult     `json:"media,omitzero"`
+	Notes           []string                 `json:"notes,omitzero"`
+	References      []*DetailReferenceResult `json:"references,omitzero"`
+	Extra           map[string]string        `json:"extra,omitzero"`
 }
 
 func (ctrl *Controller) getItemDescription(itemType string, items []*CollFacetType, title string, id int64) (string, error) {
@@ -172,6 +255,691 @@ func (ctrl *Controller) getEstateDescription(title string, id int64) (string, er
 
 func (ctrl *Controller) getTopicDescription(title string, id int64) (string, error) {
 	return ctrl.getItemDescription("topic", ctrl.getTopics(), title, id)
+}
+
+// resolveFacetValuesByTitle matches titles against facet items strictly by title (case-insensitive)
+// and extracts values grouped by prefix (e.g. "cat", "catalog", "voc", "tags").
+func (ctrl *Controller) resolveFacetValuesByTitle(titles []string, items []*CollFacetType) map[string][]string {
+	if len(titles) == 0 {
+		return nil
+	}
+	result := make(map[string][]string)
+	for _, title := range titles {
+		trimmedTitle := strings.TrimSpace(title)
+		if trimmedTitle == "" {
+			continue
+		}
+		for _, item := range items {
+			if item == nil {
+				continue
+			}
+			if strings.EqualFold(strings.TrimSpace(item.Title), trimmedTitle) {
+				parts := strings.SplitN(item.Identifier, ":", 2)
+				if len(parts) == 2 {
+					prefix := strings.ToLower(strings.TrimSpace(parts[0]))
+					val := strings.Trim(parts[1], "\" ")
+					result[prefix] = append(result[prefix], val)
+				} else if item.Identifier != "" {
+					result[""] = append(result[""], strings.Trim(item.Identifier, "\" "))
+				} else if item.Id != 0 {
+					result[""] = append(result[""], strconv.FormatInt(item.Id, 10))
+				}
+				break
+			}
+		}
+	}
+	return result
+}
+
+func (ctrl *Controller) search(ctx context.Context, args SearchArgs) (*SearchResult, string, error) {
+	searchString := cmp.Or(args.Query, args.Search)
+	filterStrings, queryString, err := parseQuery(searchString)
+	if err != nil {
+		if ctrl.logger != nil {
+			ctrl.logger.Error().Err(err).Msgf("cannot parse query '%s'", searchString)
+		}
+		queryString = searchString
+	}
+
+	var selectedCategoryValues []string
+	var selectedCatalogValues []string
+	var selectedVocabularyValues []string
+	var hasCategoryFilter, hasCatalogFilter bool
+
+	if len(args.Collections) > 0 {
+		hasCategoryFilter = true
+		mapped := ctrl.resolveFacetValuesByTitle(args.Collections, ctrl.getCollections())
+		for prefix, vals := range mapped {
+			switch prefix {
+			case "catalog":
+				hasCatalogFilter = true
+				selectedCatalogValues = append(selectedCatalogValues, vals...)
+			case "voc", "tags":
+				selectedVocabularyValues = append(selectedVocabularyValues, vals...)
+			default:
+				selectedCategoryValues = append(selectedCategoryValues, vals...)
+			}
+		}
+	}
+
+	if len(args.Estates) > 0 {
+		estateItems := append([]*CollFacetType{}, ctrl.getEstates()...)
+		for _, cat := range ctrl.catalogs {
+			if cat != nil {
+				estateItems = append(estateItems, cat)
+			}
+		}
+		mapped := ctrl.resolveFacetValuesByTitle(args.Estates, estateItems)
+		if len(mapped) == 0 {
+			hasCategoryFilter = true
+			hasCatalogFilter = true
+		} else {
+			for prefix, vals := range mapped {
+				switch prefix {
+				case "catalog":
+					hasCatalogFilter = true
+					selectedCatalogValues = append(selectedCatalogValues, vals...)
+				case "voc", "tags":
+					selectedVocabularyValues = append(selectedVocabularyValues, vals...)
+				default:
+					hasCategoryFilter = true
+					selectedCategoryValues = append(selectedCategoryValues, vals...)
+				}
+			}
+		}
+	}
+
+	if len(args.Topics) > 0 {
+		mapped := ctrl.resolveFacetValuesByTitle(args.Topics, ctrl.getTopics())
+		if len(mapped) == 0 {
+			selectedVocabularyValues = append(selectedVocabularyValues, "__non_existent_topic__")
+		} else {
+			for prefix, vals := range mapped {
+				switch prefix {
+				case "catalog":
+					hasCatalogFilter = true
+					selectedCatalogValues = append(selectedCatalogValues, vals...)
+				case "cat":
+					hasCategoryFilter = true
+					selectedCategoryValues = append(selectedCategoryValues, vals...)
+				default:
+					selectedVocabularyValues = append(selectedVocabularyValues, vals...)
+				}
+			}
+		}
+	}
+
+	createFacet := func(name, field string, ctrlList []*CollFacetType, selectedVals []string, isFiltered bool, idPrefix string) *client.InFacet {
+		facet := &client.InFacet{
+			Term: &client.InFacetTerm{
+				Name:        name,
+				Field:       field,
+				Size:        200,
+				MinDocCount: 0,
+				Include:     []string{},
+				Exclude:     []string{},
+			},
+		}
+
+		if name != "collections" && !isFiltered {
+			facet.Query = &client.InFilter{
+				ExistsTerm: &client.InFilterExistsTerm{
+					Field: "signature",
+				},
+			}
+		} else {
+			facet.Query = &client.InFilter{
+				BoolTerm: &client.InFilterBoolTerm{
+					Field:  field,
+					Values: []string{},
+					And:    false,
+				},
+			}
+		}
+
+		for _, item := range ctrlList {
+			if item == nil {
+				continue
+			}
+			parts := strings.SplitN(item.Identifier, ":", 2)
+			if len(parts) != 2 {
+				continue
+			}
+			val := strings.Trim(parts[1], "\" ")
+			facet.Term.Include = append(facet.Term.Include, val)
+			if !isFiltered {
+				if facet.Query.BoolTerm != nil {
+					if parts[0] == idPrefix {
+						facet.Query.BoolTerm.Values = append(facet.Query.BoolTerm.Values, val)
+					}
+				}
+			} else if slices.Contains(selectedVals, val) {
+				if facet.Query.BoolTerm != nil {
+					if parts[0] == idPrefix {
+						facet.Query.BoolTerm.Values = append(facet.Query.BoolTerm.Values, val)
+					}
+				}
+			}
+		}
+
+		if isFiltered && facet.Query.BoolTerm != nil {
+			for _, sv := range selectedVals {
+				if !slices.Contains(facet.Query.BoolTerm.Values, sv) {
+					facet.Query.BoolTerm.Values = append(facet.Query.BoolTerm.Values, sv)
+				}
+			}
+		}
+
+		return facet
+	}
+
+	collFacet := createFacet("collections", "category.keyword", ctrl.getCollections(), selectedCategoryValues, hasCategoryFilter, "cat")
+	catFacet := createFacet("catalogs", "catalog.keyword", ctrl.catalogs, selectedCatalogValues, hasCatalogFilter, "catalog")
+	mediaFacet := createFacet("medias", "mediatype.keyword", ctrl.medias, nil, false, "mediatypes.keyword")
+
+	vocFacet := &client.InFacet{
+		Term: &client.InFacetTerm{
+			Name:        "vocabulary",
+			Field:       "tags.keyword",
+			Size:        1200,
+			MinDocCount: 1,
+			Include:     []string{},
+			Exclude:     []string{},
+		},
+		Query: &client.InFilter{
+			BoolTerm: &client.InFilterBoolTerm{
+				Field:  "tags.keyword",
+				Values: selectedVocabularyValues,
+				And:    true,
+			},
+		},
+	}
+	if len(ctrl.facetInclude) > 0 {
+		vocFacet.Term.Include = append(vocFacet.Term.Include, ctrl.facetInclude...)
+	}
+	if len(ctrl.facetExclude) > 0 {
+		vocFacet.Term.Exclude = append(vocFacet.Term.Exclude, ctrl.facetExclude...)
+	}
+
+	filter := append([]*client.InFilter{}, ctrl.baseFilter...)
+	if len(filterStrings) > 0 {
+		for field, value := range filterStrings {
+			internalField, ok := ctrl.fieldMapping[field]
+			if !ok {
+				if ctrl.logger != nil {
+					ctrl.logger.Error().Msgf("unknown field '%s'", field)
+				}
+				return nil, "", fmt.Errorf("unknown field '%s'", field)
+			}
+			filter = append(filter, &client.InFilter{
+				BoolTerm: &client.InFilterBoolTerm{
+					Field:  internalField,
+					Values: []string{strings.Trim(value, "\" ")},
+					And:    true,
+				},
+			})
+		}
+	}
+
+	var fromPtr, pageSizePtr *int64
+	var cursorPtr *string
+	if args.Cursor != "" {
+		cursorPtr = &args.Cursor
+	} else {
+		fromVal := args.From
+		pageSizeVal := args.PageSize
+		if pageSizeVal <= 0 {
+			pageSizeVal = 36
+		}
+		fromPtr = &fromVal
+		pageSizePtr = &pageSizeVal
+	}
+
+	if ctrl.client == nil {
+		return nil, "", errors.New("graphql client not configured")
+	}
+
+	result, err := ctrl.client.Search(ctx, "", queryString, []*client.InFacet{collFacet, catFacet, mediaFacet, vocFacet}, filter, nil, fromPtr, pageSizePtr, cursorPtr, nil)
+	if err != nil {
+		if ctrl.logger != nil {
+			ctrl.logger.Error().Err(err).Msgf("cannot search for '%s'", searchString)
+		}
+		return nil, "", fmt.Errorf("search failed: %w", err)
+	}
+
+	if result == nil || result.GetSearch() == nil {
+		return &SearchResult{
+			TotalCount: 0,
+			Items:      []*SearchItemResult{},
+		}, "Keine Ergebnisse gefunden.\n", nil
+	}
+
+	searchData := result.GetSearch()
+	totalCount := int64(searchData.GetTotalCount())
+	var pageInfo *SearchPageInfoResult
+	if pi := searchData.GetPageInfo(); pi != nil {
+		pageInfo = &SearchPageInfoResult{
+			HasNextPage: pi.GetHasNextPage(),
+			EndCursor:   pi.GetEndCursor(),
+		}
+	}
+
+	detailBase := ctrl.detailAddr
+	if detailBase == "" {
+		detailBase = ctrl.externalAddr
+	}
+
+	items := make([]*SearchItemResult, 0, len(searchData.GetEdges()))
+	var mdBuilder strings.Builder
+	if totalCount == 0 || len(searchData.GetEdges()) == 0 {
+		mdBuilder.WriteString("Keine Ergebnisse gefunden.\n")
+	} else {
+		mdBuilder.WriteString(fmt.Sprintf("### Suchergebnisse (%d Treffer)\n\n", totalCount))
+	}
+
+	for i, edge := range searchData.GetEdges() {
+		if edge == nil || edge.Base == nil {
+			continue
+		}
+		var title string
+		if len(edge.Base.GetTitle()) > 0 {
+			m := &translate.MultiLangString{}
+			for _, t := range edge.Base.GetTitle() {
+				if l, err := language.Parse(t.Lang); err == nil {
+					m.Set(t.Value, l, t.Translated)
+				} else {
+					m.Set(t.Value, language.Und, t.Translated)
+				}
+			}
+			title = m.String()
+			if title == "" && len(edge.Base.GetTitle()) > 0 {
+				title = edge.Base.GetTitle()[0].Value
+			}
+		}
+
+		var persons []string
+		for _, p := range edge.Base.GetPerson() {
+			if p != nil && p.GetName() != "" {
+				persons = append(persons, p.GetName())
+			}
+		}
+
+		sig := edge.Base.Signature
+		var itemURL string
+		if sig != "" {
+			itemURL = fmt.Sprintf("%s/detail/%s/de", strings.TrimRight(detailBase, "/"), url.PathEscape(sig))
+		}
+		date := emptyIfNil(edge.Base.GetDate())
+		typ := emptyIfNil(edge.Base.GetType())
+
+		itemResult := &SearchItemResult{
+			Signature: sig,
+			Title:     title,
+			Persons:   persons,
+			Date:      date,
+			Type:      typ,
+			Url:       itemURL,
+		}
+		items = append(items, itemResult)
+
+		mdBuilder.WriteString(fmt.Sprintf("%d. ", i+1))
+		if itemURL != "" && title != "" {
+			mdBuilder.WriteString(fmt.Sprintf("**[%s](%s)**\n", title, itemURL))
+		} else if title != "" {
+			mdBuilder.WriteString(fmt.Sprintf("**%s**\n", title))
+		} else if sig != "" {
+			mdBuilder.WriteString(fmt.Sprintf("**%s**\n", sig))
+		} else {
+			mdBuilder.WriteString("**Ohne Titel**\n")
+		}
+
+		if sig != "" {
+			mdBuilder.WriteString(fmt.Sprintf("   - **Signatur:** `%s`\n", sig))
+		}
+		if len(persons) > 0 {
+			mdBuilder.WriteString(fmt.Sprintf("   - **Personen:** %s\n", strings.Join(persons, ", ")))
+		}
+		if date != "" {
+			mdBuilder.WriteString(fmt.Sprintf("   - **Datum:** %s\n", date))
+		}
+		if typ != "" {
+			mdBuilder.WriteString(fmt.Sprintf("   - **Typ:** %s\n", typ))
+		}
+		if itemURL != "" {
+			mdBuilder.WriteString(fmt.Sprintf("   - **Link:** %s\n", itemURL))
+		}
+		mdBuilder.WriteString("\n")
+	}
+
+	searchResult := &SearchResult{
+		TotalCount: totalCount,
+		PageInfo:   pageInfo,
+		Items:      items,
+	}
+	return searchResult, mdBuilder.String(), nil
+}
+
+func refineCategories(categories []string) []string {
+	if len(categories) == 0 {
+		return nil
+	}
+	cats := append([]string{}, categories...)
+	slices.SortFunc(cats, func(a, b string) int {
+		return len(b) - len(a)
+	})
+	var newCategories = []string{}
+	for _, cat := range cats {
+		isPrefix := false
+		for _, newCat := range newCategories {
+			if strings.HasPrefix(newCat, cat) {
+				isPrefix = true
+				break
+			}
+		}
+		if !isPrefix {
+			newCategories = append(newCategories, cat)
+		}
+	}
+	return newCategories
+}
+
+func resolveMultiLang(items []*client.MultiLangFragment, lang string) string {
+	if len(items) == 0 {
+		return ""
+	}
+	m := &translate.MultiLangString{}
+	for _, t := range items {
+		if t == nil {
+			continue
+		}
+		if l, err := language.Parse(t.Lang); err == nil {
+			m.Set(t.Value, l, t.Translated)
+		} else {
+			m.Set(t.Value, language.Und, t.Translated)
+		}
+	}
+	if lang != "" {
+		if s := m.GetStr(lang); s != "" {
+			return s
+		}
+	}
+	if s := m.String(); s != "" {
+		return s
+	}
+	for _, t := range items {
+		if t != nil && t.Value != "" {
+			return t.Value
+		}
+	}
+	return ""
+}
+
+func (ctrl *Controller) getDetail(ctx context.Context, args DetailArgs) (*DetailResult, string, error) {
+	sig := args.Signature
+	sig = strings.TrimSpace(sig)
+	if sig == "" {
+		return nil, "", errors.New("signature or id must be provided")
+	}
+
+	if ctrl.client == nil {
+		return nil, "", errors.New("graphql client not configured")
+	}
+
+	source, err := ctrl.client.MediathekEntries(ctx, []string{sig})
+	if err != nil {
+		if ctrl.logger != nil {
+			ctrl.logger.Error().Err(err).Msgf("cannot get mediathek entry '%s'", sig)
+		}
+		return nil, "", fmt.Errorf("cannot get mediathek entry '%s': %w", sig, err)
+	}
+	if source == nil || len(source.MediathekEntries) == 0 {
+		return nil, "", fmt.Errorf("mediathek entry '%s' not found", sig)
+	}
+
+	entry := source.MediathekEntries[0]
+	if entry == nil || entry.Base == nil {
+		return nil, "", fmt.Errorf("mediathek entry '%s' has no base data", sig)
+	}
+
+	base := entry.Base
+	title := resolveMultiLang(base.GetTitle(), language.Und.String())
+	abstract := resolveMultiLang(entry.GetAbstract(), language.Und.String())
+
+	detailBase := ctrl.detailAddr
+	if detailBase == "" {
+		detailBase = ctrl.externalAddr
+	}
+	itemURL := ""
+	if base.Signature != "" {
+		itemURL = fmt.Sprintf("%s/detail/%s", strings.TrimRight(detailBase, "/"), url.PathEscape(base.Signature))
+	}
+
+	refinedCats := refineCategories(base.GetCategory())
+
+	var persons []*DetailPersonResult
+	for _, p := range base.GetPerson() {
+		if p == nil || p.GetName() == "" {
+			continue
+		}
+		persons = append(persons, &DetailPersonResult{
+			Name: p.GetName(),
+			Role: p.GetRole(),
+			Year: p.GetYear(),
+		})
+	}
+
+	var mediaResults []*DetailMediaResult
+	for _, ml := range entry.GetMedia() {
+		if ml == nil {
+			continue
+		}
+		for _, item := range ml.GetItems() {
+			if item == nil {
+				continue
+			}
+			mediaResults = append(mediaResults, &DetailMediaResult{
+				Name:     item.GetName(),
+				MimeType: item.GetMimetype(),
+				Type:     cmp.Or(item.GetType(), ml.GetType()),
+				Uri:      item.GetURI(),
+			})
+		}
+	}
+
+	var notes []string
+	for _, note := range entry.GetNotes() {
+		if note == nil {
+			continue
+		}
+		if note.GetTitle() != nil && *note.GetTitle() != "" {
+			notes = append(notes, fmt.Sprintf("%s: %s", *note.GetTitle(), note.GetText()))
+		} else {
+			notes = append(notes, note.GetText())
+		}
+	}
+
+	var references []*DetailReferenceResult
+	for _, ref := range entry.GetReferencesFull() {
+		if ref == nil {
+			continue
+		}
+		refTitle := resolveMultiLang(ref.GetTitle(), language.Und.String())
+		references = append(references, &DetailReferenceResult{
+			Signature: ref.GetSignature(),
+			Title:     refTitle,
+			Type:      emptyIfNil(ref.GetType()),
+		})
+	}
+	if len(references) == 0 {
+		for _, ref := range base.GetReferences() {
+			if ref == nil {
+				continue
+			}
+			references = append(references, &DetailReferenceResult{
+				Signature: ref.GetSignature(),
+				Title:     emptyIfNil(ref.GetTitle()),
+				Type:      emptyIfNil(ref.GetType()),
+			})
+		}
+	}
+
+	var extra map[string]string
+	if len(entry.GetExtra()) > 0 {
+		extra = make(map[string]string)
+		for _, kv := range entry.GetExtra() {
+			if kv != nil && kv.GetKey() != "" {
+				extra[kv.GetKey()] = kv.GetValue()
+			}
+		}
+	}
+
+	detailResult := &DetailResult{
+		Signature:       base.Signature,
+		Title:           title,
+		CollectionTitle: emptyIfNil(base.GetCollectionTitle()),
+		Source:          base.GetSource(),
+		Abstract:        abstract,
+		Persons:         persons,
+		Date:            emptyIfNil(base.GetDate()),
+		Series:          emptyIfNil(base.GetSeries()),
+		Place:           emptyIfNil(base.GetPlace()),
+		Publisher:       emptyIfNil(base.GetPublisher()),
+		Rights:          emptyIfNil(base.GetRights()),
+		License:         emptyIfNil(base.GetLicense()),
+		Type:            emptyIfNil(base.GetType()),
+		Categories:      refinedCats,
+		Tags:            base.GetTags(),
+		Url:             itemURL,
+		Media:           mediaResults,
+		Notes:           notes,
+		References:      references,
+		Extra:           extra,
+	}
+
+	// Build Markdown representation
+	var md strings.Builder
+	if itemURL != "" && title != "" {
+		md.WriteString(fmt.Sprintf("### [%s](%s)\n\n", title, itemURL))
+	} else if title != "" {
+		md.WriteString(fmt.Sprintf("### %s\n\n", title))
+	} else {
+		md.WriteString(fmt.Sprintf("### Detail: %s\n\n", base.Signature))
+	}
+
+	if base.Signature != "" {
+		md.WriteString(fmt.Sprintf("- **Signatur:** `%s`\n", base.Signature))
+	}
+	if detailResult.CollectionTitle != "" {
+		md.WriteString(fmt.Sprintf("- **Sammlung:** %s\n", detailResult.CollectionTitle))
+	}
+	if detailResult.Source != "" {
+		md.WriteString(fmt.Sprintf("- **Quelle:** %s\n", detailResult.Source))
+	}
+	if detailResult.Date != "" {
+		md.WriteString(fmt.Sprintf("- **Datum:** %s\n", detailResult.Date))
+	}
+	if len(persons) > 0 {
+		var personStrs []string
+		for _, p := range persons {
+			s := p.Name
+			var details []string
+			if p.Role != nil && *p.Role != "" {
+				details = append(details, *p.Role)
+			}
+			if p.Year != nil && *p.Year != 0 {
+				details = append(details, fmt.Sprintf("%d", *p.Year))
+			}
+			if len(details) > 0 {
+				s = fmt.Sprintf("%s (%s)", s, strings.Join(details, ", "))
+			}
+			personStrs = append(personStrs, s)
+		}
+		md.WriteString(fmt.Sprintf("- **Personen:** %s\n", strings.Join(personStrs, "; ")))
+	}
+	if detailResult.Type != "" {
+		md.WriteString(fmt.Sprintf("- **Typ:** %s\n", detailResult.Type))
+	}
+	if detailResult.Series != "" {
+		md.WriteString(fmt.Sprintf("- **Reihentitel:** %s\n", detailResult.Series))
+	}
+	if detailResult.Place != "" {
+		md.WriteString(fmt.Sprintf("- **Ort:** %s\n", detailResult.Place))
+	}
+	if detailResult.Publisher != "" {
+		md.WriteString(fmt.Sprintf("- **Verlag:** %s\n", detailResult.Publisher))
+	}
+	if detailResult.Rights != "" {
+		md.WriteString(fmt.Sprintf("- **Rechte:** %s\n", detailResult.Rights))
+	}
+	if detailResult.License != "" {
+		md.WriteString(fmt.Sprintf("- **Lizenz:** %s\n", detailResult.License))
+	}
+	if len(refinedCats) > 0 {
+		md.WriteString(fmt.Sprintf("- **Kategorien:** %s\n", strings.Join(refinedCats, ", ")))
+	}
+	if len(base.GetTags()) > 0 {
+		md.WriteString(fmt.Sprintf("- **Schlagwörter:** %s\n", strings.Join(base.GetTags(), ", ")))
+	}
+	if itemURL != "" {
+		md.WriteString(fmt.Sprintf("- **Web-Ansicht:** %s\n", itemURL))
+	}
+
+	if abstract != "" {
+		md.WriteString(fmt.Sprintf("\n#### Zusammenfassung / Abstract\n%s\n", abstract))
+	}
+
+	if len(mediaResults) > 0 {
+		md.WriteString("\n#### Medien\n")
+		for _, m := range mediaResults {
+			var details []string
+			if m.MimeType != "" {
+				details = append(details, m.MimeType)
+			}
+			if m.Type != "" && m.Type != m.MimeType {
+				details = append(details, m.Type)
+			}
+			detailStr := ""
+			if len(details) > 0 {
+				detailStr = fmt.Sprintf(" (%s)", strings.Join(details, ", "))
+			}
+			if m.Uri != "" {
+				md.WriteString(fmt.Sprintf("- %s%s: %s\n", m.Name, detailStr, m.Uri))
+			} else {
+				md.WriteString(fmt.Sprintf("- %s%s\n", m.Name, detailStr))
+			}
+		}
+	}
+
+	if len(notes) > 0 {
+		md.WriteString("\n#### Notizen\n")
+		for _, note := range notes {
+			md.WriteString(fmt.Sprintf("- %s\n", note))
+		}
+	}
+
+	if len(references) > 0 {
+		md.WriteString("\n#### Referenzen\n")
+		for _, ref := range references {
+			refType := ""
+			if ref.Type != "" {
+				refType = fmt.Sprintf(" (%s)", ref.Type)
+			}
+			if ref.Title != "" {
+				md.WriteString(fmt.Sprintf("- **%s** `%s`%s\n", ref.Title, ref.Signature, refType))
+			} else {
+				md.WriteString(fmt.Sprintf("- `%s`%s\n", ref.Signature, refType))
+			}
+		}
+	}
+
+	if len(extra) > 0 {
+		md.WriteString("\n#### Zusätzliche Angaben\n")
+		for k, v := range extra {
+			md.WriteString(fmt.Sprintf("- **%s:** %s\n", k, v))
+		}
+	}
+
+	return detailResult, md.String(), nil
 }
 
 func normalizeSchemaNode(node any) any {
@@ -483,6 +1251,40 @@ func (ctrl *Controller) initMCP(router *gin.Engine) {
 				},
 			},
 		}, &GetTopicDescriptionResult{Description: desc}, nil
+	})
+
+	addTool(mcpServer, &mcp.Tool{
+		Name:        "search",
+		Description: "sucht im Katalog nach Freitext und optional nach Sammlungen, Themen und Nachlässen (anhand deren Titeln)",
+	}, func(ctx context.Context, req *mcp.CallToolRequest, args SearchArgs) (*mcp.CallToolResult, *SearchResult, error) {
+		res, mdText, err := ctrl.search(ctx, args)
+		if err != nil {
+			return nil, nil, err
+		}
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: mdText,
+				},
+			},
+		}, res, nil
+	})
+
+	addTool(mcpServer, &mcp.Tool{
+		Name:        "detail",
+		Description: "liefert die vollständigen Detailinformationen zu einem Mediathek-Eintrag anhand der Signatur",
+	}, func(ctx context.Context, req *mcp.CallToolRequest, args DetailArgs) (*mcp.CallToolResult, *DetailResult, error) {
+		res, mdText, err := ctrl.getDetail(ctx, args)
+		if err != nil {
+			return nil, nil, err
+		}
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: mdText,
+				},
+			},
+		}, res, nil
 	})
 
 	streamableHandler := mcp.NewStreamableHTTPHandler(func(r *http.Request) *mcp.Server {
