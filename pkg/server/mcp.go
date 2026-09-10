@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -19,9 +20,25 @@ type GetCollectionDescriptionArgs struct {
 	Id    int64  `json:"id,omitzero"`
 }
 
+type GetCollectionsResult struct {
+	Collections []*CollFacetType `json:"collections"`
+}
+
+type GetCollectionDescriptionResult struct {
+	Description string `json:"description"`
+}
+
 type GetEstateDescriptionArgs struct {
 	Title string `json:"title,omitzero"`
 	Id    int64  `json:"id,omitzero"`
+}
+
+type GetEstatesResult struct {
+	Estates []*CollFacetType `json:"estates"`
+}
+
+type GetEstateDescriptionResult struct {
+	Description string `json:"description"`
 }
 
 func (ctrl *Controller) getItemDescription(itemType string, items []*CollFacetType, title string, id int64) (string, error) {
@@ -129,46 +146,128 @@ func (ctrl *Controller) initMCP(router *gin.Engine) {
 		Version: "0.0.1",
 	}, nil)
 
+	// Resource Templates für Sammlungen und Nachlässe registrieren
+	mcpServer.AddResourceTemplate(&mcp.ResourceTemplate{
+		URITemplate: "collection://{title}",
+		Name:        "collection_description",
+		Title:       "Sammlung Markdown-Beschreibung",
+		Description: "Liefert die Markdown-Beschreibung einer Sammlung anhand des Titels",
+		MIMEType:    "text/markdown",
+	}, func(ctx context.Context, req *mcp.ReadResourceRequest) (*mcp.ReadResourceResult, error) {
+		rawTitle := strings.TrimPrefix(req.Params.URI, "collection://")
+		title, err := url.PathUnescape(rawTitle)
+		if err != nil {
+			title = rawTitle
+		}
+		desc, err := ctrl.getCollectionDescription(title, 0)
+		if err != nil {
+			return nil, mcp.ResourceNotFoundError(req.Params.URI)
+		}
+		return &mcp.ReadResourceResult{
+			Contents: []*mcp.ResourceContents{
+				{
+					URI:      req.Params.URI,
+					MIMEType: "text/markdown",
+					Text:     desc,
+				},
+			},
+		}, nil
+	})
+
+	mcpServer.AddResourceTemplate(&mcp.ResourceTemplate{
+		URITemplate: "estate://{title}",
+		Name:        "estate_description",
+		Title:       "Bestand Markdown-Beschreibung",
+		Description: "Liefert die Markdown-Beschreibung eines Bestandes anhand des Titels",
+		MIMEType:    "text/markdown",
+	}, func(ctx context.Context, req *mcp.ReadResourceRequest) (*mcp.ReadResourceResult, error) {
+		rawTitle := strings.TrimPrefix(req.Params.URI, "estate://")
+		title, err := url.PathUnescape(rawTitle)
+		if err != nil {
+			title = rawTitle
+		}
+		desc, err := ctrl.getEstateDescription(title, 0)
+		if err != nil {
+			return nil, mcp.ResourceNotFoundError(req.Params.URI)
+		}
+		return &mcp.ReadResourceResult{
+			Contents: []*mcp.ResourceContents{
+				{
+					URI:      req.Params.URI,
+					MIMEType: "text/markdown",
+					Text:     desc,
+				},
+			},
+		}, nil
+	})
+
 	// Tools wie gewohnt registrieren
-	//mcpServer.AddTools(tool)
 	mcp.AddTool(mcpServer, &mcp.Tool{
 		Name:        "get_collections",
 		Description: "liefert eine Liste der Sammlungen",
-	}, func(ctx context.Context, req *mcp.CallToolRequest, args struct{}) (*mcp.CallToolResult, []*CollFacetType, error) {
-		return nil, ctrl.getCollections(), nil
+	}, func(ctx context.Context, req *mcp.CallToolRequest, args struct{}) (*mcp.CallToolResult, *GetCollectionsResult, error) {
+		return nil, &GetCollectionsResult{Collections: ctrl.getCollections()}, nil
 	})
 
 	mcp.AddTool(mcpServer, &mcp.Tool{
 		Name:        "get_collection_description",
-		Description: "liefert die Beschreibung einer Sammlung anhand des Titels oder der ID",
-	}, func(ctx context.Context, req *mcp.CallToolRequest, args GetCollectionDescriptionArgs) (*mcp.CallToolResult, string, error) {
+		Description: "liefert die Beschreibung einer Sammlung anhand des Titels oder der ID als formatierter Markdown-Text",
+	}, func(ctx context.Context, req *mcp.CallToolRequest, args GetCollectionDescriptionArgs) (*mcp.CallToolResult, *GetCollectionDescriptionResult, error) {
 		desc, err := ctrl.getCollectionDescription(args.Title, args.Id)
 		if err != nil {
-			return nil, "", err
+			return nil, nil, err
 		}
-		return nil, desc, nil
+		itemRef := args.Title
+		if itemRef == "" && args.Id != 0 {
+			itemRef = strconv.FormatInt(args.Id, 10)
+		}
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{
+				&mcp.EmbeddedResource{
+					Resource: &mcp.ResourceContents{
+						URI:      fmt.Sprintf("collection://%s", itemRef),
+						MIMEType: "text/markdown",
+						Text:     desc,
+					},
+				},
+			},
+		}, &GetCollectionDescriptionResult{Description: desc}, nil
 	})
 
 	mcp.AddTool(mcpServer, &mcp.Tool{
 		Name:        "get_estates",
 		Description: "liefert eine Liste der Nachlässe",
-	}, func(ctx context.Context, req *mcp.CallToolRequest, args struct{}) (*mcp.CallToolResult, []*CollFacetType, error) {
-		return nil, ctrl.getEstates(), nil
+	}, func(ctx context.Context, req *mcp.CallToolRequest, args struct{}) (*mcp.CallToolResult, *GetEstatesResult, error) {
+		return nil, &GetEstatesResult{Estates: ctrl.getEstates()}, nil
 	})
 
 	mcp.AddTool(mcpServer, &mcp.Tool{
 		Name:        "get_estate_description",
-		Description: "liefert die Bestandes eines Nachlasses anhand des Titels oder der ID",
-	}, func(ctx context.Context, req *mcp.CallToolRequest, args GetEstateDescriptionArgs) (*mcp.CallToolResult, string, error) {
+		Description: "liefert die Beschreibung eines Bestands anhand des Titels oder der ID als formatierten Markdown-Text",
+	}, func(ctx context.Context, req *mcp.CallToolRequest, args GetEstateDescriptionArgs) (*mcp.CallToolResult, *GetEstateDescriptionResult, error) {
 		desc, err := ctrl.getEstateDescription(args.Title, args.Id)
 		if err != nil {
-			return nil, "", err
+			return nil, nil, err
 		}
-		return nil, desc, nil
+		itemRef := args.Title
+		if itemRef == "" && args.Id != 0 {
+			itemRef = strconv.FormatInt(args.Id, 10)
+		}
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{
+				&mcp.EmbeddedResource{
+					Resource: &mcp.ResourceContents{
+						URI:      fmt.Sprintf("estate://%s", itemRef),
+						MIMEType: "text/markdown",
+						Text:     desc,
+					},
+				},
+			},
+		}, &GetEstateDescriptionResult{Description: desc}, nil
 	})
 
-	sseHandler := mcp.NewSSEHandler(func(r *http.Request) *mcp.Server {
+	streamableHandler := mcp.NewStreamableHTTPHandler(func(r *http.Request) *mcp.Server {
 		return mcpServer
 	}, nil)
-	mcpRouter.Any("/*any", gin.WrapH(sseHandler))
+	mcpRouter.Any("/*any", gin.WrapH(streamableHandler))
 }
