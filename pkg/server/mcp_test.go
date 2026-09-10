@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -10,6 +11,79 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
+
+func toMap(t *testing.T, val any) map[string]any {
+	t.Helper()
+	if val == nil {
+		return nil
+	}
+	if m, ok := val.(map[string]any); ok {
+		return m
+	}
+	raw, err := json.Marshal(val)
+	if err != nil {
+		t.Fatalf("failed to marshal: %v", err)
+	}
+	var m map[string]any
+	if err := json.Unmarshal(raw, &m); err != nil {
+		t.Fatalf("failed to unmarshal to map: %v", err)
+	}
+	return m
+}
+
+func assertNoTypeArrays(t *testing.T, schema any, path string) {
+	t.Helper()
+	if schema == nil {
+		return
+	}
+	switch v := schema.(type) {
+	case map[string]any:
+		if typeVal, ok := v["type"]; ok {
+			if _, isArr := typeVal.([]any); isArr {
+				t.Errorf("schema at %q contains array type: %v", path, typeVal)
+			}
+		}
+		for k, child := range v {
+			assertNoTypeArrays(t, child, path+"."+k)
+		}
+	case []any:
+		for i, child := range v {
+			assertNoTypeArrays(t, child, fmt.Sprintf("%s[%d]", path, i))
+		}
+	}
+}
+
+func assertAnyOfTypes(t *testing.T, obj map[string]any, path string, expectedTypes ...string) {
+	t.Helper()
+	anyOfVal, ok := obj["anyOf"]
+	if !ok {
+		t.Fatalf("expected 'anyOf' at %q, got: %+v", path, obj)
+	}
+	anyOfList, ok := anyOfVal.([]any)
+	if !ok {
+		t.Fatalf("expected 'anyOf' to be slice at %q, got: %T", path, anyOfVal)
+	}
+	if len(anyOfList) != len(expectedTypes) {
+		t.Fatalf("expected %d anyOf branches at %q, got %d: %+v", len(expectedTypes), path, len(anyOfList), anyOfList)
+	}
+	foundTypes := make(map[string]bool)
+	for _, item := range anyOfList {
+		itemMap, ok := item.(map[string]any)
+		if !ok {
+			t.Fatalf("expected anyOf item to be map at %q, got: %T", path, item)
+		}
+		typ, ok := itemMap["type"].(string)
+		if !ok {
+			t.Fatalf("expected item type to be string at %q, got: %v", path, itemMap["type"])
+		}
+		foundTypes[typ] = true
+	}
+	for _, exp := range expectedTypes {
+		if !foundTypes[exp] {
+			t.Errorf("expected type %q in anyOf at %q, but found: %+v", exp, path, foundTypes)
+		}
+	}
+}
 
 func assertOutputSchemaObject(t *testing.T, tool *mcp.Tool) {
 	t.Helper()
@@ -1122,5 +1196,45 @@ func TestMCPToolsList_OutputSchema(t *testing.T) {
 			continue
 		}
 		assertOutputSchemaObject(t, tool)
+		assertNoTypeArrays(t, toMap(t, tool.InputSchema), name+".inputSchema")
+		assertNoTypeArrays(t, toMap(t, tool.OutputSchema), name+".outputSchema")
 	}
+
+	// Verify get_collections outputSchema properties structure and anyOf
+	collTool := toolsMap["get_collections"]
+	collSchema := toMap(t, collTool.OutputSchema)
+	collProps, ok := collSchema["properties"].(map[string]any)
+	if !ok {
+		t.Fatalf("get_collections outputSchema missing properties: %+v", collSchema)
+	}
+	collsField, ok := collProps["collections"].(map[string]any)
+	if !ok {
+		t.Fatalf("get_collections outputSchema missing collections field: %+v", collProps)
+	}
+	assertAnyOfTypes(t, collsField, "get_collections.outputSchema.properties.collections", "null", "array")
+
+	collItems, ok := collsField["items"].(map[string]any)
+	if !ok {
+		t.Fatalf("get_collections collections field missing items: %+v", collsField)
+	}
+	assertAnyOfTypes(t, collItems, "get_collections.outputSchema.properties.collections.items", "null", "object")
+
+	// Verify get_estates outputSchema properties structure and anyOf
+	estateTool := toolsMap["get_estates"]
+	estateSchema := toMap(t, estateTool.OutputSchema)
+	estateProps, ok := estateSchema["properties"].(map[string]any)
+	if !ok {
+		t.Fatalf("get_estates outputSchema missing properties: %+v", estateSchema)
+	}
+	estatesField, ok := estateProps["estates"].(map[string]any)
+	if !ok {
+		t.Fatalf("get_estates outputSchema missing estates field: %+v", estateProps)
+	}
+	assertAnyOfTypes(t, estatesField, "get_estates.outputSchema.properties.estates", "null", "array")
+
+	estateItems, ok := estatesField["items"].(map[string]any)
+	if !ok {
+		t.Fatalf("get_estates estates field missing items: %+v", estatesField)
+	}
+	assertAnyOfTypes(t, estateItems, "get_estates.outputSchema.properties.estates.items", "null", "object")
 }
