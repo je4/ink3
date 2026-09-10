@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
@@ -64,7 +65,7 @@ type CollFacetType struct {
 }
 
 // NewController creates a new Controller instance.
-func NewController(name, localAddr, externalAddr, searchAddr, detailAddr string, protoHTTP bool, auth map[string]string, cert *tls.Certificate, templateFS, staticFS, dataFS, pagesFS fs.FS, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, mediaserverBase, mediaserverKey string, mediaserverTokenExp time.Duration, bundle *i18n.Bundle, collections, catalogs, medias, estates []*CollFacetType, fieldMapping map[string]string, embeddings *openai.ClientV2, templateDebug, zoomOnly bool, loginURL, loginIssuer, loginJWTKey string, loginJWTAlgs []string, locations map[string][]net.IPNet, facetInclude, facetExclude []string, baseFilter []*client.InFilter, mode string, logger zLogger.ZLogger) (*Controller, error) {
+func NewController(name, localAddr, externalAddr, searchAddr, detailAddr string, protoHTTP bool, auth map[string]string, cert *tls.Certificate, templateFS, staticFS, dataFS, pagesFS fs.FS, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, mediaserverBase, mediaserverKey string, mediaserverTokenExp time.Duration, bundle *i18n.Bundle, collections, catalogs, medias, estates, topics []*CollFacetType, fieldMapping map[string]string, embeddings *openai.ClientV2, templateDebug, zoomOnly bool, loginURL, loginIssuer, loginJWTKey string, loginJWTAlgs []string, locations map[string][]net.IPNet, facetInclude, facetExclude []string, baseFilter []*client.InFilter, mode string, logger zLogger.ZLogger) (*Controller, error) {
 	md := goldmark.New(
 		goldmark.WithExtensions(extension.GFM),
 		goldmark.WithParserOptions(
@@ -107,6 +108,7 @@ func NewController(name, localAddr, externalAddr, searchAddr, detailAddr string,
 		catalogs:            catalogs,
 		medias:              medias,
 		estates:             estates,
+		topics:              topics,
 		loginURL:            loginURL,
 		loginIssuer:         loginIssuer,
 		loginJWTKey:         loginJWTKey,
@@ -122,6 +124,22 @@ func NewController(name, localAddr, externalAddr, searchAddr, detailAddr string,
 		return nil, errors.Wrap(err, "cannot initialize controller")
 	}
 	return ctrl, nil
+}
+
+func hasPathSegment(pathName, segment string) bool {
+	dir := path.Dir(filepath.ToSlash(pathName))
+	for dir != "." && dir != "/" && dir != "" {
+		base := path.Base(dir)
+		if strings.EqualFold(base, segment) {
+			return true
+		}
+		parent := path.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
+	}
+	return false
 }
 
 // init initializes the controller, sets up routes and middleware.
@@ -145,7 +163,22 @@ func (ctrl *Controller) init() error {
 			}
 			meta, markdown := ctrl.parseMarkdown(mdData, pathName)
 			itemType := strings.ToLower(meta["type"])
-			title := cmp.Or(meta[itemType+"title"], meta["collectiontitle"], meta["estatetitle"], meta["title"])
+			if hasPathSegment(pathName, "topics") || hasPathSegment(pathName, "topic") || meta["topictitle"] != "" {
+				itemType = "topic"
+				meta["type"] = "topic"
+			} else if hasPathSegment(pathName, "estates") || hasPathSegment(pathName, "estate") || meta["estatetitle"] != "" {
+				if itemType == "" {
+					itemType = "estate"
+					meta["type"] = "estate"
+				}
+			} else if hasPathSegment(pathName, "collections") || hasPathSegment(pathName, "collection") || meta["collectiontitle"] != "" {
+				if itemType == "" {
+					itemType = "collection"
+					meta["type"] = "collection"
+				}
+			}
+
+			title := cmp.Or(meta[itemType+"title"], meta["topictitle"], meta["estatetitle"], meta["collectiontitle"], meta["title"])
 			if itemType == "" || title == "" || len(markdown) == 0 {
 				return nil
 			}
@@ -166,6 +199,9 @@ func (ctrl *Controller) init() error {
 	}
 	if len(ctrl.collections) == 0 {
 		ctrl.collections = ctrl.buildFacetItemsFromMarkdowns("collection")
+	}
+	if len(ctrl.topics) == 0 {
+		ctrl.topics = ctrl.buildFacetItemsFromMarkdowns("topic")
 	}
 
 	// refresh template files to ensure they are up-to-date
@@ -534,6 +570,7 @@ type Controller struct {
 	catalogs            []*CollFacetType
 	medias              []*CollFacetType
 	estates             []*CollFacetType
+	topics              []*CollFacetType
 	fieldMapping        map[string]string
 	loginURL            string
 	loginIssuer         string
@@ -586,7 +623,7 @@ func (ctrl *Controller) buildFacetItemsFromMarkdowns(itemType string) []*CollFac
 		if !strings.EqualFold(meta["type"], itemTypeLower) {
 			continue
 		}
-		title := cmp.Or(meta[itemTypeLower+"title"], meta["title"], meta["estatetitle"], meta["collectiontitle"])
+		title := cmp.Or(meta[itemTypeLower+"title"], meta["title"], meta["estatetitle"], meta["collectiontitle"], meta["topictitle"])
 		if title == "" {
 			continue
 		}
@@ -597,7 +634,7 @@ func (ctrl *Controller) buildFacetItemsFromMarkdowns(itemType string) []*CollFac
 		seen[titleKey] = true
 
 		var id int64
-		idStr := cmp.Or(meta[itemTypeLower+"id"], meta["id"], meta["estateid"], meta["collectionid"])
+		idStr := cmp.Or(meta[itemTypeLower+"id"], meta["id"], meta["estateid"], meta["collectionid"], meta["topicid"])
 		if idStr != "" {
 			if parsed, err := strconv.ParseInt(strings.TrimSpace(idStr), 10, 64); err == nil {
 				id = parsed
@@ -611,10 +648,6 @@ func (ctrl *Controller) buildFacetItemsFromMarkdowns(itemType string) []*CollFac
 				count = parsed
 			}
 		}
-		if id == 0 {
-			id = int64(len(items)) + 1
-		}
-
 		facet := &CollFacetType{
 			Id:         id,
 			Title:      title,
@@ -628,16 +661,33 @@ func (ctrl *Controller) buildFacetItemsFromMarkdowns(itemType string) []*CollFac
 	}
 
 	slices.SortFunc(items, func(a, b *CollFacetType) int {
-		if a.Id != 0 || b.Id != 0 {
+		if a.Id != 0 && b.Id != 0 {
 			if a.Id != b.Id {
 				if a.Id < b.Id {
 					return -1
 				}
 				return 1
 			}
+		} else if a.Id != 0 {
+			return -1
+		} else if b.Id != 0 {
+			return 1
 		}
 		return strings.Compare(strings.ToLower(a.Title), strings.ToLower(b.Title))
 	})
+
+	var maxId int64
+	for _, item := range items {
+		if item.Id > maxId {
+			maxId = item.Id
+		}
+	}
+	for _, item := range items {
+		if item.Id == 0 {
+			maxId++
+			item.Id = maxId
+		}
+	}
 
 	return items
 }
@@ -654,6 +704,13 @@ func (ctrl *Controller) getCollections() []*CollFacetType {
 		return ctrl.collections
 	}
 	return ctrl.buildFacetItemsFromMarkdowns("collection")
+}
+
+func (ctrl *Controller) getTopics() []*CollFacetType {
+	if len(ctrl.topics) > 0 {
+		return ctrl.topics
+	}
+	return ctrl.buildFacetItemsFromMarkdowns("topic")
 }
 
 // Stop stops the HTTP/HTTPS server.

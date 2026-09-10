@@ -23,8 +23,13 @@ type GetCollectionDescriptionArgs struct {
 	Id    int64  `json:"id,omitzero"`
 }
 
+type GetCollectionResult struct {
+	Id    int64  `json:"id"`
+	Title string `json:"title"`
+}
+
 type GetCollectionsResult struct {
-	Collections []*CollFacetType `json:"collections"`
+	Collections []*GetCollectionResult `json:"collections"`
 }
 
 type GetCollectionDescriptionResult struct {
@@ -36,11 +41,34 @@ type GetEstateDescriptionArgs struct {
 	Id    int64  `json:"id,omitzero"`
 }
 
+type GetEstateResult struct {
+	Id    int64  `json:"id"`
+	Title string `json:"title"`
+}
+
 type GetEstatesResult struct {
-	Estates []*CollFacetType `json:"estates"`
+	Estates []*GetEstateResult `json:"estates"`
 }
 
 type GetEstateDescriptionResult struct {
+	Description string `json:"description"`
+}
+
+type GetTopicDescriptionArgs struct {
+	Title string `json:"title,omitzero"`
+	Id    int64  `json:"id,omitzero"`
+}
+
+type GetTopicResult struct {
+	Id    int64  `json:"id"`
+	Title string `json:"title"`
+}
+
+type GetTopicsResult struct {
+	Topics []*GetTopicResult `json:"topics"`
+}
+
+type GetTopicDescriptionResult struct {
 	Description string `json:"description"`
 }
 
@@ -140,6 +168,10 @@ func (ctrl *Controller) getCollectionDescription(title string, id int64) (string
 
 func (ctrl *Controller) getEstateDescription(title string, id int64) (string, error) {
 	return ctrl.getItemDescription("estate", ctrl.getEstates(), title, id)
+}
+
+func (ctrl *Controller) getTopicDescription(title string, id int64) (string, error) {
+	return ctrl.getItemDescription("topic", ctrl.getTopics(), title, id)
 }
 
 func normalizeSchemaNode(node any) any {
@@ -296,12 +328,50 @@ func (ctrl *Controller) initMCP(router *gin.Engine) {
 		}, nil
 	})
 
+	mcpServer.AddResourceTemplate(&mcp.ResourceTemplate{
+		URITemplate: "topic://{title}",
+		Name:        "topic_description",
+		Title:       "Thema Markdown-Beschreibung",
+		Description: "Liefert die Markdown-Beschreibung eines Themas anhand des Titels",
+		MIMEType:    "text/markdown",
+	}, func(ctx context.Context, req *mcp.ReadResourceRequest) (*mcp.ReadResourceResult, error) {
+		rawTitle := strings.TrimPrefix(req.Params.URI, "topic://")
+		title, err := url.PathUnescape(rawTitle)
+		if err != nil {
+			title = rawTitle
+		}
+		desc, err := ctrl.getTopicDescription(title, 0)
+		if err != nil {
+			return nil, mcp.ResourceNotFoundError(req.Params.URI)
+		}
+		return &mcp.ReadResourceResult{
+			Contents: []*mcp.ResourceContents{
+				{
+					URI:      req.Params.URI,
+					MIMEType: "text/markdown",
+					Text:     desc,
+				},
+			},
+		}, nil
+	})
+
 	// Tools wie gewohnt registrieren
 	addTool(mcpServer, &mcp.Tool{
 		Name:        "get_collections",
 		Description: "liefert eine Liste der Sammlungen",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, args struct{}) (*mcp.CallToolResult, *GetCollectionsResult, error) {
-		return nil, &GetCollectionsResult{Collections: ctrl.getCollections()}, nil
+		facets := ctrl.getCollections()
+		collections := make([]*GetCollectionResult, 0, len(facets))
+		for _, f := range facets {
+			if f == nil {
+				continue
+			}
+			collections = append(collections, &GetCollectionResult{
+				Id:    f.Id,
+				Title: f.Title,
+			})
+		}
+		return nil, &GetCollectionsResult{Collections: collections}, nil
 	})
 
 	addTool(mcpServer, &mcp.Tool{
@@ -333,7 +403,18 @@ func (ctrl *Controller) initMCP(router *gin.Engine) {
 		Name:        "get_estates",
 		Description: "liefert eine Liste der Nachlässe",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, args struct{}) (*mcp.CallToolResult, *GetEstatesResult, error) {
-		return nil, &GetEstatesResult{Estates: ctrl.getEstates()}, nil
+		facets := ctrl.getEstates()
+		estates := make([]*GetEstateResult, 0, len(facets))
+		for _, f := range facets {
+			if f == nil {
+				continue
+			}
+			estates = append(estates, &GetEstateResult{
+				Id:    f.Id,
+				Title: f.Title,
+			})
+		}
+		return nil, &GetEstatesResult{Estates: estates}, nil
 	})
 
 	addTool(mcpServer, &mcp.Tool{
@@ -359,6 +440,49 @@ func (ctrl *Controller) initMCP(router *gin.Engine) {
 				},
 			},
 		}, &GetEstateDescriptionResult{Description: desc}, nil
+	})
+
+	addTool(mcpServer, &mcp.Tool{
+		Name:        "get_topics",
+		Description: "liefert eine Liste der Themen",
+	}, func(ctx context.Context, req *mcp.CallToolRequest, args struct{}) (*mcp.CallToolResult, *GetTopicsResult, error) {
+		facets := ctrl.getTopics()
+		topics := make([]*GetTopicResult, 0, len(facets))
+		for _, f := range facets {
+			if f == nil {
+				continue
+			}
+			topics = append(topics, &GetTopicResult{
+				Id:    f.Id,
+				Title: f.Title,
+			})
+		}
+		return nil, &GetTopicsResult{Topics: topics}, nil
+	})
+
+	addTool(mcpServer, &mcp.Tool{
+		Name:        "get_topic_description",
+		Description: "liefert die Beschreibung eines Themas anhand des Titels oder der ID als formatierten Markdown-Text",
+	}, func(ctx context.Context, req *mcp.CallToolRequest, args GetTopicDescriptionArgs) (*mcp.CallToolResult, *GetTopicDescriptionResult, error) {
+		desc, err := ctrl.getTopicDescription(args.Title, args.Id)
+		if err != nil {
+			return nil, nil, err
+		}
+		itemRef := args.Title
+		if itemRef == "" && args.Id != 0 {
+			itemRef = strconv.FormatInt(args.Id, 10)
+		}
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{
+				&mcp.EmbeddedResource{
+					Resource: &mcp.ResourceContents{
+						URI:      fmt.Sprintf("topic://%s", itemRef),
+						MIMEType: "text/markdown",
+						Text:     desc,
+					},
+				},
+			},
+		}, &GetTopicDescriptionResult{Description: desc}, nil
 	})
 
 	streamableHandler := mcp.NewStreamableHTTPHandler(func(r *http.Request) *mcp.Server {

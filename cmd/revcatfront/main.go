@@ -283,6 +283,7 @@ func main() {
 		conf.Catalogs,
 		conf.Medias,
 		conf.Estates,
+		conf.Topics,
 		conf.FieldMapping,
 		embeddings,
 		conf.Templates != "",
