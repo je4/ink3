@@ -15,18 +15,21 @@ import (
 )
 
 type GetCollectionDescriptionArgs struct {
-	CollectionTitle string `json:"collection_title,omitzero"`
-	CollectionId    int64  `json:"collection_id,omitzero"`
-	Title           string `json:"title,omitzero"`
-	Id              int64  `json:"id,omitzero"`
+	Title string `json:"title,omitzero"`
+	Id    int64  `json:"id,omitzero"`
 }
 
-func (ctrl *Controller) getCollectionDescription(title string, id int64) (string, error) {
+type GetEstateDescriptionArgs struct {
+	Title string `json:"title,omitzero"`
+	Id    int64  `json:"id,omitzero"`
+}
+
+func (ctrl *Controller) getItemDescription(itemType string, items []*CollFacetType, title string, id int64) (string, error) {
 	if title == "" && id == 0 {
-		return "", errors.New("either collection title or collection id must be provided")
+		return "", fmt.Errorf("either %s title or %s id must be provided", itemType, itemType)
 	}
 
-	// Try to resolve collection from ctrl.collections if id is provided or title is a numeric string
+	// Try to resolve item from items if id is provided or title is a numeric string
 	if title != "" && id == 0 {
 		if parsedID, err := strconv.ParseInt(strings.TrimSpace(title), 10, 64); err == nil && parsedID != 0 {
 			id = parsedID
@@ -34,10 +37,10 @@ func (ctrl *Controller) getCollectionDescription(title string, id int64) (string
 	}
 
 	if id != 0 {
-		for _, coll := range ctrl.collections {
-			if coll != nil && coll.Id == id {
+		for _, item := range items {
+			if item != nil && item.Id == id {
 				if title == "" || strings.TrimSpace(title) == strconv.FormatInt(id, 10) {
-					title = coll.Title
+					title = item.Title
 				}
 				break
 			}
@@ -50,9 +53,9 @@ func (ctrl *Controller) getCollectionDescription(title string, id int64) (string
 
 	var matchedMeta map[string]string
 
-	// Direct lookup by standard key "collection.<title>"
+	// Direct lookup by standard key "<itemType>.<title>"
 	if title != "" {
-		key := strings.ToLower(fmt.Sprintf("collection.%s", title))
+		key := strings.ToLower(fmt.Sprintf("%s.%s", itemType, title))
 		if meta, ok := ctrl.markdowns[key]; ok {
 			matchedMeta = meta
 		} else if meta, ok := ctrl.markdowns[strings.ToLower(title)]; ok {
@@ -62,15 +65,17 @@ func (ctrl *Controller) getCollectionDescription(title string, id int64) (string
 
 	// Search in all markdowns if not found yet
 	if matchedMeta == nil {
+		typeTitleKey := itemType + "title"
+		typeIdKey := itemType + "id"
 		for _, meta := range ctrl.markdowns {
 			if title != "" {
-				if strings.EqualFold(meta["collectiontitle"], title) || strings.EqualFold(meta["title"], title) {
+				if strings.EqualFold(meta[typeTitleKey], title) || strings.EqualFold(meta["title"], title) {
 					matchedMeta = meta
 					break
 				}
 			}
 			if id != 0 {
-				if meta["id"] == strconv.FormatInt(id, 10) || meta["collectionid"] == strconv.FormatInt(id, 10) {
+				if meta["id"] == strconv.FormatInt(id, 10) || meta[typeIdKey] == strconv.FormatInt(id, 10) {
 					matchedMeta = meta
 					break
 				}
@@ -80,11 +85,11 @@ func (ctrl *Controller) getCollectionDescription(title string, id int64) (string
 
 	if matchedMeta == nil {
 		if title != "" && id != 0 {
-			return "", fmt.Errorf("collection description not found for title %q (id: %d)", title, id)
+			return "", fmt.Errorf("%s description not found for title %q (id: %d)", itemType, title, id)
 		} else if title != "" {
-			return "", fmt.Errorf("collection description not found for title %q", title)
+			return "", fmt.Errorf("%s description not found for title %q", itemType, title)
 		}
-		return "", fmt.Errorf("collection description not found for id %d", id)
+		return "", fmt.Errorf("%s description not found for id %d", itemType, id)
 	}
 
 	// Read markdown file from pagesFS if available
@@ -106,7 +111,15 @@ func (ctrl *Controller) getCollectionDescription(title string, id int64) (string
 		}
 	}
 
-	return "", fmt.Errorf("no description content found for collection %q", cmp.Or(title, matchedMeta["collectiontitle"], matchedMeta["title"]))
+	return "", fmt.Errorf("no description content found for %s %q", itemType, cmp.Or(title, matchedMeta[itemType+"title"], matchedMeta["title"]))
+}
+
+func (ctrl *Controller) getCollectionDescription(title string, id int64) (string, error) {
+	return ctrl.getItemDescription("collection", ctrl.collections, title, id)
+}
+
+func (ctrl *Controller) getEstateDescription(title string, id int64) (string, error) {
+	return ctrl.getItemDescription("estate", ctrl.estates, title, id)
 }
 
 func (ctrl *Controller) initMCP(router *gin.Engine) {
@@ -129,9 +142,25 @@ func (ctrl *Controller) initMCP(router *gin.Engine) {
 		Name:        "get_collection_description",
 		Description: "liefert die Beschreibung einer Sammlung anhand des Titels oder der ID",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, args GetCollectionDescriptionArgs) (*mcp.CallToolResult, string, error) {
-		title := cmp.Or(args.CollectionTitle, args.Title)
-		id := cmp.Or(args.CollectionId, args.Id)
-		desc, err := ctrl.getCollectionDescription(title, id)
+		desc, err := ctrl.getCollectionDescription(args.Title, args.Id)
+		if err != nil {
+			return nil, "", err
+		}
+		return nil, desc, nil
+	})
+
+	mcp.AddTool(mcpServer, &mcp.Tool{
+		Name:        "get_estates",
+		Description: "liefert eine Liste der Nachlässe",
+	}, func(ctx context.Context, req *mcp.CallToolRequest, args struct{}) (*mcp.CallToolResult, []*CollFacetType, error) {
+		return nil, ctrl.estates, nil
+	})
+
+	mcp.AddTool(mcpServer, &mcp.Tool{
+		Name:        "get_estate_description",
+		Description: "liefert die Beschreibung eines Nachlasses anhand des Titels oder der ID",
+	}, func(ctx context.Context, req *mcp.CallToolRequest, args GetEstateDescriptionArgs) (*mcp.CallToolResult, string, error) {
+		desc, err := ctrl.getEstateDescription(args.Title, args.Id)
 		if err != nil {
 			return nil, "", err
 		}

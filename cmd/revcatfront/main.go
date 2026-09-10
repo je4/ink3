@@ -282,6 +282,7 @@ func main() {
 		conf.Collections,
 		conf.Catalogs,
 		conf.Medias,
+		conf.Estates,
 		conf.FieldMapping,
 		embeddings,
 		conf.Templates != "",

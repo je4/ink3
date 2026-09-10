@@ -1,6 +1,7 @@
 package server
 
 import (
+	"cmp"
 	"context"
 	"crypto/tls"
 	"fmt"
@@ -62,7 +63,7 @@ type CollFacetType struct {
 }
 
 // NewController creates a new Controller instance.
-func NewController(name, localAddr, externalAddr, searchAddr, detailAddr string, protoHTTP bool, auth map[string]string, cert *tls.Certificate, templateFS, staticFS, dataFS, pagesFS fs.FS, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, mediaserverBase, mediaserverKey string, mediaserverTokenExp time.Duration, bundle *i18n.Bundle, collections, catalogs, medias []*CollFacetType, fieldMapping map[string]string, embeddings *openai.ClientV2, templateDebug, zoomOnly bool, loginURL, loginIssuer, loginJWTKey string, loginJWTAlgs []string, locations map[string][]net.IPNet, facetInclude, facetExclude []string, baseFilter []*client.InFilter, mode string, logger zLogger.ZLogger) (*Controller, error) {
+func NewController(name, localAddr, externalAddr, searchAddr, detailAddr string, protoHTTP bool, auth map[string]string, cert *tls.Certificate, templateFS, staticFS, dataFS, pagesFS fs.FS, client client.RevCatGraphQLClient, zoomPos map[string][]image.Rectangle, mediaserverBase, mediaserverKey string, mediaserverTokenExp time.Duration, bundle *i18n.Bundle, collections, catalogs, medias, estates []*CollFacetType, fieldMapping map[string]string, embeddings *openai.ClientV2, templateDebug, zoomOnly bool, loginURL, loginIssuer, loginJWTKey string, loginJWTAlgs []string, locations map[string][]net.IPNet, facetInclude, facetExclude []string, baseFilter []*client.InFilter, mode string, logger zLogger.ZLogger) (*Controller, error) {
 	md := goldmark.New(
 		goldmark.WithExtensions(extension.GFM),
 		goldmark.WithParserOptions(
@@ -104,6 +105,7 @@ func NewController(name, localAddr, externalAddr, searchAddr, detailAddr string,
 		collections:         collections,
 		catalogs:            catalogs,
 		medias:              medias,
+		estates:             estates,
 		loginURL:            loginURL,
 		loginIssuer:         loginIssuer,
 		loginJWTKey:         loginJWTKey,
@@ -141,12 +143,16 @@ func (ctrl *Controller) init() error {
 				return errors.Wrapf(err, "cannot read file %s", pathName)
 			}
 			meta, markdown := ctrl.parseMarkdown(mdData, pathName)
-			if meta["type"] == "" || meta["collectiontitle"] == "" || len(markdown) == 0 {
+			itemType := strings.ToLower(meta["type"])
+			title := cmp.Or(meta[itemType+"title"], meta["collectiontitle"], meta["estatetitle"], meta["title"])
+			if itemType == "" || title == "" || len(markdown) == 0 {
 				return nil
 			}
 			meta["path"] = pathName
-			name := strings.ToLower(fmt.Sprintf("%s.%s", meta["type"], meta["collectiontitle"]))
-			ctrl.logger.Info().Msgf("adding markdown [%s] --> %s", name, pathName)
+			name := strings.ToLower(fmt.Sprintf("%s.%s", itemType, title))
+			if ctrl.logger != nil {
+				ctrl.logger.Info().Msgf("adding markdown [%s] --> %s", name, pathName)
+			}
 			ctrl.markdowns[name] = meta
 			return nil
 		}); err != nil {
@@ -519,6 +525,7 @@ type Controller struct {
 	collections         []*CollFacetType
 	catalogs            []*CollFacetType
 	medias              []*CollFacetType
+	estates             []*CollFacetType
 	fieldMapping        map[string]string
 	loginURL            string
 	loginIssuer         string
