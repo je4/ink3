@@ -23,6 +23,7 @@ import (
 	"github.com/je4/revcat/v2/tools/client"
 	"github.com/je4/utils/v2/pkg/openai"
 	"github.com/je4/utils/v2/pkg/zLogger"
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
@@ -415,6 +416,35 @@ func (ctrl *Controller) init() error {
 	router.GET("/foliateviewer", func(c *gin.Context) {
 		ctrl.foliateViewer(c)
 	})
+
+	mcpRouter := router.Group("/mcp")
+	mcpServer := mcp.NewServer(&mcp.Implementation{
+		Name:    fmt.Sprintf("%s MCP Server", ctrl.name),
+		Version: "0.0.1",
+	}, nil)
+
+	/*
+		// Tools wie gewohnt registrieren
+		//mcpServer.AddTools(tool)
+		mcpServer.AddTool(&mcp.Tool{
+			Name:        "get_collections",
+			Description: "liefert eine Liste der Sammlungen",
+			InputSchema: &struct {
+			}{},
+		}, func(context.Context, *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+			return &mcp.CallToolResult{
+				Content: []mcp.Content{
+					&mcp.TextContent{Text: "Hallo "},
+				},
+			}, nil
+		})
+
+	*/
+
+	sseHandler := mcp.NewSSEHandler(func(r *http.Request) *mcp.Server {
+		return mcpServer
+	}, nil)
+	mcpRouter.Any("/*any", gin.WrapH(sseHandler))
 
 	// configure and initialize the HTTP server
 	var tlsConfig *tls.Config
