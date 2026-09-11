@@ -111,6 +111,8 @@ type SearchResult struct {
 
 type DetailArgs struct {
 	Signature string `json:"signature,omitzero"`
+	Id        string `json:"id,omitzero"`
+	Lang      string `json:"lang,omitzero"`
 }
 
 type DetailPersonResult struct {
@@ -309,15 +311,19 @@ func (ctrl *Controller) search(ctx context.Context, args SearchArgs) (*SearchRes
 	if len(args.Collections) > 0 {
 		hasCategoryFilter = true
 		mapped := ctrl.resolveFacetValuesByTitle(args.Collections, ctrl.getCollections())
-		for prefix, vals := range mapped {
-			switch prefix {
-			case "catalog":
-				hasCatalogFilter = true
-				selectedCatalogValues = append(selectedCatalogValues, vals...)
-			case "voc", "tags":
-				selectedVocabularyValues = append(selectedVocabularyValues, vals...)
-			default:
-				selectedCategoryValues = append(selectedCategoryValues, vals...)
+		if len(mapped) == 0 {
+			selectedCategoryValues = append(selectedCategoryValues, "__non_existent_collection__")
+		} else {
+			for prefix, vals := range mapped {
+				switch prefix {
+				case "catalog":
+					hasCatalogFilter = true
+					selectedCatalogValues = append(selectedCatalogValues, vals...)
+				case "voc", "tags":
+					selectedVocabularyValues = append(selectedVocabularyValues, vals...)
+				default:
+					selectedCategoryValues = append(selectedCategoryValues, vals...)
+				}
 			}
 		}
 	}
@@ -333,6 +339,8 @@ func (ctrl *Controller) search(ctx context.Context, args SearchArgs) (*SearchRes
 		if len(mapped) == 0 {
 			hasCategoryFilter = true
 			hasCatalogFilter = true
+			selectedCategoryValues = append(selectedCategoryValues, "__non_existent_estate__")
+			selectedCatalogValues = append(selectedCatalogValues, "__non_existent_estate__")
 		} else {
 			for prefix, vals := range mapped {
 				switch prefix {
@@ -675,10 +683,15 @@ func resolveMultiLang(items []*client.MultiLangFragment, lang string) string {
 }
 
 func (ctrl *Controller) getDetail(ctx context.Context, args DetailArgs) (*DetailResult, string, error) {
-	sig := args.Signature
+	sig := cmp.Or(args.Signature, args.Id)
 	sig = strings.TrimSpace(sig)
 	if sig == "" {
 		return nil, "", errors.New("signature or id must be provided")
+	}
+
+	lang := args.Lang
+	if lang == "" {
+		lang = language.Und.String()
 	}
 
 	if ctrl.client == nil {
@@ -702,8 +715,8 @@ func (ctrl *Controller) getDetail(ctx context.Context, args DetailArgs) (*Detail
 	}
 
 	base := entry.Base
-	title := resolveMultiLang(base.GetTitle(), language.Und.String())
-	abstract := resolveMultiLang(entry.GetAbstract(), language.Und.String())
+	title := resolveMultiLang(base.GetTitle(), lang)
+	abstract := resolveMultiLang(entry.GetAbstract(), lang)
 
 	detailBase := ctrl.detailAddr
 	if detailBase == "" {
@@ -763,7 +776,7 @@ func (ctrl *Controller) getDetail(ctx context.Context, args DetailArgs) (*Detail
 		if ref == nil {
 			continue
 		}
-		refTitle := resolveMultiLang(ref.GetTitle(), language.Und.String())
+		refTitle := resolveMultiLang(ref.GetTitle(), lang)
 		references = append(references, &DetailReferenceResult{
 			Signature: ref.GetSignature(),
 			Title:     refTitle,
