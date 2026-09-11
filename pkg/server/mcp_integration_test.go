@@ -562,6 +562,10 @@ func assertSearchParity(t *testing.T, mcpResult *SearchResult, baselineResult *S
 		t.Errorf("[%s] TotalCount mismatch: MCP=%d, Baseline=%d", description, mcpResult.TotalCount, baselineResult.TotalCount)
 	}
 
+	if mcpResult.Url != baselineResult.Url {
+		t.Errorf("[%s] SearchResult Url mismatch: MCP=%q, Baseline=%q", description, mcpResult.Url, baselineResult.Url)
+	}
+
 	if len(mcpResult.Items) != len(baselineResult.Items) {
 		t.Errorf("[%s] Items count mismatch: MCP=%d, Baseline=%d", description, len(mcpResult.Items), len(baselineResult.Items))
 	}
@@ -598,9 +602,6 @@ func assertSearchParity(t *testing.T, mcpResult *SearchResult, baselineResult *S
 		}
 		if mcpItem.Type != baseItem.Type {
 			t.Errorf("[%s] Item %q Type mismatch: MCP=%q, Baseline=%q", description, mcpItem.Signature, mcpItem.Type, baseItem.Type)
-		}
-		if mcpItem.Url != baseItem.Url {
-			t.Errorf("[%s] Item %q Url mismatch: MCP=%q, Baseline=%q", description, mcpItem.Signature, mcpItem.Url, baseItem.Url)
 		}
 		if !reflect.DeepEqual(mcpItem.Persons, baseItem.Persons) {
 			t.Errorf("[%s] Item %q Persons mismatch: MCP=%v, Baseline=%v", description, mcpItem.Signature, mcpItem.Persons, baseItem.Persons)

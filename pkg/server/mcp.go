@@ -95,7 +95,6 @@ type SearchItemResult struct {
 	Persons   []string `json:"persons,omitzero"`
 	Date      string   `json:"date,omitzero"`
 	Type      string   `json:"type,omitzero"`
-	Url       string   `json:"url,omitzero"`
 }
 
 type SearchPageInfoResult struct {
@@ -107,6 +106,7 @@ type SearchResult struct {
 	TotalCount int64                 `json:"totalCount"`
 	PageInfo   *SearchPageInfoResult `json:"pageInfo,omitzero"`
 	Items      []*SearchItemResult   `json:"items"`
+	Url        string                `json:"url,omitzero"`
 }
 
 type DetailArgs struct {
@@ -262,10 +262,16 @@ func (ctrl *Controller) getTopicDescription(title string, id int64) (string, err
 // resolveFacetValuesByTitle matches titles against facet items strictly by title (case-insensitive)
 // and extracts values grouped by prefix (e.g. "cat", "catalog", "voc", "tags").
 func (ctrl *Controller) resolveFacetValuesByTitle(titles []string, items []*CollFacetType) map[string][]string {
+	res, _ := ctrl.resolveFacetItemsByTitle(titles, items)
+	return res
+}
+
+func (ctrl *Controller) resolveFacetItemsByTitle(titles []string, items []*CollFacetType) (map[string][]string, []*CollFacetType) {
 	if len(titles) == 0 {
-		return nil
+		return nil, nil
 	}
 	result := make(map[string][]string)
+	var matchedItems []*CollFacetType
 	for _, title := range titles {
 		trimmedTitle := strings.TrimSpace(title)
 		if trimmedTitle == "" {
@@ -276,6 +282,7 @@ func (ctrl *Controller) resolveFacetValuesByTitle(titles []string, items []*Coll
 				continue
 			}
 			if strings.EqualFold(strings.TrimSpace(item.Title), trimmedTitle) {
+				matchedItems = append(matchedItems, item)
 				parts := strings.SplitN(item.Identifier, ":", 2)
 				if len(parts) == 2 {
 					prefix := strings.ToLower(strings.TrimSpace(parts[0]))
@@ -290,7 +297,7 @@ func (ctrl *Controller) resolveFacetValuesByTitle(titles []string, items []*Coll
 			}
 		}
 	}
-	return result
+	return result, matchedItems
 }
 
 func (ctrl *Controller) search(ctx context.Context, args SearchArgs) (*SearchResult, string, error) {
@@ -307,10 +314,12 @@ func (ctrl *Controller) search(ctx context.Context, args SearchArgs) (*SearchRes
 	var selectedCatalogValues []string
 	var selectedVocabularyValues []string
 	var hasCategoryFilter, hasCatalogFilter bool
+	var selectedCollectionIDs []string
+	var selectedCatalogIDs []string
 
 	if len(args.Collections) > 0 {
 		hasCategoryFilter = true
-		mapped := ctrl.resolveFacetValuesByTitle(args.Collections, ctrl.getCollections())
+		mapped, matched := ctrl.resolveFacetItemsByTitle(args.Collections, ctrl.getCollections())
 		if len(mapped) == 0 {
 			selectedCategoryValues = append(selectedCategoryValues, "__non_existent_collection__")
 		} else {
@@ -325,6 +334,20 @@ func (ctrl *Controller) search(ctx context.Context, args SearchArgs) (*SearchRes
 					selectedCategoryValues = append(selectedCategoryValues, vals...)
 				}
 			}
+			for _, item := range matched {
+				if item != nil && item.Id != 0 {
+					idStr := strconv.FormatInt(item.Id, 10)
+					if strings.HasPrefix(item.Identifier, "catalog:") {
+						if !slices.Contains(selectedCatalogIDs, idStr) {
+							selectedCatalogIDs = append(selectedCatalogIDs, idStr)
+						}
+					} else {
+						if !slices.Contains(selectedCollectionIDs, idStr) {
+							selectedCollectionIDs = append(selectedCollectionIDs, idStr)
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -335,7 +358,7 @@ func (ctrl *Controller) search(ctx context.Context, args SearchArgs) (*SearchRes
 				estateItems = append(estateItems, cat)
 			}
 		}
-		mapped := ctrl.resolveFacetValuesByTitle(args.Estates, estateItems)
+		mapped, matched := ctrl.resolveFacetItemsByTitle(args.Estates, estateItems)
 		if len(mapped) == 0 {
 			hasCategoryFilter = true
 			hasCatalogFilter = true
@@ -354,11 +377,25 @@ func (ctrl *Controller) search(ctx context.Context, args SearchArgs) (*SearchRes
 					selectedCategoryValues = append(selectedCategoryValues, vals...)
 				}
 			}
+			for _, item := range matched {
+				if item != nil && item.Id != 0 {
+					idStr := strconv.FormatInt(item.Id, 10)
+					if strings.HasPrefix(item.Identifier, "cat:") {
+						if !slices.Contains(selectedCollectionIDs, idStr) {
+							selectedCollectionIDs = append(selectedCollectionIDs, idStr)
+						}
+					} else {
+						if !slices.Contains(selectedCatalogIDs, idStr) {
+							selectedCatalogIDs = append(selectedCatalogIDs, idStr)
+						}
+					}
+				}
+			}
 		}
 	}
 
 	if len(args.Topics) > 0 {
-		mapped := ctrl.resolveFacetValuesByTitle(args.Topics, ctrl.getTopics())
+		mapped, matched := ctrl.resolveFacetItemsByTitle(args.Topics, ctrl.getTopics())
 		if len(mapped) == 0 {
 			selectedVocabularyValues = append(selectedVocabularyValues, "__non_existent_topic__")
 		} else {
@@ -372,6 +409,20 @@ func (ctrl *Controller) search(ctx context.Context, args SearchArgs) (*SearchRes
 					selectedCategoryValues = append(selectedCategoryValues, vals...)
 				default:
 					selectedVocabularyValues = append(selectedVocabularyValues, vals...)
+				}
+			}
+			for _, item := range matched {
+				if item != nil && item.Id != 0 {
+					idStr := strconv.FormatInt(item.Id, 10)
+					if strings.HasPrefix(item.Identifier, "cat:") {
+						if !slices.Contains(selectedCollectionIDs, idStr) {
+							selectedCollectionIDs = append(selectedCollectionIDs, idStr)
+						}
+					} else if strings.HasPrefix(item.Identifier, "catalog:") {
+						if !slices.Contains(selectedCatalogIDs, idStr) {
+							selectedCatalogIDs = append(selectedCatalogIDs, idStr)
+						}
+					}
 				}
 			}
 		}
@@ -515,10 +566,56 @@ func (ctrl *Controller) search(ctx context.Context, args SearchArgs) (*SearchRes
 		return nil, "", fmt.Errorf("search failed: %w", err)
 	}
 
+	var gridURL string
+	gridBase := ctrl.searchAddr
+	if gridBase == "" {
+		gridBase = ctrl.externalAddr
+	}
+	gridBase = strings.TrimRight(gridBase, "/")
+
+	q := url.Values{}
+	if searchString != "" {
+		q.Set("search", searchString)
+	}
+	if len(selectedCollectionIDs) > 0 {
+		q.Set("collections", strings.Join(selectedCollectionIDs, ","))
+	}
+	if len(selectedCatalogIDs) > 0 {
+		q.Set("catalogs", strings.Join(selectedCatalogIDs, ","))
+	}
+	if len(selectedVocabularyValues) > 0 {
+		var validVocab []string
+		for _, v := range selectedVocabularyValues {
+			if !strings.HasPrefix(v, "__non_existent_") {
+				validVocab = append(validVocab, v)
+			}
+		}
+		if len(validVocab) > 0 {
+			q.Set("vocabulary", strings.Join(validVocab, ","))
+		}
+	}
+	if args.Cursor != "" {
+		q.Set("cursor", args.Cursor)
+	} else {
+		if args.From > 0 {
+			q.Set("from", strconv.FormatInt(args.From, 10))
+		}
+		if args.PageSize > 0 && args.PageSize != 36 {
+			q.Set("pagesize", strconv.FormatInt(args.PageSize, 10))
+		}
+	}
+
+	if encoded := q.Encode(); encoded != "" {
+		gridURL = fmt.Sprintf("%s/grid/de?%s", gridBase, encoded)
+	} else {
+		gridURL = fmt.Sprintf("%s/grid/de", gridBase)
+	}
+
 	if result == nil || result.GetSearch() == nil {
 		return &SearchResult{
 			TotalCount: 0,
 			Items:      []*SearchItemResult{},
+			Url:        gridURL,
 		}, "Keine Ergebnisse gefunden.\n", nil
 	}
 
@@ -532,17 +629,15 @@ func (ctrl *Controller) search(ctx context.Context, args SearchArgs) (*SearchRes
 		}
 	}
 
-	detailBase := ctrl.detailAddr
-	if detailBase == "" {
-		detailBase = ctrl.externalAddr
-	}
-
 	items := make([]*SearchItemResult, 0, len(searchData.GetEdges()))
 	var mdBuilder strings.Builder
 	if totalCount == 0 || len(searchData.GetEdges()) == 0 {
 		mdBuilder.WriteString("Keine Ergebnisse gefunden.\n")
 	} else {
 		mdBuilder.WriteString(fmt.Sprintf("### Suchergebnisse (%d Treffer)\n\n", totalCount))
+		if gridURL != "" {
+			mdBuilder.WriteString(fmt.Sprintf("[Ergebnisse im Web-Katalog öffnen](%s)\n\n", gridURL))
+		}
 	}
 
 	for i, edge := range searchData.GetEdges() {
@@ -573,10 +668,6 @@ func (ctrl *Controller) search(ctx context.Context, args SearchArgs) (*SearchRes
 		}
 
 		sig := edge.Base.Signature
-		var itemURL string
-		if sig != "" {
-			itemURL = fmt.Sprintf("%s/detail/%s/de", strings.TrimRight(detailBase, "/"), url.PathEscape(sig))
-		}
 		date := emptyIfNil(edge.Base.GetDate())
 		typ := emptyIfNil(edge.Base.GetType())
 
@@ -586,14 +677,11 @@ func (ctrl *Controller) search(ctx context.Context, args SearchArgs) (*SearchRes
 			Persons:   persons,
 			Date:      date,
 			Type:      typ,
-			Url:       itemURL,
 		}
 		items = append(items, itemResult)
 
 		mdBuilder.WriteString(fmt.Sprintf("%d. ", i+1))
-		if itemURL != "" && title != "" {
-			mdBuilder.WriteString(fmt.Sprintf("**[%s](%s)**\n", title, itemURL))
-		} else if title != "" {
+		if title != "" {
 			mdBuilder.WriteString(fmt.Sprintf("**%s**\n", title))
 		} else if sig != "" {
 			mdBuilder.WriteString(fmt.Sprintf("**%s**\n", sig))
@@ -613,9 +701,6 @@ func (ctrl *Controller) search(ctx context.Context, args SearchArgs) (*SearchRes
 		if typ != "" {
 			mdBuilder.WriteString(fmt.Sprintf("   - **Typ:** %s\n", typ))
 		}
-		if itemURL != "" {
-			mdBuilder.WriteString(fmt.Sprintf("   - **Link:** %s\n", itemURL))
-		}
 		mdBuilder.WriteString("\n")
 	}
 
@@ -623,6 +708,7 @@ func (ctrl *Controller) search(ctx context.Context, args SearchArgs) (*SearchRes
 		TotalCount: totalCount,
 		PageInfo:   pageInfo,
 		Items:      items,
+		Url:        gridURL,
 	}
 	return searchResult, mdBuilder.String(), nil
 }

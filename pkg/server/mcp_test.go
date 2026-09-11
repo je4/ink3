@@ -2083,8 +2083,8 @@ func TestMCPSearchTool_Basic(t *testing.T) {
 	if item.Type != "Video" {
 		t.Errorf("expected Type 'Video', got %q", item.Type)
 	}
-	if item.Url != "https://example.com/detail/SIG-001/de" {
-		t.Errorf("expected Url 'https://example.com/detail/SIG-001/de', got %q", item.Url)
+	if searchResult.Url != "https://example.com/grid/de?search=performance" {
+		t.Errorf("expected SearchResult.Url 'https://example.com/grid/de?search=performance', got %q", searchResult.Url)
 	}
 
 	if len(res.Content) == 0 {
@@ -2093,6 +2093,9 @@ func TestMCPSearchTool_Basic(t *testing.T) {
 	textContent, ok := res.Content[0].(*mcp.TextContent)
 	if !ok {
 		t.Fatalf("expected *mcp.TextContent, got %T", res.Content[0])
+	}
+	if !strings.Contains(textContent.Text, "[Ergebnisse im Web-Katalog öffnen](https://example.com/grid/de?search=performance)") {
+		t.Errorf("markdown content does not contain web catalog link: %s", textContent.Text)
 	}
 	if !strings.Contains(textContent.Text, "Test Performance Video") {
 		t.Errorf("markdown content does not contain title: %s", textContent.Text)
