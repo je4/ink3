@@ -36,6 +36,8 @@ import (
 )
 
 var configfile = flag.String("config", "", "location of toml configuration file")
+var httpFlag = flag.Bool("http", false, "force HTTP instead of HTTPS")
+var protohttpFlag = flag.Bool("protohttp", false, "force HTTP instead of HTTPS")
 
 func auth(apikey string) func(ctx context.Context, req *http.Request, gqlInfo *clientv2.GQLRequestInfo, res interface{}, next clientv2.RequestInterceptorFunc) error {
 	return func(ctx context.Context, req *http.Request, gqlInfo *clientv2.GQLRequestInfo, res interface{}, next clientv2.RequestInterceptorFunc) error {
@@ -94,6 +96,9 @@ func main() {
 	if err := LoadRevCatFrontConfig(cfgFS, cfgFile, conf); err != nil {
 		log.Fatalf("cannot load toml from [%v] %s: %v", cfgFS, cfgFile, err)
 	}
+	if *httpFlag || *protohttpFlag {
+		conf.ProtoHTTP = true
+	}
 	// create logger instance
 	var out io.Writer = os.Stdout
 	if conf.LogFile != "" {
@@ -137,28 +142,42 @@ func main() {
 
 	}
 
-	var cert *tls.Certificate
-	if conf.TLSCert != "" {
-		c, err := tls.LoadX509KeyPair(conf.TLSCert, conf.TLSKey)
-		if err != nil {
-			logger.Fatal().Msgf("cannot load tls certificate: %v", err)
-		}
-		cert = &c
-	} else {
+	if conf.ProtoHTTP {
 		if strings.HasPrefix(strings.ToLower(conf.ExternalAddr), "https://") {
-			certBytes, err := fs.ReadFile(certs.CertFS, "localhost.cert.pem")
+			conf.ExternalAddr = "http://" + conf.ExternalAddr[8:]
+		}
+		if strings.HasPrefix(strings.ToLower(conf.SearchAddr), "https://") {
+			conf.SearchAddr = "http://" + conf.SearchAddr[8:]
+		}
+		if strings.HasPrefix(strings.ToLower(conf.DetailAddr), "https://") {
+			conf.DetailAddr = "http://" + conf.DetailAddr[8:]
+		}
+	}
+
+	var cert *tls.Certificate
+	if !conf.ProtoHTTP {
+		if conf.TLSCert != "" {
+			c, err := tls.LoadX509KeyPair(conf.TLSCert, conf.TLSKey)
 			if err != nil {
-				logger.Fatal().Msgf("cannot read internal cert")
-			}
-			keyBytes, err := fs.ReadFile(certs.CertFS, "localhost.key.pem")
-			if err != nil {
-				logger.Fatal().Msgf("cannot read internal key")
-			}
-			c, err := tls.X509KeyPair(certBytes, keyBytes)
-			if err != nil {
-				logger.Fatal().Msgf("cannot create internal cert")
+				logger.Fatal().Msgf("cannot load tls certificate: %v", err)
 			}
 			cert = &c
+		} else {
+			if strings.HasPrefix(strings.ToLower(conf.ExternalAddr), "https://") {
+				certBytes, err := fs.ReadFile(certs.CertFS, "localhost.cert.pem")
+				if err != nil {
+					logger.Fatal().Msgf("cannot read internal cert")
+				}
+				keyBytes, err := fs.ReadFile(certs.CertFS, "localhost.key.pem")
+				if err != nil {
+					logger.Fatal().Msgf("cannot read internal key")
+				}
+				c, err := tls.X509KeyPair(certBytes, keyBytes)
+				if err != nil {
+					logger.Fatal().Msgf("cannot create internal cert")
+				}
+				cert = &c
+			}
 		}
 	}
 
@@ -200,7 +219,7 @@ func main() {
 		httpClient,
 		conf.Revcat.Endpoint,
 		nil,
-		func(ctx context.Context, req *http.Request, gqlInfo *clientv2.GQLRequestInfo, res interface{}, next clientv2.RequestInterceptorFunc) error {
+		func(ctx context.Context, req *http.Request, gqlInfo *clientv2.GQLRequestInfo, res any, next clientv2.RequestInterceptorFunc) error {
 			userAny := ctx.Value("user")
 			groups := []string{"global/guest"}
 			if user, ok := userAny.(*server.User); ok {
@@ -208,13 +227,11 @@ func main() {
 			}
 			bearer := fmt.Sprintf("Bearer %s", conf.Revcat.Apikey)
 			claims := &GroupClaims{
-				RegisteredClaims: jwt.RegisteredClaims{
-					Subject:   "revcatfront",
-					Issuer:    "revcatfront",
-					ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 5)),
-					IssuedAt:  jwt.NewNumericDate(time.Now()),
-				},
-				Groups: strings.Join(groups, ";"),
+				Subject:   "revcatfront",
+				Issuer:    "revcatfront",
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 5)),
+				IssuedAt:  jwt.NewNumericDate(time.Now()),
+				Groups:    strings.Join(groups, ";"),
 			}
 			token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
 			tokenString, err := token.SignedString([]byte(conf.JWTKey))

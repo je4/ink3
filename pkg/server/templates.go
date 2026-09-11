@@ -35,6 +35,43 @@ var languageNamer = map[string]display.Namer{
 	"it": display.Italian.Tags(),
 }
 
+var mediaMatch = regexp.MustCompile(`^mediaserver:([^/]+)/([^/]+)$`)
+
+func (ctrl *Controller) mediaLink(uri, action, param string, token bool) string {
+	matches := mediaMatch.FindStringSubmatch(uri)
+	params := strings.Split(param, "/")
+	sort.Strings(params)
+	// if not matching, just return the uri
+	if matches == nil {
+		return uri
+	}
+	collection := matches[1]
+	signature := matches[2]
+	urlstr := fmt.Sprintf("%s/%s/%s/%s/%s", ctrl.mediaserverBase, collection, signature, action, param)
+	if token {
+		jwt, err := NewJWT(
+			ctrl.mediaserverKey,
+			strings.TrimRight(fmt.Sprintf("mediaserver:%s/%s/%s/%s", collection, signature, action, strings.Join(params, "/")), "/"),
+			"HS256",
+			int64(ctrl.mediaserverTokenExp.Seconds()),
+			"mediaserver",
+			"mediathek",
+			"")
+		if err != nil {
+			return fmt.Sprintf("ERROR: %v", err)
+		}
+		urlstr = fmt.Sprintf("%s?token=%s", urlstr, jwt)
+	}
+	return urlstr
+}
+
+func (ctrl *Controller) buildThumbnailURL(uri string) string {
+	if uri == "" {
+		return ""
+	}
+	return ctrl.mediaLink(uri, "resize", "size240x240/formatjpeg", false)
+}
+
 // funcMap returns the map of template functions.
 func (ctrl *Controller) funcMap(name string) template.FuncMap {
 	fm := sprig.FuncMap()
@@ -181,34 +218,7 @@ func (ctrl *Controller) funcMap(name string) template.FuncMap {
 		}
 		return strings.Replace(s, "\n", "<br>\n", -1)
 	}
-	mediaMatch := regexp.MustCompile(`^mediaserver:([^/]+)/([^/]+)$`)
-	fm["medialink"] = func(uri, action, param string, token bool) string {
-		matches := mediaMatch.FindStringSubmatch(uri)
-		params := strings.Split(param, "/")
-		sort.Strings(params)
-		// if not matching, just return the uri
-		if matches == nil {
-			return uri
-		}
-		collection := matches[1]
-		signature := matches[2]
-		urlstr := fmt.Sprintf("%s/%s/%s/%s/%s", ctrl.mediaserverBase, collection, signature, action, param)
-		if token {
-			jwt, err := NewJWT(
-				ctrl.mediaserverKey,
-				strings.TrimRight(fmt.Sprintf("mediaserver:%s/%s/%s/%s", collection, signature, action, strings.Join(params, "/")), "/"),
-				"HS256",
-				int64(ctrl.mediaserverTokenExp.Seconds()),
-				"mediaserver",
-				"mediathek",
-				"")
-			if err != nil {
-				return fmt.Sprintf("ERROR: %v", err)
-			}
-			urlstr = fmt.Sprintf("%s?token=%s", urlstr, jwt)
-		}
-		return urlstr
-	}
+	fm["medialink"] = ctrl.mediaLink
 
 	fm["sortMediaItems"] = func(items []*client.MediaItemFragment) []*client.MediaItemFragment {
 		return slices.SortedFunc(slices.Values(items), func(e *client.MediaItemFragment, e2 *client.MediaItemFragment) int {

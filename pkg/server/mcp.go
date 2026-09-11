@@ -78,6 +78,17 @@ type GetTopicDescriptionResult struct {
 	Description string `json:"description"`
 }
 
+type GetCategoriesArgs struct{}
+
+type GetCategoryResult struct {
+	Name  string `json:"name"`
+	Count int64  `json:"count"`
+}
+
+type GetCategoriesResult struct {
+	Categories []*GetCategoryResult `json:"categories"`
+}
+
 type SearchArgs struct {
 	Query       string   `json:"query,omitzero"`
 	Search      string   `json:"search,omitzero"`
@@ -95,6 +106,7 @@ type SearchItemResult struct {
 	Persons   []string `json:"persons,omitzero"`
 	Date      string   `json:"date,omitzero"`
 	Type      string   `json:"type,omitzero"`
+	Thumbnail string   `json:"thumbnail,omitzero"`
 }
 
 type SearchPageInfoResult struct {
@@ -151,6 +163,7 @@ type DetailResult struct {
 	Categories      []string                 `json:"categories,omitzero"`
 	Tags            []string                 `json:"tags,omitzero"`
 	Url             string                   `json:"url,omitzero"`
+	Poster          string                   `json:"poster,omitzero"`
 	Media           []*DetailMediaResult     `json:"media,omitzero"`
 	Notes           []string                 `json:"notes,omitzero"`
 	References      []*DetailReferenceResult `json:"references,omitzero"`
@@ -671,12 +684,18 @@ func (ctrl *Controller) search(ctx context.Context, args SearchArgs) (*SearchRes
 		date := emptyIfNil(edge.Base.GetDate())
 		typ := emptyIfNil(edge.Base.GetType())
 
+		var thumbnail string
+		if poster := edge.Base.GetPoster(); poster != nil && poster.URI != "" {
+			thumbnail = ctrl.buildThumbnailURL(poster.URI)
+		}
+
 		itemResult := &SearchItemResult{
 			Signature: sig,
 			Title:     title,
 			Persons:   persons,
 			Date:      date,
 			Type:      typ,
+			Thumbnail: thumbnail,
 		}
 		items = append(items, itemResult)
 
@@ -687,6 +706,10 @@ func (ctrl *Controller) search(ctx context.Context, args SearchArgs) (*SearchRes
 			mdBuilder.WriteString(fmt.Sprintf("**%s**\n", sig))
 		} else {
 			mdBuilder.WriteString("**Ohne Titel**\n")
+		}
+
+		if thumbnail != "" {
+			mdBuilder.WriteString(fmt.Sprintf("   ![Thumbnail](%s)\n", thumbnail))
 		}
 
 		if sig != "" {
@@ -768,6 +791,47 @@ func resolveMultiLang(items []*client.MultiLangFragment, lang string) string {
 	return ""
 }
 
+func (ctrl *Controller) buildDetailPosterURL(uri string) string {
+	if uri == "" {
+		return ""
+	}
+	matches := mediaMatch.FindStringSubmatch(uri)
+	if matches == nil {
+		return uri
+	}
+	collection := matches[1]
+	signature := matches[2]
+	base := strings.TrimRight(ctrl.mediaserverBase, "/")
+	return fmt.Sprintf("%s/%s/%s/resize/size1024x768/formatjpeg", base, collection, signature)
+}
+
+func (ctrl *Controller) buildDetailMediaURL(uri, mediaType, mimeType string) string {
+	if uri == "" {
+		return ""
+	}
+	matches := mediaMatch.FindStringSubmatch(uri)
+	if matches == nil {
+		return uri
+	}
+	collection := matches[1]
+	signature := matches[2]
+	base := strings.TrimRight(ctrl.mediaserverBase, "/")
+
+	mType := strings.ToLower(strings.TrimSpace(mediaType))
+	mMime := strings.ToLower(strings.TrimSpace(mimeType))
+
+	switch {
+	case mType == "video" || strings.HasPrefix(mMime, "video/"):
+		return fmt.Sprintf("%s/%s/%s$$web/master", base, collection, signature)
+	case mType == "image" || mType == "poster" || mType == "photo" || mType == "picture" || strings.HasPrefix(mMime, "image/"):
+		return fmt.Sprintf("%s/%s/%s/resize/size1024x768/formatjpeg", base, collection, signature)
+	case mType == "pdf" || mMime == "application/pdf" || strings.Contains(mMime, "pdf"):
+		return fmt.Sprintf("%s/%s/%s/master", base, collection, signature)
+	default:
+		return fmt.Sprintf("%s/%s/%s/master", base, collection, signature)
+	}
+}
+
 func (ctrl *Controller) getDetail(ctx context.Context, args DetailArgs) (*DetailResult, string, error) {
 	sig := cmp.Or(args.Signature, args.Id)
 	sig = strings.TrimSpace(sig)
@@ -827,6 +891,11 @@ func (ctrl *Controller) getDetail(ctx context.Context, args DetailArgs) (*Detail
 		})
 	}
 
+	var posterURL string
+	if poster := base.GetPoster(); poster != nil && poster.URI != "" {
+		posterURL = ctrl.buildDetailPosterURL(poster.URI)
+	}
+
 	var mediaResults []*DetailMediaResult
 	for _, ml := range entry.GetMedia() {
 		if ml == nil {
@@ -836,11 +905,13 @@ func (ctrl *Controller) getDetail(ctx context.Context, args DetailArgs) (*Detail
 			if item == nil {
 				continue
 			}
+			mType := cmp.Or(item.GetType(), ml.GetType())
+			mediaURL := ctrl.buildDetailMediaURL(item.GetURI(), mType, item.GetMimetype())
 			mediaResults = append(mediaResults, &DetailMediaResult{
 				Name:     item.GetName(),
 				MimeType: item.GetMimetype(),
-				Type:     cmp.Or(item.GetType(), ml.GetType()),
-				Uri:      item.GetURI(),
+				Type:     mType,
+				Uri:      mediaURL,
 			})
 		}
 	}
@@ -909,6 +980,7 @@ func (ctrl *Controller) getDetail(ctx context.Context, args DetailArgs) (*Detail
 		Categories:      refinedCats,
 		Tags:            base.GetTags(),
 		Url:             itemURL,
+		Poster:          posterURL,
 		Media:           mediaResults,
 		Notes:           notes,
 		References:      references,
@@ -923,6 +995,10 @@ func (ctrl *Controller) getDetail(ctx context.Context, args DetailArgs) (*Detail
 		md.WriteString(fmt.Sprintf("### %s\n\n", title))
 	} else {
 		md.WriteString(fmt.Sprintf("### Detail: %s\n\n", base.Signature))
+	}
+
+	if posterURL != "" {
+		md.WriteString(fmt.Sprintf("![Poster](%s)\n\n", posterURL))
 	}
 
 	if base.Signature != "" {
@@ -1039,6 +1115,73 @@ func (ctrl *Controller) getDetail(ctx context.Context, args DetailArgs) (*Detail
 	}
 
 	return detailResult, md.String(), nil
+}
+
+func (ctrl *Controller) getCategories(ctx context.Context) (*GetCategoriesResult, string, error) {
+	if ctrl.client == nil {
+		return nil, "", errors.New("graphql client not configured")
+	}
+
+	catFacet := &client.InFacet{
+		Term: &client.InFacetTerm{
+			Name:        "categories",
+			Field:       "category.keyword",
+			Size:        1000,
+			MinDocCount: 1,
+			Include:     []string{},
+			Exclude:     []string{},
+		},
+		Query: &client.InFilter{
+			ExistsTerm: &client.InFilterExistsTerm{
+				Field: "signature",
+			},
+		},
+	}
+
+	filter := append([]*client.InFilter{}, ctrl.baseFilter...)
+	var pageSize int64 = 0
+
+	result, err := ctrl.client.Search(ctx, "", "", []*client.InFacet{catFacet}, filter, nil, nil, &pageSize, nil, nil)
+	if err != nil {
+		if ctrl.logger != nil {
+			ctrl.logger.Error().Err(err).Msg("cannot get categories facet")
+		}
+		return nil, "", fmt.Errorf("cannot get categories: %w", err)
+	}
+
+	categories := make([]*GetCategoryResult, 0)
+	if result != nil && result.GetSearch() != nil {
+		for _, facet := range result.GetSearch().GetFacets() {
+			if facet == nil || facet.GetName() != "categories" {
+				continue
+			}
+			for _, val := range facet.GetValues() {
+				if val == nil {
+					continue
+				}
+				strVal := val.GetFacetValueString()
+				if strVal == nil {
+					continue
+				}
+				categories = append(categories, &GetCategoryResult{
+					Name:  strVal.GetStrVal(),
+					Count: strVal.GetCount(),
+				})
+			}
+		}
+	}
+
+	var md strings.Builder
+	md.WriteString(fmt.Sprintf("### Kategorien (%d gefunden)\n\n", len(categories)))
+	if len(categories) == 0 {
+		md.WriteString("Keine Kategorien gefunden.\n")
+	} else {
+		for _, cat := range categories {
+			md.WriteString(fmt.Sprintf("- %s (%d Treffer)\n", cat.Name, cat.Count))
+		}
+	}
+
+	return &GetCategoriesResult{Categories: categories}, strings.TrimSpace(md.String()), nil
 }
 
 func normalizeSchemaNode(node any) any {
@@ -1407,6 +1550,23 @@ func (ctrl *Controller) initMCP(router *gin.Engine) {
 	})
 
 	addTool(mcpServer, &mcp.Tool{
+		Name:        "get_categories",
+		Description: "liefert eine Liste der im Datenbestand vorhandenen Kategorien anhand einer Facettenabfrage",
+	}, func(ctx context.Context, req *mcp.CallToolRequest, args GetCategoriesArgs) (*mcp.CallToolResult, *GetCategoriesResult, error) {
+		res, mdText, err := ctrl.getCategories(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: mdText,
+				},
+			},
+		}, res, nil
+	})
+
+	addTool(mcpServer, &mcp.Tool{
 		Name:        "search",
 		Description: buildSearchToolDescription(ctrl.fieldMapping),
 	}, func(ctx context.Context, req *mcp.CallToolRequest, args SearchArgs) (*mcp.CallToolResult, *SearchResult, error) {
@@ -1424,7 +1584,41 @@ func (ctrl *Controller) initMCP(router *gin.Engine) {
 	})
 
 	addTool(mcpServer, &mcp.Tool{
+		Name:        "get_search",
+		Description: buildSearchToolDescription(ctrl.fieldMapping),
+	}, func(ctx context.Context, req *mcp.CallToolRequest, args SearchArgs) (*mcp.CallToolResult, *SearchResult, error) {
+		res, mdText, err := ctrl.search(ctx, args)
+		if err != nil {
+			return nil, nil, err
+		}
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: mdText,
+				},
+			},
+		}, res, nil
+	})
+
+	addTool(mcpServer, &mcp.Tool{
 		Name:        "detail",
+		Description: "liefert die vollständigen Detailinformationen zu einem Mediathek-Eintrag anhand der Signatur",
+	}, func(ctx context.Context, req *mcp.CallToolRequest, args DetailArgs) (*mcp.CallToolResult, *DetailResult, error) {
+		res, mdText, err := ctrl.getDetail(ctx, args)
+		if err != nil {
+			return nil, nil, err
+		}
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: mdText,
+				},
+			},
+		}, res, nil
+	})
+
+	addTool(mcpServer, &mcp.Tool{
+		Name:        "get_detail",
 		Description: "liefert die vollständigen Detailinformationen zu einem Mediathek-Eintrag anhand der Signatur",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, args DetailArgs) (*mcp.CallToolResult, *DetailResult, error) {
 		res, mdText, err := ctrl.getDetail(ctx, args)
