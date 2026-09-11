@@ -2302,6 +2302,122 @@ func TestMCPSearchTool_QueryParserAndFieldMapping(t *testing.T) {
 	}
 }
 
+func TestMCPSearchTool_BooleanAndGroupedQueries(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+
+	var capturedQuery string
+	var capturedFilters []*client.InFilter
+	mock := &mockRevCatClient{
+		searchFunc: func(ctx context.Context, searchtype string, query string, facets []*client.InFacet, filter []*client.InFilter, vector []float64, first *int64, size *int64, cursor *string, sort []*client.SortField, interceptors ...clientv2.RequestInterceptor) (*client.Search, error) {
+			capturedQuery = query
+			capturedFilters = filter
+			return &client.Search{
+				Search: client.Search_Search{
+					TotalCount: 0,
+					Edges:      []*client.Search_Search_Edges{},
+				},
+			}, nil
+		},
+	}
+
+	ctrl := &Controller{
+		name: "test",
+		fieldMapping: map[string]string{
+			"author": "person.name.keyword",
+		},
+		client: mock,
+	}
+	ctrl.initMCP(router)
+
+	ts := httptest.NewServer(router)
+	defer ts.Close()
+
+	clientTransport := &mcp.StreamableClientTransport{
+		Endpoint: ts.URL + "/mcp",
+	}
+	mcpCli := mcp.NewClient(&mcp.Implementation{
+		Name:    "test client",
+		Version: "0.0.1",
+	}, nil)
+
+	session, err := mcpCli.Connect(t.Context(), clientTransport, nil)
+	if err != nil {
+		t.Fatalf("failed to connect: %v", err)
+	}
+	defer session.Close()
+
+	testCases := []struct {
+		name          string
+		queryArg      string
+		wantQuery     string
+		wantFilterVal string
+	}{
+		{
+			name:          "boolean and not",
+			queryArg:      "\"Performance\" AND NOT \"Video\"",
+			wantQuery:     "\"Performance\" + -\"Video\"",
+			wantFilterVal: "",
+		},
+		{
+			name:          "grouped with field filter",
+			queryArg:      "author:\"John Doe\" AND (dance OR music)",
+			wantQuery:     "(dance | music)",
+			wantFilterVal: "John Doe",
+		},
+		{
+			name:          "prefix operators",
+			queryArg:      "+Performance -Video",
+			wantQuery:     "+Performance -Video",
+			wantFilterVal: "",
+		},
+		{
+			name:          "lowercase boolean with field filter",
+			queryArg:      "author:Basel and not video",
+			wantQuery:     "-video",
+			wantFilterVal: "Basel",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			capturedQuery = ""
+			capturedFilters = nil
+
+			res, err := session.CallTool(t.Context(), &mcp.CallToolParams{
+				Name: "search",
+				Arguments: map[string]any{
+					"query": tc.queryArg,
+				},
+			})
+			if err != nil {
+				t.Fatalf("CallTool search failed: %v", err)
+			}
+			if res.IsError {
+				t.Fatalf("CallTool search returned error")
+			}
+
+			if capturedQuery != tc.wantQuery {
+				t.Errorf("expected captured query %q, got %q", tc.wantQuery, capturedQuery)
+			}
+
+			if tc.wantFilterVal != "" {
+				var found bool
+				for _, f := range capturedFilters {
+					if f.BoolTerm != nil && f.BoolTerm.Field == "person.name.keyword" {
+						if slices.Contains(f.BoolTerm.Values, tc.wantFilterVal) {
+							found = true
+						}
+					}
+				}
+				if !found {
+					t.Errorf("expected filter value %q in %+v", tc.wantFilterVal, capturedFilters)
+				}
+			}
+		})
+	}
+}
+
 func TestMCPSearchTool_Pagination(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
@@ -2899,4 +3015,45 @@ func TestMCPDetailTool_NoClient(t *testing.T) {
 	if !res.IsError {
 		t.Fatalf("expected CallTool to return error result when client is nil")
 	}
+}
+
+func TestBuildSearchToolDescription(t *testing.T) {
+	t.Run("default empty mapping", func(t *testing.T) {
+		desc := buildSearchToolDescription(nil)
+		requiredFilters := []string{
+			"`author`",
+			"`title`",
+			"`category`",
+			"`collection`",
+			"`signature`",
+			"`abstract`",
+			"`fulltext`",
+		}
+		for _, rf := range requiredFilters {
+			if !strings.Contains(desc, rf) {
+				t.Errorf("expected description to contain %s, got:\n%s", rf, desc)
+			}
+		}
+		if !strings.Contains(desc, "QUERY SYNTAX") || !strings.Contains(desc, "UNTERSTÜTZTE FELD-FILTER") {
+			t.Errorf("expected description to contain syntax sections")
+		}
+	})
+
+	t.Run("configured field mapping", func(t *testing.T) {
+		mapping := map[string]string{
+			"author":   "[persons].name",
+			"category": "category.keyword",
+			"custom":   "custom.field",
+		}
+		desc := buildSearchToolDescription(mapping)
+		if !strings.Contains(desc, "`author`") {
+			t.Errorf("expected author filter in description")
+		}
+		if !strings.Contains(desc, "`category`") {
+			t.Errorf("expected category filter in description")
+		}
+		if !strings.Contains(desc, "`custom`") {
+			t.Errorf("expected custom filter in description")
+		}
+	})
 }

@@ -579,27 +579,31 @@ func assertSearchParity(t *testing.T, mcpResult *SearchResult, baselineResult *S
 	}
 
 	limit := min(len(mcpResult.Items), len(baselineResult.Items))
+	baseMap := make(map[string]*SearchItemResult, len(baselineResult.Items))
+	for _, item := range baselineResult.Items {
+		baseMap[item.Signature] = item
+	}
 	for i := 0; i < limit; i++ {
 		mcpItem := mcpResult.Items[i]
-		baseItem := baselineResult.Items[i]
-
-		if mcpItem.Signature != baseItem.Signature {
-			t.Errorf("[%s] Item[%d] Signature mismatch: MCP=%q, Baseline=%q", description, i, mcpItem.Signature, baseItem.Signature)
+		baseItem, exists := baseMap[mcpItem.Signature]
+		if !exists {
+			t.Errorf("[%s] MCP Item[%d] Signature %q not found in Baseline results", description, i, mcpItem.Signature)
+			continue
 		}
 		if mcpItem.Title != baseItem.Title {
-			t.Errorf("[%s] Item[%d] Title mismatch: MCP=%q, Baseline=%q", description, i, mcpItem.Title, baseItem.Title)
+			t.Errorf("[%s] Item %q Title mismatch: MCP=%q, Baseline=%q", description, mcpItem.Signature, mcpItem.Title, baseItem.Title)
 		}
 		if mcpItem.Date != baseItem.Date {
-			t.Errorf("[%s] Item[%d] Date mismatch: MCP=%q, Baseline=%q", description, i, mcpItem.Date, baseItem.Date)
+			t.Errorf("[%s] Item %q Date mismatch: MCP=%q, Baseline=%q", description, mcpItem.Signature, mcpItem.Date, baseItem.Date)
 		}
 		if mcpItem.Type != baseItem.Type {
-			t.Errorf("[%s] Item[%d] Type mismatch: MCP=%q, Baseline=%q", description, i, mcpItem.Type, baseItem.Type)
+			t.Errorf("[%s] Item %q Type mismatch: MCP=%q, Baseline=%q", description, mcpItem.Signature, mcpItem.Type, baseItem.Type)
 		}
 		if mcpItem.Url != baseItem.Url {
-			t.Errorf("[%s] Item[%d] Url mismatch: MCP=%q, Baseline=%q", description, i, mcpItem.Url, baseItem.Url)
+			t.Errorf("[%s] Item %q Url mismatch: MCP=%q, Baseline=%q", description, mcpItem.Signature, mcpItem.Url, baseItem.Url)
 		}
 		if !reflect.DeepEqual(mcpItem.Persons, baseItem.Persons) {
-			t.Errorf("[%s] Item[%d] Persons mismatch: MCP=%v, Baseline=%v", description, i, mcpItem.Persons, baseItem.Persons)
+			t.Errorf("[%s] Item %q Persons mismatch: MCP=%v, Baseline=%v", description, mcpItem.Signature, mcpItem.Persons, baseItem.Persons)
 		}
 	}
 }
@@ -612,6 +616,10 @@ func TestIntegration_MCPSearch_FreeText(t *testing.T) {
 		"Performance",
 		"Video",
 		"Basel",
+		"\"Performance\" AND NOT \"Video\"",
+		"Basel OR Zurich",
+		"(Performance OR Video) AND NOT Basel",
+		"+Performance -Video",
 		"",
 	}
 

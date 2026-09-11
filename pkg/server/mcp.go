@@ -1047,6 +1047,60 @@ func addTool[In, Out any](s *mcp.Server, tool *mcp.Tool, handler func(context.Co
 	mcp.AddTool(s, tool, handler)
 }
 
+func buildSearchToolDescription(fieldMapping map[string]string) string {
+	knownFieldDocs := map[string]string{
+		"author":     "- `author`: Urheber, Autoren, Künstler oder beteiligte Personen (z. B. `author:\"John Doe\"`, `author:Beuys`).",
+		"title":      "- `title`: Werks-, Dokument- oder Objekttitel (z. B. `title:\"Performance Art\"`, `title:Konzert`).",
+		"category":   "- `category`: Kategorie-Schlagwort (z. B. `category:Video`, `category:Audio`).",
+		"collection": "- `collection`: Name oder Titel der Sammlung (z. B. `collection:\"Sammlung Medienkunst\"`).",
+		"signature":  "- `signature`: Exakte Archiv- oder Bestandssignatur (z. B. `signature:\"MK-123\"`).",
+		"abstract":   "- `abstract`: Zusammenfassung oder Abstract-Text (z. B. `abstract:\"Dokumentation\"`).",
+		"fulltext":   "- `fulltext`: Volltextsuche in verknüpften PDF-Dokumenten (z. B. `fulltext:\"Vortrag\"`).",
+	}
+
+	standardOrder := []string{"author", "title", "category", "collection", "signature", "abstract", "fulltext"}
+
+	var docLines []string
+	if len(fieldMapping) > 0 {
+		var keys []string
+		for k := range fieldMapping {
+			keys = append(keys, k)
+		}
+		slices.Sort(keys)
+
+		for _, k := range keys {
+			if doc, ok := knownFieldDocs[k]; ok {
+				docLines = append(docLines, doc)
+			} else {
+				docLines = append(docLines, fmt.Sprintf("- `%s`: Filter für Feld %s (z. B. `%s:\"Wert\"`).", k, k, k))
+			}
+		}
+	} else {
+		for _, k := range standardOrder {
+			docLines = append(docLines, knownFieldDocs[k])
+		}
+	}
+
+	return "Sucht im Archiv- und Bibliothekskatalog nach Mediathek-Einträgen anhand von Freitext, booleschen Operatoren, Phrasen, Feldfiltern und Facetten.\n\n" +
+		"QUERY SYNTAX (Parameter `query`):\n" +
+		"- Freitext: Einzelne Suchbegriffe (z. B. `Performance`).\n" +
+		"- Phrasensuche: Exakte Wortgruppen in doppelten Anführungszeichen (z. B. `\"Digital Art\"` oder `\"John Doe\"`).\n" +
+		"- Boolesche Operatoren: `AND`, `OR`, `NOT` sowie `&&`, `||`, `!` (z. B. `Performance AND NOT Video`, `Basel OR Zurich`).\n" +
+		"- Präfix-Operatoren: `+` (Muss-Bedingung) und `-` (Ausschluss-Bedingung), z. B. `+Performance -Video`.\n" +
+		"- Gruppierung & Klammern: Komplexe logische Ausdrücke mit runden Klammern, z. B. `(Performance OR Konzert) AND NOT Basel`.\n" +
+		"- Feld-Filter: Strukturierte Filter im Format `field:value` oder `field:\"exact value\"` (z. B. `author:\"John Doe\"`, `title:Performance`). Werden automatisch extrahiert und mit der Freitextsuche kombiniert.\n\n" +
+		"UNTERSTÜTZTE FELD-FILTER (`field:value`):\n" +
+		strings.Join(docLines, "\n") + "\n\n" +
+		"FACETTEN-FILTER (Dedizierte Argumente):\n" +
+		"- `collections`: Liste von Sammlungstiteln (exakte Titel aus dem Tool `get_collections`).\n" +
+		"- `topics`: Liste von Thementiteln (exakte Titel aus dem Tool `get_topics`).\n" +
+		"- `estates`: Liste von Nachlass-/Bestandstiteln (exakte Titel aus dem Tool `get_estates`).\n\n" +
+		"PAGINIERUNG:\n" +
+		"- `from`: 0-basierter Startindex für den Seitenaufruf (Standard: 0).\n" +
+		"- `pageSize`: Anzahl der gewünschten Ergebnisse (Standard: 36).\n" +
+		"- `cursor`: End-Cursor-Token aus `pageInfo.endCursor` für cursor-basierte Weiterschaltung."
+}
+
 func (ctrl *Controller) initMCP(router *gin.Engine) {
 	mcpRouter := router.Group("/mcp")
 	mcpServer := mcp.NewServer(&mcp.Implementation{
@@ -1268,7 +1322,7 @@ func (ctrl *Controller) initMCP(router *gin.Engine) {
 
 	addTool(mcpServer, &mcp.Tool{
 		Name:        "search",
-		Description: "sucht im Katalog nach Freitext und optional nach Sammlungen, Themen und Nachlässen (anhand deren Titeln)",
+		Description: buildSearchToolDescription(ctrl.fieldMapping),
 	}, func(ctx context.Context, req *mcp.CallToolRequest, args SearchArgs) (*mcp.CallToolResult, *SearchResult, error) {
 		res, mdText, err := ctrl.search(ctx, args)
 		if err != nil {
